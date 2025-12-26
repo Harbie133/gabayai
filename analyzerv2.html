@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symptom Analyzer - GabayAI</title>
+<!-- Update paths to your actual CSS files -->
+<link rel="stylesheet" href="navbar.css">
+<link rel="stylesheet" href="analyzerv2.css"> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* --- IMPORTANT NAVBAR FIXES --- */
+  /* Forces mobile menu items to stack vertically regardless of external CSS conflicts */
+  .mobile-menu-items {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  
+  /* Ensures menu stays on top */
+  .mobile-menu {
+     z-index: 9999 !important; 
+  }
+
+  /* --- EXISTING ANALYZER STYLES --- */
+  /* Extra styling for the Home Remedy emphasis */
+  .load-more-conditions {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #4f46e5;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+  }
+  .load-more-conditions:hover {
+    text-decoration: underline;
+  }
+  
+  /* Disclaimer Banner Styling */
+  .ai-disclaimer-banner {
+    background-color: #fff3cd;
+    border-left: 5px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #856404;
+  }
+  .ai-disclaimer-banner i {
+    font-size: 1.2rem;
+    margin-top: 2px;
+  }
+  .remedy-badge {
+    background: #e6fffa;
+    color: #047481;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* NEW: Triage + Drug warning support */
+  #triage-container {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+  }
+  .triage-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  #drug-warning-container {
+    display: none;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 10px 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- RESPONSIVE NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav"> 
+      <li><a href="homer.html" class="nav-link ">Dashboard</a></li>
+      <li><a href="analyzerv2.html" class="nav-link active">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link ">Consultation</a></li>
+      <li><a href="editaccount.html" class="nav-link">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
+      <a href="analyzerv2.html" class="mobile-nav-link active">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link ">Consultation</a>
+      <a href="editaccount.html" class="mobile-nav-link ">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>  
+
+<div class="main-content">
+<div class="container" id="mainContainer">
+  <h2>Symptom Analyzer</h2>
+
+  <!-- Step 1: Vitals -->
+  <div class="step active" id="step1">
+    <div class="form-group">
+      <div class="section-label">Personal Information</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="age">Age</label>
+          <input type="number" id="age" placeholder="Age" min="1" max="130" oninput="validateAge(this)">
+          <div id="age-error" class="error-message">Invalid age</div>
+        </div>
+        <div class="form-field">
+          <label for="gender">Gender</label>
+          <select id="gender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Body Measurements</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="height">Height (cm)</label>
+          <input type="number" id="height" placeholder="cm" oninput="validatePositiveNumber(this, 'height-error')">
+          <div id="height-error" class="error-message">Invalid height</div>
+        </div>
+        <div class="form-field">
+          <label for="weight">Weight (kg)</label>
+          <input type="number" id="weight" placeholder="kg" oninput="validatePositiveNumber(this, 'weight-error')">
+          <div id="weight-error" class="error-message">Invalid weight</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Vital Signs</div>
+      <div class="form-field">
+        <label for="bp">Blood Pressure</label>
+        <input type="text" id="bp" placeholder="e.g. 120/80 mmHg">
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button onclick="validateStep1()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Symptoms -->
+  <div class="step" id="step2">
+    <label for="symptoms">Describe your symptoms</label>
+    <textarea id="symptoms" placeholder="Pwede Tagalog or English. Masakit ba ulo? Kailan nagsimula?"></textarea>
+
+    <div class="form-group followup-section" id="followup-section">
+      <div class="section-label">Follow-up Questions</div>
+      <div id="questions-container"></div>
+      <p class="followup-hint">Select the best match or 'Hindi ko alam'.</p>
+    </div>
+
+    <div class="button-group">
+      <button onclick="prevStep(2)">Back</button>
+      <button id="step2-main-btn" onclick="handleStep2()">Next</button>
+    </div>
+
+    <div class="analyzing" id="analyzing">
+      <div class="spinner-container"><div class="spinner"></div></div>
+      <div class="analyzing-text" id="analyzing-text">Analyzing your symptoms...</div>
+    </div>
+  </div>
+
+  <!-- Step 3: Results -->
+  <div class="step" id="step3">
+    <h3>Health Assessment Results</h3>
+
+    <!-- NEW: Triage / Urgency container -->
+    <div id="triage-container"></div>
+
+    <!-- IMPORTANT DISCLAIMER BANNER -->
+    <div class="ai-disclaimer-banner">
+      <i class="fas fa-robot"></i>
+      <div>
+        <strong>Paalala / Reminder:</strong>
+        <p style="margin: 0;">
+          This result is generated by AI and is <strong>NOT a final medical diagnosis</strong>. 
+          Use this only as a guide. Always consult a licensed doctor for proper medication and treatment.
+        </p>
+      </div>
+    </div>
+
+    <!-- NEW: Drug interaction warning -->
+    <div id="drug-warning-container"></div>
+
+    <div id="red-flags-card" class="warning-banner collapsed">
+      <div class="warning-header" onclick="toggleRedFlags()">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-triangle-exclamation"></i>
+          <span>Important Health Notices (Red Flags)</span>
+        </div>
+        <i class="fas fa-chevron-down chevron-icon" id="red-flag-chevron"></i>
+      </div>
+      <ul id="red-flags-list"></ul>
+    </div>
+
+    <div class="results-layout">
+      <!-- Sidebar for List -->
+      <div class="results-sidebar" id="condition-list"></div>
+
+      <!-- Detail View -->
+      <div class="results-detail">
+        <div id="detail-placeholder" class="detail-placeholder">
+          <i class="fas fa-hand-point-left"></i>
+          <p>Select a condition to see Home Remedies & Details.</p>
+        </div>
+
+        <div id="detail-content" style="display:none;">
+          <div class="detail-header">
+            <h3 id="det-name" class="detail-title">Condition Name</h3>
+            <span id="det-badge" class="match-badge">High Match</span>
+          </div>
+
+          <div class="detail-section">
+            <h4>Overview</h4>
+            <p id="det-overview"></p>
+          </div>
+
+          <div class="detail-section">
+            <h4>Matching Symptoms</h4>
+            <ul id="det-symptoms"></ul>
+          </div>
+
+          <div class="detail-section">
+            <!-- Label explicitly says Home Remedies -->
+            <h4>
+                <i class="fas fa-mug-hot" style="color:#e07a5f; margin-right:5px;"></i>
+                Home Remedies & Self Care 
+                <span class="remedy-badge">No Prescription Needed</span>
+            </h4>
+            <div class="treatment-box">
+              <ul id="det-treatment"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button onclick="prevStep(3)">Back to answers</button>
+      <button onclick="location.reload()">Start Over</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="auth-guard.js"></script>
+<script src="language-manager.js"></script>
+<script src="analyzerv2.js?v=7"></script> <!-- Updated Version -->
+
+<script>
+// 1. Logout Function
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+      window.location.href = 'user_logout.php';
+  }
+}
+
+// 2. Mobile Menu Toggle Logic
+function toggleMobileMenu() {
+  const mobileMenu = document.getElementById('mobileMenu');
+  const hamburger = document.getElementById('hamburger');
+  
+  // Toggle the classes
+  mobileMenu.classList.toggle('show');
+  hamburger.classList.toggle('open');
+}
+
+// 3. Close Mobile Menu when clicking outside (FIXED & CLEANED)
+document.addEventListener('click', function(e) {
+  const mobileMenu = document.getElementById('mobileMenu');
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+
+  // Check kung ang clinicick ay HINDI yung button at HINDI yung menu mismo
+  if (mobileMenuBtn && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+    if (mobileMenu.classList.contains('show')) {
+      mobileMenu.classList.remove('show');
+      hamburger.classList.remove('open');
+    }
+  }
+});
+
+// 4. Initialize App
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('App loaded and Navbar ready.');
+});
+</script>
+</body>
+</html>

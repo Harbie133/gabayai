@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Video Consultation - GabayAI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            overflow: hidden;
+        }
+
+        .video-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-header {
+            background: rgba(0,0,0,0.9);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .video-header h2 {
+            font-size: 1.2rem;
+            color: #4c6ef5;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fbbf24;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .video-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            background: #000;
+            padding: 10px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-label {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            color: #4c6ef5;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(0,0,0,0.9);
+            border-top: 1px solid #333;
+        }
+
+        .control-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .control-btn.mic {
+            background: #4c6ef5;
+            color: white;
+        }
+
+        .control-btn.mic.muted {
+            background: #e53e3e;
+        }
+
+        .control-btn.camera {
+            background: #4c6ef5;
+            color: white;
+        }
+
+        .control-btn.camera.off {
+            background: #e53e3e;
+        }
+
+        .control-btn.end-call {
+            background: #e53e3e;
+            color: white;
+            width: 65px;
+            height: 65px;
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="video-container">
+    <div class="video-header">
+        <h2><i class="fas fa-video"></i> Video Consultation</h2>
+        <div class="connection-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="connectionStatus">Connecting...</span>
+        </div>
+    </div>
+
+    <div class="video-grid">
+        <div class="video-wrapper">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div class="video-label"><i class="fas fa-user-md"></i> Doctor</div>
+            <div class="video-placeholder" id="doctorPlaceholder">
+                <i class="fas fa-user-md"></i>
+                <p>Waiting for doctor...</p>
+            </div>
+        </div>
+        <div class="video-wrapper">
+            <video id="localVideo" autoplay muted playsinline></video>
+            <div class="video-label" id="patientLabel"><i class="fas fa-user"></i> You</div>
+        </div>
+    </div>
+
+    <div class="video-controls">
+        <button class="control-btn mic" id="micBtn" title="Toggle Microphone">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button class="control-btn camera" id="cameraBtn" title="Toggle Camera">
+            <i class="fas fa-video"></i>
+        </button>
+        <button class="control-btn end-call" id="endCallBtn" title="Leave Consultation">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    let localStream;
+    let remoteStream;
+    let peerConnection;
+    let roomId;
+    let patientName;
+    let userId = 'patient';
+    let lastSignalId = 0;
+    let signalPolling;
+    let isAudioEnabled = true;
+    let isVideoEnabled = true;
+
+    const configuration = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    roomId = urlParams.get('room');
+    patientName = urlParams.get('name') || 'Patient';
+
+    console.log('🔵 PATIENT: Room:', roomId);
+    console.log('🔵 PATIENT: Name:', patientName);
+
+    document.getElementById('patientLabel').innerHTML = `<i class="fas fa-user"></i> ${patientName}`;
+
+    if (!roomId) {
+        alert('Invalid consultation link');
+        window.location.href = 'virtual_consultation_room.html';
+    } else {
+        startVideoCall();
+    }
+
+    async function startVideoCall() {
+        try {
+            console.log('🔵 PATIENT: Starting...');
+            updateConnectionStatus('connecting', 'Requesting permissions...');
+
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: true
+            });
+
+            document.getElementById('localVideo').srcObject = localStream;
+            console.log('🔵 PATIENT: Got stream');
+            updateConnectionStatus('connecting', 'Connecting...');
+
+            createPeerConnection();
+            startSignalPolling();
+
+        } catch (error) {
+            console.error('❌ Error:', error);
+            let msg = 'Camera access failed.\n\n';
+            if (error.name === 'NotAllowedError') {
+                msg += 'Please allow camera permissions.';
+            } else {
+                msg += error.message;
+            }
+            alert(msg);
+        }
+    }
+
+    function createPeerConnection() {
+        peerConnection = new RTCPeerConnection(configuration);
+
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+            console.log('🔵 PATIENT: Added track:', track.kind);
+        });
+
+        peerConnection.ontrack = (event) => {
+            console.log('🔵 PATIENT: ✅ Received track:', event.track.kind);
+            if (!remoteStream) {
+                remoteStream = new MediaStream();
+                document.getElementById('remoteVideo').srcObject = remoteStream;
+            }
+            remoteStream.addTrack(event.track);
+            document.getElementById('doctorPlaceholder').style.display = 'none';
+            document.getElementById('remoteVideo').style.display = 'block';
+            updateConnectionStatus('connected', 'Connected to Doctor');
+        };
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log('🔵 PATIENT: Sending ICE');
+                sendSignal('ice-candidate', event.candidate);
+            }
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+            console.log('🔵 PATIENT: State:', peerConnection.connectionState);
+        };
+    }
+
+    function updateConnectionStatus(status, text) {
+        document.getElementById('statusDot').className = 'status-dot ' + status;
+        document.getElementById('connectionStatus').textContent = text;
+    }
+
+    async function sendSignal(type, data) {
+        try {
+            await fetch('teleconsult_signal.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    sender_id: 'patient',
+                    receiver_id: 'doctor',
+                    signal_type: type,
+                    signal_data: data
+                })
+            });
+            console.log(`🔵 PATIENT: Sent ${type}`);
+        } catch (error) {
+            console.error('❌ Error:', error);
+        }
+    }
+
+    function startSignalPolling() {
+        signalPolling = setInterval(async () => {
+            try {
+                const response = await fetch(
+                    `teleconsult_signal.php?room_id=${roomId}&receiver_id=patient&last_id=${lastSignalId}`
+                );
+                const data = await response.json();
+
+                if (data.success && data.signals && data.signals.length > 0) {
+                    console.log('🔵 PATIENT: Got', data.signals.length, 'signals');
+                    for (const signal of data.signals) {
+                        if (signal.sender_id !== 'patient') {
+                            await handleSignal(signal);
+                        }
+                        lastSignalId = Math.max(lastSignalId, signal.id);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Poll error:', error);
+            }
+        }, 1000);
+    }
+
+    async function handleSignal(signal) {
+        try {
+            console.log('🔵 PATIENT: Handle:', signal.signal_type);
+            
+            switch (signal.signal_type) {
+                case 'offer':
+                    console.log('🔵 PATIENT: Got offer');
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    await sendSignal('answer', answer);
+                    console.log('🔵 PATIENT: Sent answer');
+                    break;
+
+                case 'answer':
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
+                    break;
+
+                case 'ice-candidate':
+                    if (signal.signal_data && signal.signal_data.candidate) {
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(signal.signal_data));
+                        console.log('🔵 PATIENT: Added ICE');
+                    }
+                    break;
+            }
+        } catch (error) {
+            console.error('❌ Signal error:', error);
+        }
+    }
+
+    document.getElementById('micBtn').addEventListener('click', function() {
+        isAudioEnabled = !isAudioEnabled;
+        if (localStream && localStream.getAudioTracks().length > 0) {
+            localStream.getAudioTracks()[0].enabled = isAudioEnabled;
+            this.classList.toggle('muted');
+            this.querySelector('i').className = isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash';
+        }
+    });
+
+    document.getElementById('cameraBtn').addEventListener('click', function() {
+        isVideoEnabled = !isVideoEnabled;
+        if (localStream && localStream.getVideoTracks().length > 0) {
+            localStream.getVideoTracks()[0].enabled = isVideoEnabled;
+            this.classList.toggle('off');
+            this.querySelector('i').className = isVideoEnabled ? 'fas fa-video' : 'fas fa-video-slash';
+        }
+    });
+
+    document.getElementById('endCallBtn').addEventListener('click', function() {
+        if (confirm('Leave consultation?')) {
+            endCall();
+        }
+    });
+
+    async function endCall() {
+        console.log('🔵 PATIENT: Ending...');
+        
+        if (signalPolling) clearInterval(signalPolling);
+        if (localStream) localStream.getTracks().forEach(t => t.stop());
+        if (peerConnection) peerConnection.close();
+
+        // Auto-cleanup signals
+        if (roomId) {
+            try {
+                const response = await fetch('end_teleconsult.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ room_id: roomId })
+                });
+                const data = await response.json();
+                console.log('🔵 PATIENT: Cleanup:', data);
+            } catch (error) {
+                console.error('❌ Cleanup error:', error);
+            }
+        }
+
+        alert('You have left the consultation.');
+        window.location.href = 'consult.html';
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (localStream || peerConnection) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+
+</body>
+</html>

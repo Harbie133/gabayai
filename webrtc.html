@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Teleconsultation - Healthcare System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .video-box {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .video-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .video-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .connection-info {
+            padding: 15px 20px;
+            background: #e9ecef;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 0 20px 20px;
+        }
+
+        .data-channel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .messages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+        }
+
+        .message {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .message.local {
+            background: #e3f2fd;
+            text-align: right;
+        }
+
+        .message.remote {
+            background: #f3e5f5;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .peer-id-section {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .peer-id-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .peer-id-input:focus {
+            border-color: #007bff;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Healthcare WebRTC Teleconsultation</h1>
+            <p>Secure Real-Time Video Communication for Medical Consultations</p>
+        </div>
+
+        <div class="controls">
+            <button id="startCallBtn" class="btn btn-success">📹 Start Call</button>
+            <button id="endCallBtn" class="btn btn-danger" disabled>📞 End Call</button>
+            <button id="muteAudioBtn" class="btn btn-warning" disabled>🔇 Mute Audio</button>
+            <button id="muteVideoBtn" class="btn btn-warning" disabled>📷 Disable Video</button>
+            <button id="shareScreenBtn" class="btn btn-primary" disabled>🖥️ Share Screen</button>
+        </div>
+
+        <div class="video-container">
+            <div class="video-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="video-label">Local Video (You)</div>
+            </div>
+            <div class="video-box">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div class="video-label">Remote Video (Peer)</div>
+            </div>
+        </div>
+
+        <div class="connection-info">
+            <strong>Connection Status:</strong>
+            <span id="connectionStatus" class="status disconnected">Initializing...</span>
+            <span id="loadingIndicator" class="loading" style="display: none;"></span>
+        </div>
+
+        <div class="chat-container">
+            <div class="data-channel">
+                <h3>💬 Real-time Messages</h3>
+                <div id="messagesContainer" class="messages"></div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button id="sendMessageBtn" class="btn btn-primary" disabled>Send</button>
+                </div>
+            </div>
+
+            <div class="peer-id-section">
+                <h3>🔗 Connection Setup</h3>
+                <label for="peerIdInput"><strong>Enter Peer ID to Connect:</strong></label>
+                <input type="text" id="peerIdInput" class="peer-id-input" placeholder="Enter peer ID...">
+                <button id="connectToPeerBtn" class="btn btn-primary" disabled>Connect to Peer</button>
+                
+                <div style="margin-top: 15px;">
+                    <label><strong>Your Peer ID:</strong></label>
+                    <div id="myPeerId" style="background: #e9ecef; padding: 10px; border-radius: 5px; margin-top: 5px; font-family: monospace; word-break: break-all;">Generating...</div>
+                </div>
+
+                <div class="debug-info" id="debugInfo">
+                    <strong>Debug Log:</strong><br>
+                    Initializing application...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include PeerJS for simplified WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script>
+        class HealthcareWebRTC {
+            constructor() {
+                this.peer = null;
+                this.connection = null;
+                this.call = null;
+                this.localStream = null;
+                this.isAudioMuted = false;
+                this.isVideoMuted = false;
+                this.isScreenSharing = false;
+                this.peerReady = false;
+                this.retryCount = 0;
+                this.maxRetries = 3;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.initializePeer();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    startCallBtn: document.getElementById('startCallBtn'),
+                    endCallBtn: document.getElementById('endCallBtn'),
+                    muteAudioBtn: document.getElementById('muteAudioBtn'),
+                    muteVideoBtn: document.getElementById('muteVideoBtn'),
+                    shareScreenBtn: document.getElementById('shareScreenBtn'),
+                    connectToPeerBtn: document.getElementById('connectToPeerBtn'),
+                    sendMessageBtn: document.getElementById('sendMessageBtn'),
+                    localVideo: document.getElementById('localVideo'),
+                    remoteVideo: document.getElementById('remoteVideo'),
+                    connectionStatus: document.getElementById('connectionStatus'),
+                    loadingIndicator: document.getElementById('loadingIndicator'),
+                    messagesContainer: document.getElementById('messagesContainer'),
+                    messageInput: document.getElementById('messageInput'),
+                    peerIdInput: document.getElementById('peerIdInput'),
+                    myPeerId: document.getElementById('myPeerId'),
+                    debugInfo: document.getElementById('debugInfo')
+                };
+            }
+
+            setupEventListeners() {
+                this.elements.startCallBtn.addEventListener('click', () => this.startCall());
+                this.elements.endCallBtn.addEventListener('click', () => this.endCall());
+                this.elements.muteAudioBtn.addEventListener('click', () => this.toggleAudio());
+                this.elements.muteVideoBtn.addEventListener('click', () => this.toggleVideo());
+                this.elements.shareScreenBtn.addEventListener('click', () => this.toggleScreenShare());
+                this.elements.connectToPeerBtn.addEventListener('click', () => this.connectToPeer());
+                this.elements.sendMessageBtn.addEventListener('click', () => this.sendMessage());
+                
+                this.elements.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                
+                this.elements.peerIdInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.connectToPeer();
+                });
+            }
+
+            debugLog(message) {
+                console.log(message);
+                const debugInfo = this.elements.debugInfo;
+                const timestamp = new Date().toLocaleTimeString();
+                debugInfo.innerHTML += `<br>[${timestamp}] ${message}`;
+                debugInfo.scrollTop = debugInfo.scrollHeight;
+            }
+
+            initializePeer() {
+                this.showLoading(true);
+                this.debugLog('Initializing PeerJS connection...');
+                
+                // Destroy existing peer if any
+                if (this.peer) {
+                    this.peer.destroy();
+                }
+
+                // Enhanced ICE server configuration for better connectivity
+                const iceServers = [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun.stunprotocol.org:3478' },
+                    { urls: 'stun:turn.goog:19302' }
+                ];
+
+                // Initialize PeerJS with enhanced configuration
+                this.peer = new Peer({
+                    config: {
+                        iceServers: iceServers,
+                        sdpSemantics: 'unified-plan'
+                    },
+                    // Use default cloud PeerJS server for better reliability
+                    debug: 2 // Enable debug logging
+                });
+
+                this.peer.on('open', (id) => {
+                    console.log('Peer ID generated:', id);
+                    this.debugLog(`Peer connection established with ID: ${id}`);
+                    this.elements.myPeerId.textContent = id;
+                    this.updateStatus('Ready to Connect', 'connected');
+                    this.showLoading(false);
+                    this.peerReady = true;
+                    this.elements.connectToPeerBtn.disabled = false;
+                    this.retryCount = 0; // Reset retry count on success
+                });
+
+                this.peer.on('call', (call) => {
+                    console.log('Incoming call received');
+                    this.debugLog('Incoming video call received');
+                    this.handleIncomingCall(call);
+                });
+
+                this.peer.on('connection', (conn) => {
+                    console.log('Incoming data connection');
+                    this.debugLog('Incoming data connection established');
+                    this.setupDataConnection(conn);
+                });
+
+                this.peer.on('error', (error) => {
+                    console.error('Peer error:', error);
+                    this.debugLog(`Peer error: ${error.type} - ${error.message}`);
+                    
+                    if (error.type === 'network' || error.type === 'server-error') {
+                        this.handleNetworkError(error);
+                    } else if (error.type === 'peer-unavailable') {
+                        this.updateStatus('Peer Not Found', 'disconnected');
+                        this.showLoading(false);
+                        alert('The peer ID you entered is not available. Please check the ID and try again.');
+                    } else {
+                        this.updateStatus('Connection Error', 'disconnected');
+                        this.showLoading(false);
+                        alert(`Connection error: ${error.message}`);
+                    }
+                });
+
+                this.peer.on('disconnected', () => {
+                    console.log('Peer disconnected');
+                    this.debugLog('Peer disconnected from server');
+                    this.updateStatus('Disconnected', 'disconnected');
+                    this.peerReady = false;
+                    this.elements.connectToPeerBtn.disabled = true;
+                    
+                    // Attempt to reconnect
+                    if (this.retryCount < this.maxRetries) {
+                        this.debugLog('Attempting to reconnect...');
+                        setTimeout(() => {
+                            this.peer.reconnect();
+                            this.retryCount++;
+                        }, 2000);
+                    }
+                });
+
+                this.peer.on('close', () => {
+                    console.log('Peer connection closed');
+                    this.debugLog('Peer connection closed');
+                    this.peerReady = false;
+                    this.elements.connectToPeerBtn.disabled = true;
+                });
+            }
+
+            handleNetworkError(error) {
+                this.retryCount++;
+                if (this.retryCount <= this.maxRetries) {
+                    this.debugLog(`Network error, retrying... (${this.retryCount}/${this.maxRetries})`);
+                    this.updateStatus('Reconnecting...', 'connecting');
+                    setTimeout(() => {
+                        this.initializePeer();
+                    }, 3000);
+                } else {
+                    this.updateStatus('Connection Failed', 'disconnected');
+                    this.showLoading(false);
+                    this.debugLog('Max retry attempts reached. Please refresh the page.');
+                    alert('Unable to establish connection to server. Please check your internet connection and refresh the page.');
+                }
+            }
+
+            async startCall() {
+                try {
+                    this.showLoading(true);
+                    this.debugLog('Starting camera and microphone...');
+                    
+                    // Get user media with high quality settings for medical consultations
+                    this.localStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            frameRate: { ideal: 30 }
+                        },
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        }
+                    });
+
+                    this.elements.localVideo.srcObject = this.localStream;
+                    this.updateCallControls(true);
+                    this.updateStatus('Camera Ready', 'connected');
+                    this.showLoading(false);
+                    this.debugLog('Camera and microphone started successfully');
+                    
+                } catch (error) {
+                    console.error('Error accessing media devices:', error);
+                    this.debugLog(`Media access error: ${error.message}`);
+                    this.showLoading(false);
+                    
+                    let errorMessage = 'Could not access camera/microphone. ';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Please grant camera and microphone permissions and try again.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'No camera or microphone found on this device.';
+                    } else {
+                        errorMessage += 'Please ensure you have granted permissions and try again.';
+                    }
+                    
+                    alert(errorMessage);
+                }
+            }
+
+            connectToPeer() {
+                const peerId = this.elements.peerIdInput.value.trim();
+                if (!peerId) {
+                    alert('Please enter a valid Peer ID');
+                    return;
+                }
+
+                if (!this.peerReady) {
+                    alert('Peer connection not ready. Please wait for initialization to complete.');
+                    return;
+                }
+
+                if (!this.localStream) {
+                    alert('Please start your camera first');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.debugLog(`Attempting to connect to peer: ${peerId}`);
+                this.updateStatus('Connecting...', 'connecting');
+                
+                try {
+                    // Make video call
+                    this.call = this.peer.call(peerId, this.localStream);
+                    
+                    // Setup data connection
+                    this.connection = this.peer.connect(peerId);
+                    this.setupDataConnection(this.connection);
+                    
+                    // Handle incoming stream
+                    this.call.on('stream', (remoteStream) => {
+                        console.log('Received remote stream');
+                        this.debugLog('Remote video stream received');
+                        this.elements.remoteVideo.srcObject = remoteStream;
+                        this.updateStatus('Connected', 'connected');
+                        this.showLoading(false);
+                    });
+
+                    this.call.on('close', () => {
+                        console.log('Call ended by remote peer');
+                        this.debugLog('Call ended by remote peer');
+                        this.endCall();
+                    });
+
+                    this.call.on('error', (error) => {
+                        console.error('Call error:', error);
+                        this.debugLog(`Call error: ${error.message}`);
+                        this.updateStatus('Call Failed', 'disconnected');
+                        this.showLoading(false);
+                        alert(`Call failed: ${error.message}`);
+                    });
+
+                    // Set timeout for connection attempt
+                    setTimeout(() => {
+                        if (this.elements.connectionStatus.textContent === 'Connecting...') {
+                            this.debugLog('Connection timeout - peer may not be available');
+                            this.updateStatus('Connection Timeout', 'disconnected');
+                            this.showLoading(false);
+                            alert('Connection timeout. The peer may not be available or may not have started their camera yet.');
+                        }
+                    }, 15000);
+
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    this.debugLog(`Connection error: ${error.message}`);
+                    this.updateStatus('Connection Failed', 'disconnected');
+                    this.showLoading(false);
+                    alert(`Failed to connect: ${error.message}`);
+                }
+            }
+
+            async handleIncomingCall(call) {
+                const accept = confirm('Incoming video call. Accept?');
+                
+                if (accept) {
+                    if (!this.localStream) {
+                        try {
+                            await this.startCall();
+                        } catch (error) {
+                            alert('Could not start camera for incoming call');
+                            return;
+                        }
+                    }
+                    
+                    this.call = call;
+                    this.call.answer(this.localStream);
+                    this.debugLog('Answered incoming call');
+                    
+                    this.call.on('stream', (remoteStream) => {
+                        console.log('Received remote stream from incoming call');
+                        this.debugLog('Remote stream received from incoming call');
+                        this.elements.remoteVideo.srcObject = remoteStream;
+                        this.updateStatus('Connected', 'connected');
+                    });
+
+                    this.call.on('close', () => {
+                        console.log('Incoming call ended');
+                        this.debugLog('Incoming call ended');
+                        this.endCall();
+                    });
+                } else {
+                    call.close();
+                    this.debugLog('Incoming call declined');
+                }
+            }
+
+            setupDataConnection(conn) {
+                this.connection = conn;
+                
+                conn.on('open', () => {
+                    console.log('Data connection established');
+                    this.debugLog('Data channel opened for messaging');
+                    this.elements.messageInput.disabled = false;
+                    this.elements.sendMessageBtn.disabled = false;
+                    this.addMessage('System', 'Data connection established', 'system');
+                });
+
+                conn.on('data', (data) => {
+                    console.log('Received data:', data);
+                    this.addMessage('Peer', data, 'remote');
+                });
+
+                conn.on('close', () => {
+                    console.log('Data connection closed');
+                    this.debugLog('Data connection closed');
+                    this.elements.messageInput.disabled = true;
+                    this.elements.sendMessageBtn.disabled = true;
+                    this.addMessage('System', 'Data connection closed', 'system');
+                });
+
+                conn.on('error', (error) => {
+                    console.error('Data connection error:', error);
+                    this.debugLog(`Data connection error: ${error.message}`);
+                });
+            }
+
+            sendMessage() {
+                const message = this.elements.messageInput.value.trim();
+                if (!message || !this.connection || !this.connection.open) return;
+
+                this.connection.send(message);
+                this.addMessage('You', message, 'local');
+                this.elements.messageInput.value = '';
+            }
+
+            addMessage(sender, message, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+                this.elements.messagesContainer.appendChild(messageDiv);
+                this.elements.messagesContainer.scrollTop = this.elements.messagesContainer.scrollHeight;
+            }
+
+            toggleAudio() {
+                if (!this.localStream) return;
+                
+                const audioTrack = this.localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    this.isAudioMuted = !audioTrack.enabled;
+                    this.elements.muteAudioBtn.textContent = this.isAudioMuted ? '🔊 Unmute Audio' : '🔇 Mute Audio';
+                    this.elements.muteAudioBtn.className = this.isAudioMuted ? 'btn btn-danger' : 'btn btn-warning';
+                    this.debugLog(`Audio ${this.isAudioMuted ? 'muted' : 'unmuted'}`);
+                }
+            }
+
+            toggleVideo() {
+                if (!this.localStream) return;
+                
+                const videoTrack = this.localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    this.isVideoMuted = !videoTrack.enabled;
+                    this.elements.muteVideoBtn.textContent = this.isVideoMuted ? '📹 Enable Video' : '📷 Disable Video';
+                    this.elements.muteVideoBtn.className = this.isVideoMuted ? 'btn btn-danger' : 'btn btn-warning';
+                    this.debugLog(`Video ${this.isVideoMuted ? 'disabled' : 'enabled'}`);
+                }
+            }
+
+            async toggleScreenShare() {
+                if (!this.isScreenSharing) {
+                    try {
+                        this.debugLog('Starting screen share...');
+                        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                            video: { cursor: 'always' },
+                            audio: false
+                        });
+                        
+                        const videoTrack = screenStream.getVideoTracks()[0];
+                        if (this.call) {
+                            const sender = this.call.peerConnection.getSenders().find(s => 
+                                s.track && s.track.kind === 'video'
+                            );
+                            if (sender) {
+                                await sender.replaceTrack(videoTrack);
+                            }
+                        }
+                        
+                        this.elements.localVideo.srcObject = screenStream;
+                        this.isScreenSharing = true;
+                        this.elements.shareScreenBtn.textContent = '📹 Stop Sharing';
+                        this.elements.shareScreenBtn.className = 'btn btn-danger';
+                        this.debugLog('Screen sharing started');
+                        
+                        videoTrack.addEventListener('ended', () => {
+                            this.stopScreenShare();
+                        });
+                        
+                    } catch (error) {
+                        console.error('Screen share error:', error);
+                        this.debugLog(`Screen share error: ${error.message}`);
+                        alert('Could not start screen sharing');
+                    }
+                } else {
+                    this.stopScreenShare();
+                }
+            }
+
+            async stopScreenShare() {
+                if (this.localStream && this.call) {
+                    const videoTrack = this.localStream.getVideoTracks()[0];
+                    const sender = this.call.peerConnection.getSenders().find(s => 
+                        s.track && s.track.kind === 'video'
+                    );
+                    if (sender && videoTrack) {
+                        await sender.replaceTrack(videoTrack);
+                    }
+                }
+                
+                this.elements.localVideo.srcObject = this.localStream;
+                this.isScreenSharing = false;
+                this.elements.shareScreenBtn.textContent = '🖥️ Share Screen';
+                this.elements.shareScreenBtn.className = 'btn btn-primary';
+                this.debugLog('Screen sharing stopped');
+            }
+
+            endCall() {
+                this.debugLog('Ending call...');
+                
+                if (this.call) {
+                    this.call.close();
+                    this.call = null;
+                }
+                
+                if (this.connection && this.connection.open) {
+                    this.connection.close();
+                    this.connection = null;
+                }
+                
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => track.stop());
+                    this.localStream = null;
+                }
+                
+                this.elements.localVideo.srcObject = null;
+                this.elements.remoteVideo.srcObject = null;
+                
+                this.updateCallControls(false);
+                this.updateStatus(this.peerReady ? 'Ready to Connect' : 'Disconnected', 
+                                this.peerReady ? 'connected' : 'disconnected');
+                
+                this.elements.messageInput.disabled = true;
+                this.elements.sendMessageBtn.disabled = true;
+                
+                this.isAudioMuted = false;
+                this.isVideoMuted = false;
+                this.isScreenSharing = false;
+                
+                // Reset button texts
+                this.elements.muteAudioBtn.textContent = '🔇 Mute Audio';
+                this.elements.muteAudioBtn.className = 'btn btn-warning';
+                this.elements.muteVideoBtn.textContent = '📷 Disable Video';
+                this.elements.muteVideoBtn.className = 'btn btn-warning';
+                this.elements.shareScreenBtn.textContent = '🖥️ Share Screen';
+                this.elements.shareScreenBtn.className = 'btn btn-primary';
+                
+                this.debugLog('Call ended successfully');
+            }
+
+            updateCallControls(inCall) {
+                this.elements.startCallBtn.disabled = inCall;
+                this.elements.endCallBtn.disabled = !inCall;
+                this.elements.muteAudioBtn.disabled = !inCall;
+                this.elements.muteVideoBtn.disabled = !inCall;
+                this.elements.shareScreenBtn.disabled = !inCall;
+            }
+
+            updateStatus(message, type) {
+                this.elements.connectionStatus.textContent = message;
+                this.elements.connectionStatus.className = `status ${type}`;
+            }
+
+            showLoading(show) {
+                this.elements.loadingIndicator.style.display = show ? 'inline-block' : 'none';
+            }
+        }
+
+        // Initialize the WebRTC application when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing Healthcare WebRTC Application');
+            window.webrtcApp = new HealthcareWebRTC();
+        });
+
+        // Handle page unload to properly clean up connections
+        window.addEventListener('beforeunload', () => {
+            if (window.webrtcApp && window.webrtcApp.peer) {
+                window.webrtcApp.peer.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

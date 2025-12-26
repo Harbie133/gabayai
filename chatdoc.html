@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consultation Room - GabayAI</title>
+  <link rel="stylesheet" href="navbar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    body{
+      margin:0;
+      background:#f0f2f5;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .page-wrapper{
+      flex:1;
+      max-width:1100px;
+      margin:70px auto 0;
+      padding:0 16px 16px;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .doctor-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:8px 4px;
+    }
+    .doctor-main{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .doctor-avatar{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      object-fit:cover;
+      background:#e5e7eb;
+      flex-shrink:0;
+    }
+    .doctor-text{ min-width:0; }
+    .doctor-name{
+      font-weight:600;
+      font-size:.98rem;
+      color:#050505;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+      max-width:240px;
+    }
+    .doctor-spec{
+      font-size:.8rem;
+      color:#6b7280;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+      max-width:240px;
+    }
+    .doctor-status{
+      padding:5px 10px;
+      border-radius:999px;
+      background:#d4edda;
+      color:#166534;
+      font-size:.72rem;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .doctor-status .dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#22c55e;
+    }
+    .queue-badge{
+      font-size:.72rem;
+      color:#64748b;
+      margin-left:6px;
+    }
+    @media (max-width:768px){
+      .page-wrapper{ margin-top:80px; }
+      .doctor-bar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .doctor-name,.doctor-spec{
+        max-width:100%;
+        white-space:normal;
+      }
+    }
+    .layout{
+      display:grid;
+      grid-template-columns: 260px minmax(0,3fr) minmax(0,1.6fr);
+      gap:0;
+      align-items:stretch;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid #e2e8f0;
+      background:#fff;
+    }
+    @media (max-width:1100px){
+      .layout{
+        grid-template-columns: 230px minmax(0,3fr);
+      }
+      .side-panel{ display:none; }
+    }
+    @media (max-width:800px){
+      .layout{
+        grid-template-columns: minmax(0,1fr);
+      }
+      .conversation-list{ display:none; }
+      .side-panel{ display:none; }
+    }
+    .conversation-list{
+      border-right:1px solid #e5e7eb;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      height:70vh;
+      min-height:440px;
+    }
+    .conv-header{
+      padding:10px 12px;
+      border-bottom:1px solid #e5e7eb;
+      font-size:.85rem;
+      font-weight:600;
+      color:#4b5563;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .conv-items{
+      flex:1;
+      overflow-y:auto;
+    }
+    .conv-empty{
+      font-size:.85rem;
+      color:#9ca3af;
+      text-align:center;
+      padding:24px 8px;
+    }
+    .conv-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .conv-item:hover{
+      background:#f3f4f6;
+    }
+    .conv-item.active{
+      background:#e5edff;
+    }
+    .conv-avatar{
+      width:32px;
+      height:32px;
+      border-radius:999px;
+      object-fit:cover;
+      background:#e5e7eb;
+      flex-shrink:0;
+    }
+    .conv-main{
+      min-width:0;
+      flex:1;
+    }
+    .conv-name{
+      font-size:.86rem;
+      font-weight:500;
+      color:#111827;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+    .conv-preview{
+      font-size:.78rem;
+      color:#6b7280;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+    .conv-meta{
+      font-size:.72rem;
+      color:#9ca3af;
+      text-align:right;
+    }
+    .conv-status-pill{
+      display:inline-block;
+      margin-top:2px;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:.7rem;
+      background:#f3f4ff;
+      color:#4c6ef5;
+    }
+    .chat-panel{
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      height:70vh;
+      min-height:440px;
+    }
+    .chat-log{
+      flex:1;
+      padding:16px 12px;
+      overflow-y:auto;
+      background:#e4e6eb;
+      scroll-behavior:smooth;
+    }
+    .chat-empty{
+      text-align:center;
+      padding:40px 10px;
+      color:#9ca3af;
+      font-size:.9rem;
+    }
+    .chat-empty i{
+      font-size:1.4rem;
+      margin-bottom:4px;
+      opacity:.6;
+    }
+    .bubble-wrap{
+      display:flex;
+      flex-direction:column;
+      margin-bottom:6px;
+    }
+    .bubble{
+      max-width:70%;
+      padding:8px 10px;
+      border-radius:18px;
+      margin:1px 0;
+      font-size:.9rem;
+      line-height:1.4;
+      word-wrap:break-word;
+    }
+    .me{
+      margin-left:auto;
+      background:#0084ff;
+      color:#fff;
+      border-bottom-right-radius:4px;
+    }
+    .them{
+      margin-right:auto;
+      background:#f0f0f0;
+      color:#050505;
+      border-bottom-left-radius:4px;
+    }
+    .meta{
+      font-size:.7rem;
+      opacity:.75;
+      margin-top:1px;
+      text-align:right;
+    }
+    .chat-input-wrap{
+      border-top:1px solid #d1d5db;
+      padding:8px 10px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#fff;
+    }
+    .attach-btn{
+      border:none;
+      background:transparent;
+      color:#6b7280;
+      font-size:1.1rem;
+      cursor:pointer;
+      padding:4px;
+      border-radius:999px;
+    }
+    .attach-btn:hover{
+      background:#e5e7eb;
+    }
+    .chat-input{
+      flex:1;
+      border-radius:20px;
+      border:1px solid #e5e7eb;
+      padding:8px 12px;
+      outline:none;
+      font-size:.9rem;
+      background:#f0f2f5;
+    }
+    .chat-input:focus{
+      border-color:#4c6ef5;
+      box-shadow:0 0 0 2px rgba(76,110,245,.2);
+      background:#fff;
+    }
+    .send-btn{
+      border:none;
+      border-radius:999px;
+      padding:0 14px;
+      background:#0084ff;
+      color:#fff;
+      font-weight:500;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:.85rem;
+    }
+    .send-btn[disabled]{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+    .side-panel{
+      background:#fff;
+      border-left:1px solid #e2e8f0;
+      padding:14px 14px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .side-panel h4{
+      margin:0 0 4px;
+      font-size:.9rem;
+      color:#111827;
+    }
+    .summary-item{
+      font-size:.85rem;
+      color:#4b5563;
+      margin:0 0 4px;
+      white-space:pre-line;
+    }
+    .pill-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .pill{
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4c6ef5;
+      font-size:.78rem;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav">
+      <li><a href="homer.html" class="nav-link">Dashboard</a></li>
+      <li><a href="analyzerv2.html" class="nav-link">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link active">Consultation</a></li>
+      <li><a href="editaccount.html" class="nav-link">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link">Dashboard</a>
+      <a href="analyzerv2.html" class="mobile-nav-link">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link active">Consultation</a>
+      <a href="editaccount.html" class="mobile-nav-link">Profile</a>
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="doctor-bar">
+    <div class="doctor-main">
+      <img id="docAvatar" class="doctor-avatar" src="" alt="Doctor">
+      <div class="doctor-text">
+        <div id="docName" class="doctor-name">Doctor name</div>
+        <div id="docSpec" class="doctor-spec">Specialization</div>
+      </div>
+    </div>
+    <div>
+      <div class="doctor-status">
+        <span class="dot"></span>
+        <span id="consultStatusText">In consultation</span>
+      </div>
+      <span id="queueBadge" class="queue-badge"></span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="conversation-list">
+      <div class="conv-header">
+        <span>Conversations</span>
+        <i class="fas fa-comments"></i>
+      </div>
+      <div id="convItems" class="conv-items">
+        <div class="conv-empty">
+          No conversations yet.<br>
+          Start a consultation to message a doctor.
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-panel">
+      <div id="chatLog" class="chat-log">
+        <div class="chat-empty">
+          <i class="fas fa-comments"></i><br/>
+          You don't have any conversations yet.<br/>
+          Go to the Consultation page, submit your details,<br/>
+          then wait for a doctor to reply here.
+        </div>
+      </div>
+      <div class="chat-input-wrap">
+        <!-- attachment icon (UI only for now) -->
+        <button id="attachBtn" class="attach-btn" type="button" title="Attach file">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <input id="fileInput" type="file" style="display:none"
+               multiple
+               accept="image/*,application/pdf">
+        <input id="msgInput" class="chat-input" type="text"
+               placeholder="Type your message..." autocomplete="off">
+        <button id="sendBtn" class="send-btn">
+          <i class="fas fa-paper-plane"></i> Send
+        </button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div>
+        <h4>Chief complaint</h4>
+        <p id="sideComplaint" class="summary-item">—</p>
+      </div>
+      <div>
+        <h4>Key info</h4>
+        <p id="sideInfo" class="summary-item">—</p>
+      </div>
+      <div>
+        <h4>Topics from Analyzer</h4>
+        <div id="sideTopics" class="pill-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="auth-guard.js"></script>
+<script>
+  function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+      window.location.href = 'user_logout.php';
+    }
+  }
+  function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');
+    hamburger.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+      if (mobileMenu.classList.contains('show')) {
+        mobileMenu.classList.remove('show');
+        hamburger.classList.remove('open');
+      }
+    }
+  });
+
+  const POLL_MS = 4000;
+  const QUEUE_POLL_MS = 5000;
+
+  const chatLog    = document.getElementById('chatLog');
+  const msgInput   = document.getElementById('msgInput');
+  const sendBtn    = document.getElementById('sendBtn');
+  const queueBadge = document.getElementById('queueBadge');
+  const consultStatusText = document.getElementById('consultStatusText');
+  const convItemsEl = document.getElementById('convItems');
+  const attachBtn  = document.getElementById('attachBtn');
+  const fileInput  = document.getElementById('fileInput');
+
+  let currentConsult = null;
+  let lastMessageId  = 0;
+
+  const params = new URLSearchParams(location.search);
+  const consultationId = params.get('consult');
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = String(str ?? "");
+    return div.innerHTML;
+  }
+  function avatarUrl(name){
+    const safe = encodeURIComponent(name || "Doctor");
+    return `https://ui-avatars.com/api/?name=${safe}&background=EEF2FF&color=3730A3&rounded=true&size=160`;
+  }
+
+  function initHeaderAndSidebarFromConsult(){
+    if(!currentConsult) return;
+
+    const docName = currentConsult.doctorName || "Doctor";
+    const docSpec = currentConsult.doctorSpecialization || "Specialization";
+    const p = currentConsult.patient || {};
+
+    document.getElementById('docName').textContent = docName;
+    document.getElementById('docSpec').textContent = docSpec;
+    document.getElementById('docAvatar').src = avatarUrl(docName);
+
+    const infoParts = [];
+    if(p.age)      infoParts.push(p.age + " yrs");
+    if(p.sex)      infoParts.push(p.sex);
+    if(p.duration) infoParts.push(p.duration);
+    if(p.severity) infoParts.push(p.severity);
+    document.getElementById('sideInfo').textContent =
+      infoParts.length ? infoParts.join(" · ") : "—";
+
+    document.getElementById('sideComplaint').textContent =
+      p.complaint || "—";
+
+    const topicsWrap = document.getElementById('sideTopics');
+    topicsWrap.innerHTML = "";
+    (p.topics || []).forEach(t=>{
+      const span = document.createElement('span');
+      span.className = 'pill';
+      span.textContent = t;
+      topicsWrap.appendChild(span);
+    });
+  }
+
+  function resetHeaderAndSidebar(){
+    currentConsult = null;
+    document.getElementById('docName').textContent = 'Doctor name';
+    document.getElementById('docSpec').textContent = 'Specialization';
+    document.getElementById('docAvatar').src = avatarUrl('Doctor');
+    document.getElementById('sideComplaint').textContent = '—';
+    document.getElementById('sideInfo').textContent = '—';
+    document.getElementById('sideTopics').innerHTML = '';
+    consultStatusText.textContent = 'No active consultation';
+    queueBadge.textContent = '';
+  }
+
+  function appendMessage(msg){
+    const empty = chatLog.querySelector('.chat-empty');
+    if(empty) empty.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-wrap';
+
+    const isMe = msg.sender === 'patient';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
+
+    // text caption kung meron
+    if (msg.text && msg.text.trim() !== '') {
+      const textDiv = document.createElement('div');
+      textDiv.innerHTML = escapeHtml(msg.text);
+      bubble.appendChild(textDiv);
+    }
+
+    // attachment (image o file)
+    if (msg.attachment && msg.attachment.file_path) {
+      const att = msg.attachment;
+      const url = att.file_path;
+
+      if (att.file_type && att.file_type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = att.file_name || 'attachment';
+        img.style.maxWidth = '220px';
+        img.style.borderRadius = '10px';
+        img.style.display = 'block';
+        img.style.marginTop = msg.text ? '6px' : '0';
+        img.style.cursor = 'pointer';
+        img.onclick = () => window.open(url, '_blank');
+        bubble.appendChild(img);
+      } else {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.display = 'inline-block';
+        link.style.marginTop = msg.text ? '6px' : '0';
+        link.textContent = att.file_name || 'Download attachment';
+        bubble.appendChild(link);
+      }
+    }
+
+    wrap.appendChild(bubble);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = msg.time || "";
+    wrap.appendChild(meta);
+
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text || !consultationId) return;
+
+    sendBtn.disabled = true;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    appendMessage({
+      id: 'temp-' + now.getTime(),
+      sender: 'patient',
+      text,
+      time: timeStr
+    });
+
+    msgInput.value = "";
+
+    try{
+      await fetch('sendMessage_patient.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          consultationId: consultationId,
+          message: text
+        })
+      });
+    }catch(e){
+      console.error(e);
+    }finally{
+      sendBtn.disabled = false;
+    }
+  }
+
+  async function sendAttachment(){
+    if (!consultationId) return;
+    if (!fileInput.files.length) return;
+
+    const file = fileInput.files[0];
+    const text = msgInput.value.trim();
+
+    const formData = new FormData();
+    formData.append('consultationId', consultationId);
+    formData.append('message', text);
+    formData.append('file', file);
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    // optimistic preview gamit blob URL
+    appendMessage({
+      id: 'temp-file-' + now.getTime(),
+      sender: 'patient',
+      text,
+      time: timeStr,
+      attachment: {
+        file_path: URL.createObjectURL(file),
+        file_name: file.name,
+        file_type: file.type
+      }
+    });
+
+    msgInput.value = '';
+    sendBtn.disabled = true;
+
+    try{
+      const res  = await fetch('upload_attachment_patient.php', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.success){
+        console.error('Upload failed:', data);
+        alert('Upload failed: ' + (data.error || 'Unknown error'));
+      }
+    }catch(e){
+      console.error(e);
+      alert('Upload error: ' + e);
+    }finally{
+      sendBtn.disabled = false;
+      fileInput.value = '';
+    }
+  }
+
+  async function pollMessages(){
+    if(!consultationId) return;
+    try{
+      const res = await fetch(
+        `getMessages.php?consultationId=${encodeURIComponent(consultationId)}&since=${encodeURIComponent(lastMessageId)}`,
+        {cache:'no-store'}
+      );
+      if(!res.ok) return;
+      const data = await res.json();
+      if(!Array.isArray(data)) return;
+      data.forEach(m=>{
+        lastMessageId = Math.max(lastMessageId, m.id);
+        appendMessage({
+          id: m.id,
+          sender: m.sender === 'doctor' ? 'doctor' : 'patient',
+          text: m.text,
+          time: m.time,
+          attachment: m.attachment || null
+        });
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  async function refreshQueue(){
+    if (!consultationId) return;
+    try{
+      const res = await fetch(`get_queue_position.php?consult_id=${encodeURIComponent(consultationId)}`, {
+        cache:'no-store'
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.error) return;
+
+      if (data.status === 'finished' || data.status === 'cancelled') {
+        consultStatusText.textContent = 'Consultation ended';
+        queueBadge.textContent = '';
+      } else {
+        consultStatusText.textContent = 'In consultation';
+        if (data.ahead === 0) {
+          queueBadge.textContent = 'You are 1st in queue';
+        } else {
+          queueBadge.textContent = `You are #${data.position} in queue`;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function loadConversations(){
+    try{
+      const res = await fetch('get_patient_conversations.php', {cache:'no-store'});
+      if(!res.ok) return;
+      const data = await res.json();
+      convItemsEl.innerHTML = '';
+
+      if(!Array.isArray(data) || data.length === 0){
+        convItemsEl.innerHTML = `
+          <div class="conv-empty">
+            No conversations yet.<br>
+            Start a consultation to message a doctor.
+          </div>
+        `;
+        return;
+      }
+
+      data.forEach(conv=>{
+        const item = document.createElement('div');
+        item.className = 'conv-item' +
+          (String(conv.consultation_id) === String(consultationId) ? ' active' : '');
+        item.onclick = () => {
+          window.location.href = 'chatdoc.html?consult=' +
+            encodeURIComponent(conv.consultation_id);
+        };
+
+        const avatar = document.createElement('img');
+        avatar.className = 'conv-avatar';
+        avatar.src = avatarUrl(conv.doctor_name);
+        avatar.alt = conv.doctor_name || 'Doctor';
+        item.appendChild(avatar);
+
+        const main = document.createElement('div');
+        main.className = 'conv-main';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'conv-name';
+        nameEl.textContent = conv.doctor_name || 'Doctor';
+        main.appendChild(nameEl);
+
+        const previewEl = document.createElement('div');
+        previewEl.className = 'conv-preview';
+
+        if (conv.info_preview) {
+          previewEl.textContent = conv.info_preview;
+        } else {
+          previewEl.textContent = conv.last_message || '(no messages yet)';
+        }
+        main.appendChild(previewEl);
+
+        if (conv.status) {
+          const pill = document.createElement('span');
+          pill.className = 'conv-status-pill';
+          pill.textContent = conv.status === 'finished'
+            ? 'Finished'
+            : conv.status;
+          main.appendChild(pill);
+        }
+
+        item.appendChild(main);
+
+        const meta = document.createElement('div');
+        meta.className = 'conv-meta';
+        meta.textContent = conv.last_time || '';
+        item.appendChild(meta);
+
+        convItemsEl.appendChild(item);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  async function loadConsultationDetails(){
+    if (!consultationId) {
+      resetHeaderAndSidebar();
+      return;
+    }
+    try{
+      const res = await fetch(
+        'get_consultation_details.php?consultationId=' +
+        encodeURIComponent(consultationId),
+        { cache: 'no-store' }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data.error) {
+        resetHeaderAndSidebar();
+        return;
+      }
+
+      currentConsult = data;
+      initHeaderAndSidebarFromConsult();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  attachBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length){
+      sendAttachment();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  if(!consultationId){
+    resetHeaderAndSidebar();
+    msgInput.disabled = true;
+    sendBtn.disabled  = true;
+  }
+
+  loadConversations();
+  loadConsultationDetails();
+  if (consultationId){
+    pollMessages();
+    refreshQueue();
+    setInterval(pollMessages, POLL_MS);
+    setInterval(refreshQueue, QUEUE_POLL_MS);
+  }
+</script>
+
+
+</body>
+</html>

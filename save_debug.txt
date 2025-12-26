@@ -1,0 +1,17 @@
+
+=== 2025-10-19 08:49:59 ===
+User ID: 1
+Blood Type: A+
+POST Data: Array
+(
+    [bloodType] => A+
+    [height] => 
+    [weight] => 
+    [allergies] => None
+    [chronicConditions] => Migraine; Other
+    [currentMedications] => None
+    [medicalHistory] => N/A
+    [familyMedicalHistory] => N/A
+)
+
+Inserting new record

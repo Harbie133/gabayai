@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Online Consultation - GabayAI</title>
+<link rel="stylesheet" href="navbar.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* --- GLOBAL THEME (Purple Gradient) --- */
+  :root {
+    --primary: #4f46e5;
+    --secondary: #7c3aed;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --gray-dark: #1f2937;
+    --gray-light: #f3f4f6;
+    --chat-bg: #f8fafc;
+  }
+
+  body { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #667eea;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    color: var(--gray-dark); 
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+
+  /* Navbar Fixes */
+  .main-content { margin-top: 70px; padding: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
+  .mobile-menu-items { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+  .mobile-menu { z-index: 9999 !important; }
+
+  /* --- LAYOUT CONTAINER --- */
+  .consult-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* --- SCREENS (Form, Queue, Chat) --- */
+  .screen {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    height: 100%;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* --- SCREEN 1: INTAKE FORM --- */
+  .intake-scroll { overflow-y: auto; padding: 30px; height: 100%; }
+  .form-header { text-align: center; margin-bottom: 30px; }
+  .form-header h2 { color: var(--primary); margin: 0; }
+  .form-header p { color: #6b7280; margin-top: 5px; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 0.9rem; }
+  .form-control {
+    width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+    font-size: 1rem; transition: 0.2s; box-sizing: border-box;
+  }
+  .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+  
+  .btn-primary {
+    width: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary));
+    color: white; border: none; padding: 14px; border-radius: 8px;
+    font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+
+  /* --- SCREEN 2: WAITING ROOM (QUEUE) --- */
+  .queue-center {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px; background: #fdf2f8; /* Pinkish tint */
+  }
+  .queue-card {
+    background: white; padding: 40px; border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; width: 100%;
+  }
+  .queue-number { font-size: 4rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
+  .queue-status { color: #db2777; font-weight: 600; background: #fce7f3; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 20px; }
+  
+  /* --- SCREEN 3: CHAT INTERFACE --- */
+  .chat-header {
+    background: white; padding: 15px 20px; border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .doc-profile { display: flex; align-items: center; gap: 12px; }
+  .doc-avatar { width: 45px; height: 45px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem; }
+  .doc-info h4 { margin: 0; color: #111827; }
+  .doc-info span { font-size: 0.8rem; color: var(--success); display: flex; align-items: center; gap: 4px; }
+  .doc-info span::before { content: ""; width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; }
+
+  .chat-body {
+    flex: 1; background: var(--chat-bg); padding: 20px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 15px;
+  }
+  
+  .message { max-width: 80%; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; position: relative; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  @keyframes msgPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .msg-ai { align-self: flex-start; background: white; border: 1px solid #e5e7eb; border-top-left-radius: 2px; color: #374151; }
+  .msg-user { align-self: flex-end; background: var(--primary); color: white; border-top-right-radius: 2px; box-shadow: 0 2px 5px rgba(79, 70, 229, 0.2); }
+  
+  /* Patient Info Card inside Chat */
+  .patient-summary-card {
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px;
+    font-size: 0.85rem; color: #92400e; margin-bottom: 10px; align-self: center; width: 90%;
+  }
+  .patient-summary-card strong { display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+
+  .chat-footer {
+    padding: 15px; background: white; border-top: 1px solid #e5e7eb; display: flex; gap: 10px;
+  }
+  .chat-input {
+    flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 25px; outline: none; transition: 0.2s;
+  }
+  .chat-input:focus { border-color: var(--primary); }
+  .send-btn {
+    width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--primary); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+  }
+  .send-btn:hover { background: var(--secondary); transform: scale(1.05); }
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav"> 
+      <li><a href="homer.html" class="nav-link">Dashboard</a></li>
+      <li><a href="analyzer.html" class="nav-link">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link active">Consultation</a></li>
+      <li><a href="profile.html" class="nav-link">Profile</a></li>
+      <li><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
+    </ul>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link">Dashboard</a>
+      <a href="analyzer.html" class="mobile-nav-link">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link">Consultation</a>
+      <div class="mobile-logout"><button onclick="logout()">Logout</button></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="consult-container">
+    
+    <!-- SCREEN 1: INTAKE FORM -->
+    <div id="screen-intake" class="screen active">
+      <div class="intake-scroll">
+        <div class="form-header">
+          <h2><i class="fas fa-file-medical"></i> Patient Intake Form</h2>
+          <p>Please fill out your details before the doctor sees you.</p>
+        </div>
+        
+        <form id="consultForm" onsubmit="submitForm(event)">
+          <div class="form-group">
+            <label>Chief Complaint (Ano ang masakit?)</label>
+            <textarea class="form-control" id="symptoms" rows="3" placeholder="e.g. Masakit ang ulo, lagnat ng 2 araw..." required></textarea>
+          </div>
+          
+          <div class="form-group">
+             <label>Medical History / Allergies</label>
+             <input type="text" class="form-control" id="history" placeholder="e.g. Hypertension, Allergy sa hipon (Optional)">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>Pain Scale (1-10)</label>
+              <select class="form-control" id="painScale">
+                <option value="1">1 - Mild</option>
+                <option value="5">5 - Moderate</option>
+                <option value="8">8 - Severe</option>
+                <option value="10">10 - Worst Pain</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Duration</label>
+              <select class="form-control" id="duration">
+                <option value="Just started">Just now</option>
+                <option value="1-2 days">1-2 days</option>
+                <option value="1 week">1 week+</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">Submit & Join Queue <i class="fas fa-arrow-right"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: WAITING ROOM -->
+    <div id="screen-queue" class="screen">
+      <div class="queue-center">
+        <div class="queue-card">
+          <i class="fas fa-hourglass-half fa-spin" style="font-size: 3rem; color: #db2777; margin-bottom: 20px;"></i>
+          <h3>You are in the queue</h3>
+          <p style="color: #6b7280;">Please wait while we connect you to an available doctor.</p>
+          
+          <div class="queue-status">Estimated Wait: <span id="timer">00:05</span></div>
+          <div class="queue-number">#<span id="queueNum">1</span></div>
+          <p style="font-size: 0.9rem; color: #9ca3af;">Do not close this window.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: CHAT INTERFACE -->
+    <div id="screen-chat" class="screen">
+      <div class="chat-header">
+        <div class="doc-profile">
+          <div class="doc-avatar"><i class="fas fa-user-md"></i></div>
+          <div class="doc-info">
+            <h4>Dr. Gabay AI (Demo)</h4>
+            <span>Online • General Practitioner</span>
+          </div>
+        </div>
+        <button onclick="endSession()" style="background:none; border:none; color:#ef4444; font-weight:600; cursor:pointer;">End Chat</button>
+      </div>
+
+      <div class="chat-body" id="chatBody">
+        <!-- Patient Summary will be injected here -->
+        <div class="msg-ai message">
+          Hello! I'm Dr. Gabay AI. I've reviewed your intake form. How are you feeling right now?
+        </div>
+      </div>
+
+      <div class="chat-footer">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type your message..." onkeypress="handleEnter(event)">
+        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="auth-guard.js"></script>
+<script>
+// --- STATE MANAGEMENT ---
+let patientData = {};
+
+// 1. Submit Form
+function submitForm(e) {
+  e.preventDefault();
+  
+  // Capture Data
+  patientData = {
+    symptoms: document.getElementById('symptoms').value,
+    history: document.getElementById('history').value || "None",
+    pain: document.getElementById('painScale').value,
+    duration: document.getElementById('duration').value
+  };
+
+  // Switch to Queue
+  switchScreen('screen-queue');
+  startQueueTimer();
+}
+
+// 2. Queue Simulation
+function startQueueTimer() {
+  let seconds = 5; // Demo wait time (5 seconds)
+  const timerEl = document.getElementById('timer');
+  
+  const interval = setInterval(() => {
+    seconds--;
+    timerEl.textContent = `00:0${seconds}`;
+    
+    if (seconds <= 0) {
+      clearInterval(interval);
+      enterChatRoom();
+    }
+  }, 1000);
+}
+
+// 3. Enter Chat & Show Summary
+function enterChatRoom() {
+  switchScreen('screen-chat');
+  
+  // Inject Patient Summary Card at top of chat
+  const chatBody = document.getElementById('chatBody');
+  const summaryHTML = `
+    <div class="patient-summary-card">
+      <strong><i class="fas fa-clipboard-list"></i> Patient Intake Summary</strong>
+      <div>• <b>Complaint:</b> ${patientData.symptoms}</div>
+      <div>• <b>Pain Level:</b> ${patientData.pain}/10</div>
+      <div>• <b>History:</b> ${patientData.history}</div>
+    </div>
+  `;
+  
+  // Insert at the beginning
+  chatBody.insertAdjacentHTML('afterbegin', summaryHTML);
+}
+
+// 4. Chat Logic
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Add User Message
+  addMessage(text, 'user');
+  input.value = '';
+
+  // Simulate AI Reply (Demo Only)
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    // Simple demo logic - you can connect this to serverv3.js later
+    let reply = "I understand. Based on what you've told me, please continue to monitor your temperature. Is there anything else you'd like to ask?";
+    if (text.toLowerCase().includes('salamat') || text.toLowerCase().includes('thank')) {
+      reply = "You're welcome! Get well soon.";
+    }
+    addMessage(reply, 'ai');
+  }, 1500);
+}
+
+function addMessage(text, sender) {
+  const chatBody = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = `message msg-${sender}`;
+  div.innerHTML = text;
+  chatBody.appendChild(div);
+  chatBody.scrollTop = chatBody.scrollHeight; // Auto scroll
+}
+
+function showTyping() {
+  const chatBody = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.id = 'typing-indicator';
+  div.className = 'message msg-ai';
+  div.innerHTML = '<i class="fas fa-ellipsis-h fa-bounce"></i>';
+  chatBody.appendChild(div);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function handleEnter(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+// Helper: Switch Screen
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function endSession() {
+  if(confirm("End consultation session?")) {
+    location.reload(); // Reset to form
+  }
+}
+
+// Navbar Mobile Toggle
+function logout() { if (confirm('Are you sure?')) window.location.href = 'user_logout.php'; }
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('show');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+</script>
+</body>
+</html>

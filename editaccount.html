@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Account - GabayAI</title>
+  <link rel="stylesheet" href="navbar.css" />
+  <link rel="stylesheet" href="editaccount.css" />
+</head>
+<body>
+  <!-- Custom Modal -->
+  <div class="custom-modal-overlay" id="customModal">
+    <div class="custom-modal">
+      <div class="custom-modal-header">
+        <div class="custom-modal-icon" id="modalIcon">
+          <span id="modalIconSymbol">?</span>
+        </div>
+        <h3 class="custom-modal-title" id="modalTitle">Confirm Action</h3>
+      </div>
+      <p class="custom-modal-message" id="modalMessage"></p>
+      <div class="custom-modal-buttons">
+        <button class="custom-modal-btn custom-modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+        <button class="custom-modal-btn custom-modal-btn-confirm" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- <CHANGE> Added responsive navbar -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav">
+      <li><a href="homer.html" class="nav-link ">Dashboard</a></li>
+      <li><a href="analyzerv2.html" class="nav-link ">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link ">Consultation</a></li>
+      <li><a href="editaccount.html" class="nav-link active">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
+      <a href="analyzerv2.html" class="mobile-nav-link ">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link ">Consultation</a>
+      <a href="editaccount.html" class="mobile-nav-link active">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <div class="container">
+    <h2>Account Settings</h2>
+    
+    <div class="alert alert-success" id="successAlert"></div>
+    <div class="alert alert-error" id="errorAlert"></div>
+    
+    <div class="info-box">
+      <i class="fas fa-info-circle"></i> Update your username or change your password below. You'll need your current password to make changes.
+    </div>
+    
+    <form id="editAccountForm" novalidate>
+      <!-- Username Section -->
+      <div class="form-section">
+        <h3>Username</h3>
+        <div class="form-group">
+          <label for="username">Username *</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required />
+          <div class="error-message" id="usernameError">Please enter a username (3-20 characters).</div>
+        </div>
+      </div>
+
+      <!-- Password Section -->
+      <div class="form-section">
+        <h3>Change Password</h3>
+        
+        <div class="form-group">
+          <label for="currentPassword">Current Password *</label>
+          <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter your current password" required />
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('currentPassword')"></i>
+          <div class="error-message" id="currentPasswordError">Please enter your current password.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password *</label>
+          <input type="password" id="newPassword" name="newPassword" placeholder="Enter a new password" />
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword')"></i>
+          <div class="error-message" id="newPasswordError">Please enter a new password.</div>
+          
+          <div class="password-strength" id="passwordStrength">
+            <div class="strength-bar">
+              <div class="strength-bar-fill" id="strengthBar"></div>
+            </div>
+            <div class="strength-text" id="strengthText"></div>
+          </div>
+          
+          <div class="password-requirements" id="passwordRequirements">
+            <div class="requirement" id="req-length">At least 8 characters</div>
+            <div class="requirement" id="req-uppercase">One uppercase letter</div>
+            <div class="requirement" id="req-lowercase">One lowercase letter</div>
+            <div class="requirement" id="req-number">One number</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password *</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your new password" />
+          <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword')"></i>
+          <div class="error-message" id="confirmPasswordError">Passwords do not match.</div>
+        </div>
+      </div>
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+
+
+  <script src="auth-guard.js"></script>
+  <script src="navbar.js"></script>
+  <script>
+    const form = document.getElementById('editAccountForm');
+    const username = document.getElementById('username');
+    const currentPassword = document.getElementById('currentPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const successAlert = document.getElementById('successAlert');
+    const errorAlert = document.getElementById('errorAlert');
+
+    // Custom Modal Elements
+    const customModal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalIconSymbol = document.getElementById('modalIconSymbol');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+    // Load current username
+    window.addEventListener('DOMContentLoaded', loadAccountInfo);
+
+    function loadAccountInfo() {
+      fetch('get_user_session.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.logged_in && data.username) {
+            username.value = data.username;
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Custom Confirm Function
+    function customConfirm(message, title = 'Confirm Action', type = 'info') {
+      return new Promise((resolve) => {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        modalIcon.className = 'custom-modal-icon ' + type;
+        modalIconSymbol.textContent = type === 'warning' ? '⚠' : '?';
+        
+        modalConfirmBtn.className = 'custom-modal-btn custom-modal-btn-confirm';
+        modalConfirmBtn.textContent = 'Confirm';
+        
+        customModal.classList.add('active');
+        
+        const handleConfirm = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(true);
+        };
+        
+        const handleCancel = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(false);
+        };
+        
+        modalConfirmBtn.addEventListener('click', handleConfirm);
+        modalCancelBtn.addEventListener('click', handleCancel);
+        
+        customModal.addEventListener('click', function(e) {
+          if (e.target === customModal) handleCancel();
+        });
+      });
+    }
+
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const icon = field.nextElementSibling;
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    // Password strength checker
+    newPassword.addEventListener('input', function() {
+      const password = this.value;
+      const strengthBar = document.getElementById('strengthBar');
+      const strengthText = document.getElementById('strengthText');
+      const passwordStrength = document.getElementById('passwordStrength');
+      const passwordRequirements = document.getElementById('passwordRequirements');
+      
+      if (password.length > 0) {
+        passwordStrength.classList.add('show');
+        passwordRequirements.classList.add('show');
+        
+        // Check requirements
+        const hasLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        
+        document.getElementById('req-length').classList.toggle('met', hasLength);
+        document.getElementById('req-uppercase').classList.toggle('met', hasUppercase);
+        document.getElementById('req-lowercase').classList.toggle('met', hasLowercase);
+        document.getElementById('req-number').classList.toggle('met', hasNumber);
+        
+        // Calculate strength
+        let strength = 0;
+        if (hasLength) strength++;
+        if (hasUppercase) strength++;
+        if (hasLowercase) strength++;
+        if (hasNumber) strength++;
+        
+        strengthBar.className = 'strength-bar-fill';
+        if (strength <= 2) {
+          strengthBar.classList.add('weak');
+          strengthText.textContent = 'Weak password';
+          strengthText.style.color = '#ef4444';
+        } else if (strength === 3) {
+          strengthBar.classList.add('medium');
+          strengthText.textContent = 'Medium password';
+          strengthText.style.color = '#f59e0b';
+        } else {
+          strengthBar.classList.add('strong');
+          strengthText.textContent = 'Strong password';
+          strengthText.style.color = '#10b981';
+        }
+      } else {
+        passwordStrength.classList.remove('show');
+        passwordRequirements.classList.remove('show');
+      }
+    });
+
+    function resetErrors() {
+      document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+      document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    }
+
+    function showAlert(type, message) {
+      successAlert.classList.remove('show');
+      errorAlert.classList.remove('show');
+      
+      const alert = type === 'success' ? successAlert : errorAlert;
+      alert.textContent = message;
+      alert.classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      setTimeout(() => alert.classList.remove('show'), 5000);
+    }
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      resetErrors();
+
+      let valid = true;
+
+      // Validate username
+      if (!username.value.trim() || username.value.length < 3 || username.value.length > 20) {
+        username.classList.add('invalid');
+        document.getElementById('usernameError').style.display = 'block';
+        valid = false;
+      }
+
+      // Validate current password
+      if (!currentPassword.value.trim()) {
+        currentPassword.classList.add('invalid');
+        document.getElementById('currentPasswordError').style.display = 'block';
+        valid = false;
+      }
+
+      // Check if password change is attempted
+      const isChangingPassword = newPassword.value.trim() !== '';
+      
+      if (isChangingPassword) {
+        // Validate new password
+        if (newPassword.value.length < 8) {
+          newPassword.classList.add('invalid');
+          document.getElementById('newPasswordError').textContent = 'Password must be at least 8 characters.';
+          document.getElementById('newPasswordError').style.display = 'block';
+          valid = false;
+        }
+
+        // Validate password match
+        if (newPassword.value !== confirmPassword.value) {
+          confirmPassword.classList.add('invalid');
+          document.getElementById('confirmPasswordError').style.display = 'block';
+          valid = false;
+        }
+      }
+
+      if (valid) {
+        const confirmMessage = isChangingPassword 
+          ? 'Do you want to save these changes? Your username and password will be updated.'
+          : 'Do you want to update your username?';
+        
+        const confirmed = await customConfirm(
+          confirmMessage,
+          'Confirm Account Update',
+          'info'
+        );
+
+        if (confirmed) {
+          saveAccountChanges(isChangingPassword);
+        }
+      }
+    });
+
+    function saveAccountChanges(isChangingPassword) {
+      const formData = new FormData();
+      formData.append('username', username.value.trim());
+      formData.append('current_password', currentPassword.value);
+      
+      if (isChangingPassword) {
+        formData.append('new_password', newPassword.value);
+      }
+
+      fetch('update_account.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('success', data.message || 'Account updated successfully!');
+          currentPassword.value = '';
+          newPassword.value = '';
+          confirmPassword.value = '';
+          document.getElementById('passwordStrength').classList.remove('show');
+          document.getElementById('passwordRequirements').classList.remove('show');
+        } else {
+          showAlert('error', data.message || 'Failed to update account.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'An error occurred. Please try again.');
+      });
+    }
+  </script>
+
+
+</body>
+</html>

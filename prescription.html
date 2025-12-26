@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Prescriptions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    background: #174374;
+    color: white;
+    width: 250px;
+    min-width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-left: 30px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  .sidebar nav a {
+    color: #e1e8f0;
+    padding: 13px 30px;
+    text-decoration: none;
+    display: block;
+    border-left: 4px solid transparent;
+    transition: background 0.15s, border-left-color 0.15s;
+    font-size: 1.07rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: #0e2c4a;
+    border-left-color: #16a085;
+    color: white;
+  }
+  .sidebar .logout {
+    margin-top: auto;
+    margin-left: 30px;
+    color: #e57373;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  /* Hamburger button */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    cursor: pointer;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    padding: 4px;
+  }
+  @media (min-width: 901px) {
+    .hamburger {
+      display: none;
+    }
+  }
+  .hamburger div {
+    background: #000000;
+    border-radius: 2px;
+    height: 4px;
+    transition: all 0.4s ease;
+    transform-origin: center;
+    width: 100%;
+  }
+  .hamburger.active div:nth-child(1) {
+    width: 70%;
+    transform: translateY(6px);
+  }
+  .hamburger.active div:nth-child(2) {
+    width: 100%;
+    opacity: 0.6;
+  }
+  .hamburger.active div:nth-child(3) {
+    width: 50%;
+    transform: translateY(-6px);
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 36px 3vw 3vw 3vw;
+    transition: margin-left 0.3s ease;
+  }
+  .main-content.full-width {
+    margin-left: 0;
+  }
+  .back-button {
+    background: none;
+    border: none;
+    color: #16a085;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .profile-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #174374;
+    margin-bottom: 24px;
+  }
+  /* Patient selector and controls */
+  .controls-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .patient-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+  }
+  .patient-select:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+  }
+  .search-input:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  .add-prescription-btn {
+    background-color: #16a085;
+    color: white;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+  }
+  .add-prescription-btn:hover {
+    background-color: #13876e;
+  }
+  /* Prescription stats */
+  .prescription-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 18px;
+    text-align: center;
+    border-left: 5px solid #16a085;
+  }
+  .stat-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    color: #174374;
+    font-weight: 700;
+  }
+  .stat-card p {
+    margin: 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  /* Prescription filters */
+  .prescription-filters {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #506a82;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+  .filter-btn.active {
+    border-color: #16a085;
+    background: #16a085;
+    color: white;
+  }
+  .filter-btn:hover:not(.active) {
+    border-color: #16a085;
+    color: #16a085;
+  }
+  /* Prescriptions list */
+  .prescriptions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .prescription-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    border-left: 5px solid #16a085;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+  }
+  .prescription-card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .prescription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .prescription-info h4 {
+    margin: 0 0 8px 0;
+    color: #174374;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .prescription-date {
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  .prescription-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .status-active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .status-completed {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .status-expired {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .prescription-patient {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .patient-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #16a085;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  .patient-details h5 {
+    margin: 0 0 4px 0;
+    color: #174374;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .patient-details p {
+    margin: 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  .prescription-details {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .medication-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .medication-item:last-child {
+    border-bottom: none;
+  }
+  .medication-name {
+    font-weight: 600;
+    color: #174374;
+  }
+  .medication-dosage {
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  .prescription-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-refill {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .btn-refill:hover {
+    background: #10b981;
+    color: white;
+  }
+  .btn-edit {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .btn-edit:hover {
+    background: #fcd34d;
+  }
+  .btn-stop {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .btn-stop:hover {
+    background: #ef4444;
+    color: white;
+  }
+  /* Responsive */
+  @media(max-width: 900px) {
+    .sidebar {
+      transform: translateX(-260px);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 20px 15px;
+    }
+    .controls-section {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .prescription-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .prescription-actions {
+      justify-content: flex-start;
+    }
+    .prescription-filters {
+      justify-content: center;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+  <div class="logo">MEDI<span style="color:#16a085;">Care</span></div>
+  <nav>
+    <a href="DoctorDashboard.html">Dashboard</a>
+    <a href="DoctorProfile.html">Profile</a>
+    <a href="patients.html" class="active">Patients</a>
+    <a href="#">Symptom Analysis</a>
+    <a href="#">Medication/Prescriptions</a>
+    <a href="#">Teleconsultation</a>
+    <a href="notifications.html">Notifications</a>
+    <a href="#">Analytics</a>
+    <a href="#">Settings</a>
+    <a href="#">Support</a>
+  </nav>
+  <div class="logout">Logout</div>
+</div>
+<div class="hamburger" id="hamburger" aria-label="Toggle Menu" role="button" tabindex="0">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+<div class="main-content" id="mainContent">
+  <button class="back-button" onclick="history.back()" aria-label="Go back to previous page">← Back</button>
+  <div class="profile-header">Prescriptions</div>
+  
+  <div class="controls-section">
+    <select class="patient-select" id="patientSelect" onchange="loadPrescriptions()">
+      <option value="" disabled selected>Select a patient</option>
+      <option value="P001">John Doe (#P001)</option>
+      <option value="P002">Jane Smith (#P002)</option>
+      <option value="P003">Mary Lee (#P003)</option>
+      <option value="P004">David Tan (#P004)</option>
+      <option value="P005">Sarah Wilson (#P005)</option>
+      <option value="P006">Robert Chen (#P006)</option>
+    </select>
+    <input type="text" class="search-input" placeholder="Search medications..." id="searchInput">
+    <button class="add-prescription-btn" onclick="alert('Add New Prescription')">+ New Prescription</button>
+  </div>
+
+  <div class="prescription-stats">
+    <div class="stat-card">
+      <h3>24</h3>
+      <p>Active Prescriptions</p>
+    </div>
+    <div class="stat-card">
+      <h3>8</h3>
+      <p>Expiring Soon</p>
+    </div>
+    <div class="stat-card">
+      <h3>15</h3>
+      <p>This Month</p>
+    </div>
+    <div class="stat-card">
+      <h3>3</h3>
+      <p>Pending Refills</p>
+    </div>
+  </div>
+
+  <div class="prescription-filters">
+    <button class="filter-btn active" onclick="filterPrescriptions('all')">All</button>
+    <button class="filter-btn" onclick="filterPrescriptions('active')">Active</button>
+    <button class="filter-btn" onclick="filterPrescriptions('completed')">Completed</button>
+    <button class="filter-btn" onclick="filterPrescriptions('expired')">Expired</button>
+  </div>
+
+  <div class="prescriptions-list" id="prescriptionsList">
+    <div class="prescription-card" data-status="active">
+      <div class="prescription-header">
+        <div class="prescription-info">
+          <h4>Prescription #RX001</h4>
+          <p class="prescription-date">Prescribed: Dec 15, 2024 • Duration: 30 days</p>
+        </div>
+        <div class="prescription-status status-active">Active</div>
+      </div>
+      <div class="prescription-patient">
+        <div class="patient-avatar">JD</div>
+        <div class="patient-details">
+          <h5>John Doe</h5>
+          <p>Age: 45 • Hypertension Treatment</p>
+        </div>
+      </div>
+      <div class="prescription-details">
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Lisinopril</div>
+            <div class="medication-dosage">10mg once daily</div>
+          </div>
+          <div class="medication-dosage">30 tablets</div>
+        </div>
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Hydrochlorothiazide</div>
+            <div class="medication-dosage">25mg once daily</div>
+          </div>
+          <div class="medication-dosage">30 tablets</div>
+        </div>
+      </div>
+      <div class="prescription-actions">
+        <button class="action-btn btn-refill" onclick="alert('Process refill')">Refill</button>
+        <button class="action-btn btn-edit" onclick="alert('Edit prescription')">Edit</button>
+        <button class="action-btn btn-stop" onclick="alert('Stop prescription')">Stop</button>
+      </div>
+    </div>
+
+    <div class="prescription-card" data-status="active">
+      <div class="prescription-header">
+        <div class="prescription-info">
+          <h4>Prescription #RX002</h4>
+          <p class="prescription-date">Prescribed: Dec 10, 2024 • Duration: 14 days</p>
+        </div>
+        <div class="prescription-status status-active">Active</div>
+      </div>
+      <div class="prescription-patient">
+        <div class="patient-avatar">JS</div>
+        <div class="patient-details">
+          <h5>Jane Smith</h5>
+          <p>Age: 32 • Diabetes Management</p>
+        </div>
+      </div>
+      <div class="prescription-details">
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Metformin</div>
+            <div class="medication-dosage">500mg twice daily</div>
+          </div>
+          <div class="medication-dosage">28 tablets</div>
+        </div>
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Insulin Glargine</div>
+            <div class="medication-dosage">15 units at bedtime</div>
+          </div>
+          <div class="medication-dosage">1 vial</div>
+        </div>
+      </div>
+      <div class="prescription-actions">
+        <button class="action-btn btn-refill" onclick="alert('Process refill')">Refill</button>
+        <button class="action-btn btn-edit" onclick="alert('Edit prescription')">Edit</button>
+        <button class="action-btn btn-stop" onclick="alert('Stop prescription')">Stop</button>
+      </div>
+    </div>
+
+    <div class="prescription-card" data-status="completed">
+      <div class="prescription-header">
+        <div class="prescription-info">
+          <h4>Prescription #RX003</h4>
+          <p class="prescription-date">Prescribed: Nov 20, 2024 • Duration: 7 days</p>
+        </div>
+        <div class="prescription-status status-completed">Completed</div>
+      </div>
+      <div class="prescription-patient">
+        <div class="patient-avatar">ML</div>
+        <div class="patient-details">
+          <h5>Mary Lee</h5>
+          <p>Age: 28 • Migraine Treatment</p>
+        </div>
+      </div>
+      <div class="prescription-details">
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Sumatriptan</div>
+            <div class="medication-dosage">50mg as needed</div>
+          </div>
+          <div class="medication-dosage">6 tablets</div>
+        </div>
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Ibuprofen</div>
+            <div class="medication-dosage">400mg as needed</div>
+          </div>
+          <div class="medication-dosage">14 tablets</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prescription-card" data-status="expired">
+      <div class="prescription-header">
+        <div class="prescription-info">
+          <h4>Prescription #RX004</h4>
+          <p class="prescription-date">Prescribed: Nov 1, 2024 • Duration: 30 days</p>
+        </div>
+        <div class="prescription-status status-expired">Expired</div>
+      </div>
+      <div class="prescription-patient">
+        <div class="patient-avatar">SW</div>
+        <div class="patient-details">
+          <h5>Sarah Wilson</h5>
+          <p>Age: 39 • Asthma Treatment</p>
+        </div>
+      </div>
+      <div class="prescription-details">
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Albuterol Inhaler</div>
+            <div class="medication-dosage">2 puffs as needed</div>
+          </div>
+          <div class="medication-dosage">1 inhaler</div>
+        </div>
+        <div class="medication-item">
+          <div>
+            <div class="medication-name">Fluticasone Inhaler</div>
+            <div class="medication-dosage">2 puffs twice daily</div>
+          </div>
+          <div class="medication-dosage">1 inhaler</div>
+        </div>
+      </div>
+      <div class="prescription-actions">
+        <button class="action-btn btn-refill" onclick="alert('Renew prescription')">Renew</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  const mainContent = document.getElementById('mainContent');
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    mainContent.classList.toggle('full-width');
+  }
+  
+  hamburger.addEventListener('click', toggleSidebar);
+  hamburger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+
+  // Filter prescriptions
+  function filterPrescriptions(status) {
+    const prescriptions = document.querySelectorAll('.prescription-card');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    // Update active filter button
+    filterBtns.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide prescriptions
+    prescriptions.forEach(prescription => {
+      if (status === 'all' || prescription.dataset.status === status) {
+        prescription.style.display = 'block';
+      } else {
+        prescription.style.display = 'none';
+      }
+    });
+  }
+
+  // Load prescriptions for selected patient
+  function loadPrescriptions() {
+    const selectedPatient = document.getElementById('patientSelect').value;
+    if (selectedPatient) {
+      // In a real app, this would filter prescriptions by patient
+      console.log('Loading prescriptions for patient:', selectedPatient);
+    }
+  }
+
+  // Search functionality
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const prescriptions = document.querySelectorAll('.prescription-card');
+    
+    prescriptions.forEach(prescription => {
+      const medicationNames = prescription.querySelectorAll('.medication-name');
+      const patientName = prescription.querySelector('.patient-details h5').textContent.toLowerCase();
+      let found = false;
+      
+      // Search in patient name
+      if (patientName.includes(searchTerm)) {
+        found = true;
+      }
+      
+      // Search in medication names
+      medicationNames.forEach(med => {
+        if (med.textContent.toLowerCase().includes(searchTerm)) {
+          found = true;
+        }
+      });
+      
+      prescription.style.display = found ? 'block' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

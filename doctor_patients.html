@@ -1,0 +1,511 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8" />
+  <title>Patient Management - Doctor Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      color: #2d3748;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      background: #3d5a80;
+      color: white;
+      width: 260px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      z-index: 1200;
+      transition: transform 0.3s ease;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.hide {
+      transform: translateX(-260px);
+    }
+    .sidebar .logo {
+      font-weight: 800;
+      font-size: 1.6rem;
+      padding: 30px 25px 20px 25px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar .logo span {
+      color: #98c1d9;
+    }
+    .sidebar nav {
+      flex: 1;
+      padding: 20px 0;
+      overflow-y: auto;
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 25px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.95rem;
+      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .sidebar nav a i {
+      width: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      background: rgba(255,255,255,0.1);
+      border-left-color: #98c1d9;
+      color: white;
+    }
+    .sidebar .logout {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.9);
+    }
+    .sidebar .logout:hover {
+      background: rgba(0,0,0,0.2);
+      color: #ff6b6b;
+    }
+
+    /* Hamburger Menu */
+    .hamburger {
+      width: 30px;
+      height: 24px;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      cursor: pointer;
+      z-index: 1300;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hamburger div {
+      background: #3d5a80;
+      border-radius: 2px;
+      height: 3px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 0;
+      transition: margin-left 0.3s ease;
+      min-height: 100vh;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: white;
+      padding: 20px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar h1 {
+      font-size: 1.6rem;
+      color: #3d5a80;
+      font-weight: 600;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1rem;
+      color: #4a5568;
+    }
+    .user-info i {
+      font-size: 1.8rem;
+      color: #3d5a80;
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Module Cards Grid - For Main Patient Modules */
+    .module-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 35px;
+    }
+    .module-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-top: 4px solid #3d5a80;
+      position: relative;
+    }
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(61, 90, 128, 0.15);
+    }
+    .module-card .icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #3d5a80 0%, #293a52 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .module-card .icon i {
+      font-size: 1.8rem;
+      color: white;
+    }
+    .module-card h3 {
+      font-size: 1.2rem;
+      color: #2d3748;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .module-card p {
+      font-size: 0.9rem;
+      color: #718096;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+    .module-card .count {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #e6f2ff;
+      color: #3d5a80;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .module-card .arrow {
+      color: #3d5a80;
+      font-size: 1.2rem;
+    }
+
+    /* Section Header */
+    .section-header {
+      margin-bottom: 25px;
+    }
+    .section-header h2 {
+      font-size: 1.4rem;
+      color: #2d3748;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .section-header p {
+      color: #718096;
+      font-size: 0.95rem;
+    }
+
+    /* Quick Stats Bar */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+    .stat-box {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .stat-box .stat-icon {
+      width: 50px;
+      height: 50px;
+      background: rgba(61, 90, 128, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stat-box .stat-icon i {
+      font-size: 1.5rem;
+      color: #3d5a80;
+    }
+    .stat-box .stat-info h4 {
+      font-size: 0.85rem;
+      color: #718096;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .stat-box .stat-info .number {
+      font-size: 1.8rem;
+      color: #2d3748;
+      font-weight: 700;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 900px) {
+      .hamburger {
+        display: flex;
+      }
+      .sidebar {
+        transform: translateX(-260px);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .module-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .quick-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo">MEDI<span>Care</span></div>
+      <nav>
+        <a href="doctor_dashboard.html">
+          <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="doctor_profile.html">
+          <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="doctor_patients.html" class="active">
+          <i class="fas fa-users"></i> Patients
+        </a>
+        <a href="#">
+          <i class="fas fa-heartbeat"></i> Symptom Analysis
+        </a>
+        <a href="doctor_teleconsult.html">
+          <i class="fas fa-video"></i> Teleconsultation
+        </a>
+        <a href="doctor_appointments.html">
+        <i class="fas fa-calendar-alt"></i> Appointments
+      </a>
+        <a href="#">
+          <i class="fas fa-bell"></i> Notifications
+        </a>
+      </nav>
+      <div class="logout" onclick="location.href='doctor_logout.php'">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </div>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <div class="hamburger" id="hamburger">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <h1>Patient Management</h1>
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <span>Dr. <span class="user-name" id="username">...</span></span>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Section Header -->
+        <div class="section-header">
+          <h2>Patient Management Center</h2>
+          <p>Manage all aspects of patient care and records</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="stat-box">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h4>Total Patients</h4>
+              <div class="number" id="totalPatients">0</div>
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="stat-info">
+              <h4>New This Month</h4>
+              <div class="number" id="newPatients">0</div>
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+              <h4>Active Cases</h4>
+              <div class="number" id="activeCases">0</div>
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">
+              <i class="fas fa-file-medical"></i>
+            </div>
+            <div class="stat-info">
+              <h4>Pending Reports</h4>
+              <div class="number" id="pendingReports">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Module Cards Grid -->
+        <div class="module-cards-grid">
+          <!-- Patient List Module -->
+          <div class="module-card" onclick="location.href='patient_list.html'">
+            <span class="count" id="patientCount">0</span>
+            <div class="icon">
+              <i class="fas fa-list"></i>
+            </div>
+            <h3>Patient List</h3>
+            <p>View and search all registered patients with filtering options</p>
+            <i class="fas fa-arrow-right arrow"></i>
+          </div>
+
+          <!-- Patient Registration Module -->
+          <div class="module-card" onclick="location.href='patient_registration.html'">
+            <div class="icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <h3>Patient Registration</h3>
+            <p>Register new patients and capture their medical information</p>
+            <i class="fas fa-arrow-right arrow"></i>
+          </div>
+
+          <!-- Appointment Scheduling Module -->
+          <div class="module-card" onclick="location.href='doctor_appointments.html'">
+            <span class="count" id="appointmentCount">0</span>
+            <div class="icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3>Appointments</h3>
+            <p>Schedule and manage patient appointments and follow-ups</p>
+            <i class="fas fa-arrow-right arrow"></i>
+          </div>
+
+          <!-- Patient Messages Module -->
+          <div class="module-card" onclick="location.href='patient_messages.html'">
+            <span class="count" id="messageCount">0</span>
+            <div class="icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3>Patient Messages</h3>
+            <p>Secure messaging system for patient communication</p>
+            <i class="fas fa-arrow-right arrow"></i>
+          </div>
+
+          
+
+          <!-- Prescriptions Module -->
+          <div class="module-card" onclick="location.href='prescriptions.html'">
+            <div class="icon">
+              <i class="fas fa-prescription-bottle"></i>
+            </div>
+            <h3>Prescriptions</h3>
+            <p>Create and manage medication prescriptions for patients</p>
+            <i class="fas fa-arrow-right arrow"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    
+    hamburger.addEventListener('click', function() {
+      sidebar.classList.toggle('show');
+    });
+
+    // Fetch doctor session
+    window.addEventListener('DOMContentLoaded', function() {
+      fetch('get_doctor_session.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.logged_in) {
+            document.getElementById('username').textContent = data.username;
+            loadPatientStats();
+          } else {
+            window.location.href = 'doctor_login.html';
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          window.location.href = 'doctor_login.html';
+        });
+    });
+
+    // Load patient statistics
+    function loadPatientStats() {
+      fetch('get_patient_stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('totalPatients').textContent = data.total_patients || 0;
+            document.getElementById('newPatients').textContent = data.new_patients || 0;
+            document.getElementById('activeCases').textContent = data.active_cases || 0;
+            document.getElementById('pendingReports').textContent = data.pending_reports || 0;
+            
+            document.getElementById('patientCount').textContent = data.total_patients || 0;
+            document.getElementById('consultationCount').textContent = data.total_consultations || 0;
+            document.getElementById('appointmentCount').textContent = data.upcoming_appointments || 0;
+            document.getElementById('messageCount').textContent = data.unread_messages || 0;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+  </script>
+  </body>
+  </html>

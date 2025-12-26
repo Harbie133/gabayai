@@ -1,0 +1,71 @@
+
+.logout-btn {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+.logout-btn i {
+    font-size: 0.8rem;
+}
+
+/* Mobile logout button */
+.mobile-logout {
+    padding: 12px 20px;
+    margin-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.mobile-logout button {
+    width: 100%;
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.mobile-logout button:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logout-btn {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-logout {
+        display: none;
+    }
+}

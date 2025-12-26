@@ -1,0 +1,77 @@
+/* Health tips panel */
+.tips-panel {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border: 1px solid #e5e5e5;
+    margin-top: 25px;
+  }
+  
+  .tips-header h2 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+  
+  .tips-sub {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 12px;
+  }
+  
+  .tip-topic h3 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  
+  .tip-status {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  
+  .tip-error {
+    color: #b22222;
+  }
+  
+  /* Tagalog + English columns */
+  .tip-columns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  
+  .tip-column {
+    flex: 1 1 260px;
+  }
+  
+  .tip-column h4 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  
+  .tip-column p {
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 4px;
+  }
+  
+  /* warning line */
+  .tip-warning {
+    font-size: 0.85rem;
+    color: #b22222;
+    margin-top: 4px;
+  }
+  
+  /* mobile tweaks */
+  @media (max-width: 600px) {
+    .tips-header h2 {
+      font-size: 1.15rem;
+    }
+  
+    .tip-columns {
+      flex-direction: column;
+    }
+  }
+  

@@ -1,0 +1,4 @@
+=== 2025-10-19 08:46:45 ===
+GENERAL ERROR: Error: db_connection.php file not found
+Stack trace: #0 C:\xampp\htdocs\GABAYAI\test_save.php(26): include()
+#1 {main}

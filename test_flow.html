@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login Flow</title>
+</head>
+<body>
+    <h1>Test Login Flow</h1>
+    <button onclick="checkSession()">Check Session</button>
+    <button onclick="goToLogin()">Go to Login</button>
+    <button onclick="goToDashboard()">Go to Dashboard</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 20px; background: #f0f0f0;"></div>
+    
+    <script>
+        function checkSession() {
+            fetch('check_session.php')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = 'Error: ' + error;
+                });
+        }
+        
+        function goToLogin() {
+            window.location.href = 'userlogin.html';
+        }
+        
+        function goToDashboard() {
+            window.location.href = 'homer.html';
+        }
+    </script>
+</body>
+</html>

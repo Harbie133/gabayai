@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Medical Records</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    background: #174374;
+    color: white;
+    width: 250px;
+    min-width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-left: 30px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  .sidebar nav a {
+    color: #e1e8f0;
+    padding: 13px 30px;
+    text-decoration: none;
+    display: block;
+    border-left: 4px solid transparent;
+    transition: background 0.15s, border-left-color 0.15s;
+    font-size: 1.07rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: #0e2c4a;
+    border-left-color: #16a085;
+    color: white;
+  }
+  .sidebar .logout {
+    margin-top: auto;
+    margin-left: 30px;
+    color: #e57373;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  /* Hamburger button */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    cursor: pointer;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    padding: 4px;
+  }
+  @media (min-width: 901px) {
+    .hamburger {
+      display: none;
+    }
+  }
+  .hamburger div {
+    background: #000000;
+    border-radius: 2px;
+    height: 4px;
+    transition: all 0.4s ease;
+    transform-origin: center;
+    width: 100%;
+  }
+  .hamburger.active div:nth-child(1) {
+    width: 70%;
+    transform: translateY(6px);
+  }
+  .hamburger.active div:nth-child(2) {
+    width: 100%;
+    opacity: 0.6;
+  }
+  .hamburger.active div:nth-child(3) {
+    width: 50%;
+    transform: translateY(-6px);
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 36px 3vw 3vw 3vw;
+    transition: margin-left 0.3s ease;
+  }
+  .main-content.full-width {
+    margin-left: 0;
+  }
+  .back-button {
+    background: none;
+    border: none;
+    color: #16a085;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .profile-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #174374;
+    margin-bottom: 24px;
+  }
+  /* Patient selection */
+  .patient-selector {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .patient-selector select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+  }
+  .patient-selector select:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  .add-record-btn {
+    background-color: #16a085;
+    color: white;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+  }
+  .add-record-btn:hover {
+    background-color: #13876e;
+  }
+  /* Patient info header */
+  .patient-info {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #16a085;
+  }
+  .patient-details h3 {
+    margin: 0 0 8px 0;
+    color: #174374;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .patient-details p {
+    margin: 4px 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  /* Records timeline */
+  .records-timeline {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .timeline-header {
+    color: #16a085;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #16a085;
+    padding-bottom: 8px;
+  }
+  .record-item {
+    border-left: 3px solid #16a085;
+    margin-left: 10px;
+    padding-left: 20px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .record-item::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #16a085;
+    border-radius: 50%;
+    position: absolute;
+    left: -7px;
+    top: 8px;
+  }
+  .record-date {
+    color: #16a085;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+  .record-title {
+    color: #174374;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  .record-content {
+    color: #506a82;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .record-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    background: #e6fffa;
+    color: #16a085;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .tag.prescription {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .tag.lab {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .tag.diagnosis {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  /* Quick actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .action-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+    border-left: 5px solid #16a085;
+  }
+  .action-card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .action-card .icon {
+    font-size: 2rem;
+    color: #16a085;
+    margin-bottom: 8px;
+  }
+  .action-card h4 {
+    margin: 0;
+    color: #174374;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  /* Responsive */
+  @media(max-width: 900px) {
+    .sidebar {
+      transform: translateX(-260px);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 20px 15px;
+    }
+    .patient-selector {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .patient-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+  <div class="logo">MEDI<span style="color:#16a085;">Care</span></div>
+  <nav>
+    <a href="DoctorDashboard.html">Dashboard</a>
+    <a href="DoctorProfile.html">Profile</a>
+    <a href="patients.html" class="active">Patients</a>
+    <a href="#">Symptom Analysis</a>
+    <a href="#">Medication/Prescriptions</a>
+    <a href="#">Teleconsultation</a>
+    <a href="notifications.html">Notifications</a>
+    <a href="#">Analytics</a>
+    <a href="#">Settings</a>
+    <a href="#">Support</a>
+  </nav>
+  <div class="logout">Logout</div>
+</div>
+<div class="hamburger" id="hamburger" aria-label="Toggle Menu" role="button" tabindex="0">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+<div class="main-content" id="mainContent">
+  <button class="back-button" onclick="history.back()" aria-label="Go back to previous page">← Back</button>
+  <div class="profile-header">Medical Records</div>
+  
+  <div class="patient-selector">
+    <select id="patientSelect" onchange="loadPatientRecords()">
+      <option value="" disabled selected>Select a patient to view records</option>
+      <option value="P001">John Doe (#P001)</option>
+      <option value="P002">Jane Smith (#P002)</option>
+      <option value="P003">Mary Lee (#P003)</option>
+      <option value="P004">David Tan (#P004)</option>
+      <option value="P005">Sarah Wilson (#P005)</option>
+      <option value="P006">Robert Chen (#P006)</option>
+    </select>
+    <button class="add-record-btn" onclick="alert('Add New Medical Record')">+ Add Record</button>
+  </div>
+
+  <div id="patientRecords" style="display: none;">
+    <div class="patient-info">
+      <div class="patient-details">
+        <h3 id="selectedPatientName">John Doe</h3>
+        <p><strong>Patient ID:</strong> <span id="selectedPatientId">#P001</span></p>
+        <p><strong>Age:</strong> <span id="selectedPatientAge">45</span> • <strong>Gender:</strong> <span id="selectedPatientGender">Male</span></p>
+        <p><strong>Last Visit:</strong> <span id="selectedPatientLastVisit">Dec 20, 2024</span></p>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <div class="action-card" onclick="alert('View All Prescriptions')">
+        <div class="icon">💊</div>
+        <h4>Prescriptions</h4>
+      </div>
+      <div class="action-card" onclick="alert('View Lab Results')">
+        <div class="icon">🧪</div>
+        <h4>Lab Results</h4>
+      </div>
+      <div class="action-card" onclick="alert('View Diagnoses')">
+        <div class="icon">📋</div>
+        <h4>Diagnoses</h4>
+      </div>
+      <div class="action-card" onclick="alert('View Documents')">
+        <div class="icon">📁</div>
+        <h4>Documents</h4>
+      </div>
+    </div>
+
+    <div class="records-timeline">
+      <div class="timeline-header">Medical History Timeline</div>
+      
+      <div class="record-item">
+        <div class="record-date">December 20, 2024</div>
+        <div class="record-title">Follow-up Consultation - Hypertension</div>
+        <div class="record-content">
+          Patient reports feeling well with current medication. Blood pressure readings at home averaging 125/80. No side effects reported from Lisinopril. Recommended to continue current dosage.
+        </div>
+        <div class="record-tags">
+          <span class="tag">Follow-up</span>
+          <span class="tag prescription">Prescription</span>
+        </div>
+      </div>
+
+      <div class="record-item">
+        <div class="record-date">December 5, 2024</div>
+        <div class="record-title">Lab Results - Blood Work</div>
+        <div class="record-content">
+          Complete blood count and lipid panel results received. All values within normal ranges. Cholesterol levels improved since last visit. HbA1c: 5.8% (good control).
+        </div>
+        <div class="record-tags">
+          <span class="tag lab">Lab Results</span>
+        </div>
+      </div>
+
+      <div class="record-item">
+        <div class="record-date">November 15, 2024</div>
+        <div class="record-title">Initial Diagnosis - Hypertension</div>
+        <div class="record-content">
+          Patient presented with elevated blood pressure readings (150/95). Family history of cardiovascular disease. Started on Lisinopril 10mg daily. Lifestyle modifications discussed including diet and exercise.
+        </div>
+        <div class="record-tags">
+          <span class="tag diagnosis">Diagnosis</span>
+          <span class="tag prescription">New Prescription</span>
+        </div>
+      </div>
+
+      <div class="record-item">
+        <div class="record-date">November 1, 2024</div>
+        <div class="record-title">Physical Examination</div>
+        <div class="record-content">
+          Annual physical examination. Patient reports occasional headaches and fatigue. Vital signs: BP 148/92, HR 78, Temp 98.6°F. Recommended blood pressure monitoring and follow-up appointment.
+        </div>
+        <div class="record-tags">
+          <span class="tag">Physical Exam</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="noPatientSelected" class="records-timeline">
+    <div style="text-align: center; padding: 40px; color: #506a82;">
+      <div style="font-size: 3rem; margin-bottom: 16px;">📋</div>
+      <h3 style="color: #174374; margin-bottom: 8px;">No Patient Selected</h3>
+      <p>Please select a patient from the dropdown above to view their medical records.</p>
+    </div>
+  </div>
+
+</div>
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  const mainContent = document.getElementById('mainContent');
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    mainContent.classList.toggle('full-width');
+  }
+  
+  hamburger.addEventListener('click', toggleSidebar);
+  hamburger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+
+  // Patient records data (mock data)
+  const patientData = {
+    'P001': { name: 'John Doe', age: 45, gender: 'Male', lastVisit: 'Dec 20, 2024' },
+    'P002': { name: 'Jane Smith', age: 32, gender: 'Female', lastVisit: 'Dec 18, 2024' },
+    'P003': { name: 'Mary Lee', age: 28, gender: 'Female', lastVisit: 'Dec 15, 2024' },
+    'P004': { name: 'David Tan', age: 52, gender: 'Male', lastVisit: 'Dec 10, 2024' },
+    'P005': { name: 'Sarah Wilson', age: 39, gender: 'Female', lastVisit: 'Dec 8, 2024' },
+    'P006': { name: 'Robert Chen', age: 61, gender: 'Male', lastVisit: 'Dec 5, 2024' }
+  };
+
+  function loadPatientRecords() {
+    const selectedPatient = document.getElementById('patientSelect').value;
+    const patientRecords = document.getElementById('patientRecords');
+    const noPatientSelected = document.getElementById('noPatientSelected');
+    
+    if (selectedPatient && patientData[selectedPatient]) {
+      const patient = patientData[selectedPatient];
+      
+      // Update patient info
+      document.getElementById('selectedPatientName').textContent = patient.name;
+      document.getElementById('selectedPatientId').textContent = '#' + selectedPatient;
+      document.getElementById('selectedPatientAge').textContent = patient.age;
+      document.getElementById('selectedPatientGender').textContent = patient.gender;
+      document.getElementById('selectedPatientLastVisit').textContent = patient.lastVisit;
+      
+      // Show patient records, hide no selection message
+      patientRecords.style.display = 'block';
+      noPatientSelected.style.display = 'none';
+    } else {
+      patientRecords.style.display = 'none';
+      noPatientSelected.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

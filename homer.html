@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard - GabayAI</title>
+
+<link rel="stylesheet" href="navbar.css"/>
+<link rel="stylesheet" href="homerhealth.css"/>
+</head>
+<body>
+<!-- <CHANGE> Added responsive navbar -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav"> 
+      <li><a href="homer.html" class="nav-link active">Dashboard</a></li>
+      <li><a href="analyzerv2.html" class="nav-link ">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link ">Consultation</a></li>
+      <li><a href="editaccount.html" class="nav-link">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link active">Dashboard</a>
+      <a href="analyzer.html" class="mobile-nav-link ">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link ">Consultation</a>
+      <a href="editaccount.html" class="mobile-nav-link ">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- Main Content Container -->
+<div class="main-content">
+  <div class="container">
+    
+    <div class="cards">
+      <!-- 1. Analyzer -->
+      <div class="card" onclick="location.href='analyzerv2.html'">
+        <div class="card-icon">🩺</div>
+        <div class="card-content">  
+          <h3>Symptom Analyzer</h3>
+          <p style="font-size: 0.9rem; color: #718096;">Check your symptoms with AI</p>
+        </div>
+      </div>
+
+      <!-- 2. Consultation -->
+      <div class="card" onclick="location.href='consult.html'">
+        <div class="card-icon">💻</div>
+        <div class="card-content">
+          <h3>Consultation</h3>
+          <p style="font-size: 0.9rem; color: #718096;">Chat with a Doctor</p>
+        </div>
+      </div>
+
+      <!-- 3. NEW: Health Tips & First Aid (Replaced Prescription) -->
+      <div class="card" onclick="location.href='health_tips.html'">
+        <div class="card-icon">❤️‍🩹</div>
+        <div class="card-content">
+          <h3>Health Tips & First Aid</h3>
+          <p style="font-size: 0.9rem; color: #718096;">Emergency guides & Advice</p>
+        </div>
+      </div>
+
+      <!-- 4. Profile -->
+      <div class="card" onclick="location.href='editaccount.html'">
+        <div class="card-icon">👤</div>
+        <div class="card-content">
+          <h3>Edit Account</h3>
+          <p style="font-size: 0.9rem; color: #718096;">Manage your account</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="auth-guard.js"></script>
+<script src="homerhealth.js"></script>
+
+<script>
+// User logout function (only clears user sessions, not doctor sessions)
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'user_logout.php';
+    }
+}
+
+// FIXED: Mobile menu toggle - now uses 'show' class instead of 'active'
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');  // Changed from 'active' to 'show'
+    hamburger.classList.toggle('open');   // Changed from 'active' to 'open'
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+        if (mobileMenu.classList.contains('show')) {
+            mobileMenu.classList.remove('show');
+            hamburger.classList.remove('open');
+        }
+    }
+});
+
+// Sync patient data with doctor's patient list
+window.addEventListener('DOMContentLoaded', function() {
+    syncPatientData();
+});
+
+function syncPatientData() {
+    fetch('sync_patient_data.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Patient data synced:', data);
+        })
+        .catch(error => {
+            console.error('Error syncing patient data:', error);
+        });
+}
+</script>
+</body>
+</html>

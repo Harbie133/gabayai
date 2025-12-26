@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Appointment Scheduling - GabayAI</title>
+<link rel="stylesheet" href="navbar.css" />
+<link rel="stylesheet" href="appointment.css" />
+</head>
+<body>
+
+<!-- <CHANGE> Added responsive navbar -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav">
+      <li><a href="homer.html" class="nav-link ">Dashboard</a></li>
+      <li><a href="analyzer.html" class="nav-link ">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link active">Consultation</a></li>
+      <li><a href="profile.html" class="nav-link">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
+      <a href="analyzer.html" class="mobile-nav-link ">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link active">Consultation</a>
+      <a href="profile.html" class="mobile-nav-link ">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  
+
+<!-- Book Appointment Form -->
+<div class="container">
+  <h2>Schedule an Appointment</h2>
+  <form id="appointmentForm" novalidate>
+    <div class="form-group">
+      <label for="doctor">Select Doctor *</label>
+      <select id="doctor" name="doctor" required>
+        <option value="">-- Select a Doctor --</option>
+      </select>
+      <div class="error-message" id="doctorError">Please select a doctor.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="fullName">Full Name *</label>
+      <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required />
+      <div class="error-message" id="fullNameError">Please enter your full name.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="contactNo">Contact No. *</label>
+      <input type="text" id="contactNo" name="contactNo" placeholder="Enter your contact number" required />
+      <div class="error-message" id="contactNoError">Please enter your contact number.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address (Optional)</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email" />
+      <div class="error-message" id="emailError">Please enter a valid email address.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Select Date *</label>
+      <input type="date" id="date" name="date" required />
+      <div class="error-message" id="dateError">Please select a valid date (weekday, within 2 months from today).</div>
+    </div>
+
+    <div class="form-group">
+      <label for="time">Select Time (24-hour) *</label>
+      <input type="time" id="time" name="time" required />
+      <div class="error-message" id="timeError">Time must be between 07:00 and 17:00.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="reason">Reason for Appointment *</label>
+      <textarea id="reason" name="reason" rows="4" placeholder="Briefly describe the reason for your appointment" required></textarea>
+      <div class="error-message" id="reasonError">Please enter the reason for your appointment.</div>
+    </div>
+
+    <button type="submit">Submit Appointment</button>
+  </form>
+</div>
+
+<!-- Appointment Status Section - BELOW -->
+<div class="appointments-status-section">
+  <div class="section-header">
+    <h2><i class="fas fa-calendar-check"></i> My Appointments</h2>
+    <button class="refresh-btn" onclick="loadMyAppointments()">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+  
+  <div id="myAppointmentsContainer">
+    <div class="empty-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading your appointments...</p>
+    </div>
+  </div>
+</div>
+
+
+<script src="navbar.js"></script>
+<script src="auth-guard.js"></script>
+
+
+
+<script>
+
+  // FIXED: Mobile menu toggle - now uses 'show' class instead of 'active'
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');  // Changed from 'active' to 'show'
+    hamburger.classList.toggle('open');   // Changed from 'active' to 'open'
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+        if (mobileMenu.classList.contains('show')) {
+            mobileMenu.classList.remove('show');
+            hamburger.classList.remove('open');
+        }
+    }
+});
+
+
+  // Doctor dropdown fetch
+  window.addEventListener('load', () => {
+    fetch('fetch_doctors.php')
+      .then(response => response.json())
+      .then(data => {
+        const doctorSelect = document.getElementById('doctor');
+        data.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = `${doc.name} (${doc.specialty})`;
+          doctorSelect.appendChild(option);
+        });
+      })
+      .catch(err => console.error('Error loading doctors:', err));
+
+    // Set date min/max
+    const date = document.getElementById('date');
+    const today = new Date();
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 2);
+    const formatDate = d => d.toISOString().split('T')[0];
+
+    date.min = formatDate(today);
+    date.max = formatDate(maxDate);
+    
+    // Load patient's appointments
+    loadMyAppointments();
+  });
+
+  const form = document.getElementById('appointmentForm');
+  const doctor = document.getElementById('doctor');
+  const fullName = document.getElementById('fullName');
+  const contactNo = document.getElementById('contactNo');
+  const email = document.getElementById('email');
+  const dateInput = document.getElementById('date');
+  const timeInput = document.getElementById('time');
+  const reason = document.getElementById('reason');
+
+  const doctorError = document.getElementById('doctorError');
+  const fullNameError = document.getElementById('fullNameError');
+  const contactNoError = document.getElementById('contactNoError');
+  const emailError = document.getElementById('emailError');
+  const dateError = document.getElementById('dateError');
+  const timeError = document.getElementById('timeError');
+  const reasonError = document.getElementById('reasonError');
+
+  function resetErrors() {
+    [doctor, fullName, contactNo, email, dateInput, timeInput, reason].forEach(input => input.classList.remove('invalid'));
+    [doctorError, fullNameError, contactNoError, emailError, dateError, timeError, reasonError].forEach(err => (err.style.display = 'none'));
+  }
+
+  function isWeekday(dateStr) {
+    const date = new Date(dateStr);
+    const day = date.getDay();
+    return day !== 0 && day !== 6;
+  }
+
+  function isDateInRange(dateStr) {
+    if (!dateStr) return false;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const maxDate = new Date(today); maxDate.setMonth(maxDate.getMonth() + 2);
+    const date = new Date(dateStr);
+    return date >= today && date <= maxDate;
+  }
+
+  function isAllowedTime(timeStr) {
+    if (!timeStr) return false;
+    const [hourStr] = timeStr.split(':');
+    const hour = parseInt(hourStr, 10);
+    return hour >= 7 && hour <= 17;
+  }
+
+  function isValidEmail(emailStr) {
+    if (!emailStr) return true;
+    return email.checkValidity();
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    resetErrors();
+
+    let valid = true;
+
+    if (!doctor.value) {
+      doctor.classList.add('invalid'); doctorError.style.display = 'block'; valid = false;
+    }
+    if (!fullName.value.trim()) {
+      fullName.classList.add('invalid'); fullNameError.style.display = 'block'; valid = false;
+    }
+    if (!contactNo.value.trim()) {
+      contactNo.classList.add('invalid'); contactNoError.style.display = 'block'; valid = false;
+    }
+    if (!isValidEmail(email.value.trim())) {
+      email.classList.add('invalid'); emailError.style.display = 'block'; valid = false;
+    }
+    if (!dateInput.value || !isWeekday(dateInput.value) || !isDateInRange(dateInput.value)) {
+      dateInput.classList.add('invalid'); dateError.style.display = 'block'; valid = false;
+    }
+    if (!timeInput.value || !isAllowedTime(timeInput.value)) {
+      timeInput.classList.add('invalid'); timeError.style.display = 'block'; valid = false;
+    }
+    if (!reason.value.trim()) {
+      reason.classList.add('invalid'); reasonError.style.display = 'block'; valid = false;
+    }
+
+    if (valid) {
+      const formData = new FormData(form);
+      fetch('submit_appointment.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        if (msg.includes('Success')) {
+          form.reset();
+          loadMyAppointments(); // Reload appointments
+        }
+      })
+      .catch(err => alert('Error submitting appointment: ' + err));
+    }
+  });
+  
+  // Load patient's appointments
+  function loadMyAppointments() {
+    fetch('get_patient_appointments.php')
+      .then(response => response.json())
+      .then(data => {
+        console.log('My appointments:', data);
+        
+        if (data.success) {
+          displayMyAppointments(data.appointments);
+        } else {
+          document.getElementById('myAppointmentsContainer').innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>${data.message || 'Unable to load appointments'}</p>
+            </div>
+          `;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('myAppointmentsContainer').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading appointments</p>
+          </div>
+        `;
+      });
+  }
+  
+  
+  // Display patient's appointments
+  function displayMyAppointments(appointments) {
+    if (appointments.length === 0) {
+      document.getElementById('myAppointmentsContainer').innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-calendar-times"></i>
+          <h3>No Appointments Yet</h3>
+          <p>You have no scheduled appointments</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '<div class="appointments-grid">';
+    
+    appointments.forEach(apt => {
+      const date = new Date(apt.appointment_date).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+      const time = formatTime(apt.appointment_time);
+      const canCancel = apt.status === 'pending' || apt.status === 'confirmed';
+      
+      // Get status icon
+      let statusIcon = '';
+      switch(apt.status) {
+        case 'pending': statusIcon = 'fa-clock'; break;
+        case 'confirmed': statusIcon = 'fa-check-circle'; break;
+        case 'in_progress': statusIcon = 'fa-spinner fa-pulse'; break;
+        case 'completed': statusIcon = 'fa-check-double'; break;
+        case 'cancelled': statusIcon = 'fa-times-circle'; break;
+      }
+      
+      html += `
+        <div class="appointment-card ${apt.status}">
+          <div class="appointment-card-content">
+            <div class="doctor-name">
+              <i class="fas fa-user-md"></i>
+              Dr. ${apt.doctor_name || 'N/A'}
+            </div>
+            
+            <div class="appointment-info-row">
+              <i class="fas fa-calendar"></i>
+              <span>${date}</span>
+            </div>
+            
+            <div class="appointment-info-row">
+              <i class="fas fa-clock"></i>
+              <span>${time}</span>
+            </div>
+            
+            <div class="appointment-reason">
+              <div class="appointment-reason-label">Reason for Visit</div>
+              <div class="appointment-reason-text">${apt.symptoms || 'No details provided'}</div>
+            </div>
+          </div>
+          
+          <div class="appointment-footer">
+            <span class="status-badge ${apt.status}">
+              <i class="fas ${statusIcon}"></i>
+              ${apt.status.replace('_', ' ').toUpperCase()}
+            </span>
+            ${canCancel ? `
+              <button class="btn-cancel" onclick="cancelMyAppointment(${apt.appointment_id})">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    document.getElementById('myAppointmentsContainer').innerHTML = html;
+  }
+  
+  // Format time
+  function formatTime(timeStr) {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  }
+  
+  // Cancel appointment
+  function cancelMyAppointment(id) {
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+      fetch('cancel_patient_appointment.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `appointment_id=${id}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Appointment cancelled successfully');
+          loadMyAppointments();
+        } else {
+          alert(data.message || 'Failed to cancel appointment');
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error);
+      });
+    }
+  }
+
+
+
+
+</script>
+</body>
+</html>

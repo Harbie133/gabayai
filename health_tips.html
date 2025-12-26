@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Health & First Aid - GabayAI</title>
+<link rel="stylesheet" href="navbar.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* --- NAVBAR FIXES --- */
+  .mobile-menu-items { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+  .mobile-menu { z-index: 9999 !important; }
+
+  /* --- PROFESSIONAL UI STYLES --- */
+  :root {
+    --primary: #4f46e5;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --gray-dark: #1f2937;
+    --gray-light: #f3f4f6;
+  }
+  
+  /* UPDATED BACKGROUND: PURPLE GRADIENT (Like Homer Dashboard) */
+  body { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #667eea; /* Fallback */
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    color: var(--gray-dark); 
+    min-height: 100vh;
+  }
+
+  /* Padding for fixed navbar + extra bottom space for mobile */
+  .main-content { margin-top: 80px; padding: 20px; padding-bottom: 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* Emergency Quick Actions */
+  .emergency-row {
+    display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px;
+    /* Hide scrollbar */
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .emergency-row::-webkit-scrollbar { display: none; }
+  
+  .emergency-btn {
+    background: #fff0f0; border: 1px solid #fed7d7; color: #c53030;
+    padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 8px; white-space: nowrap; cursor: pointer;
+    transition: all 0.2s;
+    /* Ensure buttons don't shrink on mobile */
+    flex-shrink: 0;
+  }
+  .emergency-btn:hover { background: #c53030; color: white; transform: translateY(-2px); }
+  .emergency-btn i { font-size: 1rem; }
+
+  /* Search & Filter - Updated for Purple BG visibility */
+  .header-section { text-align: center; margin-bottom: 30px; }
+  .header-section h2 { color: white; font-size: 2rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .header-section p { color: #e0e7ff; margin-bottom: 25px; font-size: 1.1rem; }
+
+  .search-wrapper { position: relative; max-width: 600px; margin: 0 auto; }
+  .search-box {
+    width: 100%; padding: 16px 20px 16px 45px;
+    border: none; border-radius: 12px;
+    font-size: 1rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    outline: none; transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .search-box:focus { background: white; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3); }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; cursor: pointer; }
+
+  /* Category Tabs */
+  .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 16px; border-radius: 20px; border: none; 
+    background: rgba(255, 255, 255, 0.2);
+    color: white; font-weight: 500; cursor: pointer; transition: 0.2s;
+    backdrop-filter: blur(5px);
+  }
+  .tab-btn:hover { background: rgba(255, 255, 255, 0.3); }
+  .tab-btn.active { background: white; color: var(--primary); font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+  /* Content Grid */
+  .tips-grid { display: grid; gap: 15px; }
+
+  /* Realistic Medical Card */
+  .med-card {
+    background: white; border-radius: 12px; overflow: hidden;
+    border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 15px; /* Added spacing between cards */
+  }
+  .med-header {
+    padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    background: white; transition: background 0.2s;
+  }
+  .med-header:hover { background: #f9fafb; }
+  
+  .med-title-group { display: flex; align-items: center; gap: 15px; }
+  .med-icon-box {
+    width: 45px; height: 45px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0; /* Prevent icon squishing */
+  }
+  .icon-red { background: #fee2e2; color: #dc2626; }
+  .icon-blue { background: #e0e7ff; color: #4f46e5; }
+  .icon-green { background: #d1fae5; color: #059669; }
+
+  .med-info h3 { margin: 0; font-size: 1.1rem; color: #111827; }
+  .med-info p { margin: 2px 0 0; font-size: 0.85rem; color: #6b7280; }
+
+  /* Expanded Content */
+  .med-content {
+    max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+    background: #f8fafc; border-top: 1px solid #f1f5f9;
+  }
+  .med-body { padding: 24px; }
+  
+  /* Medical Sections with CLEAR SEPARATORS */
+  .med-section { 
+    margin-bottom: 25px; 
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #cbd5e1; /* Subtle separator line */
+  }
+  .med-section:last-of-type { 
+    border-bottom: none; 
+    margin-bottom: 10px; 
+    padding-bottom: 0;
+  }
+
+  .med-label { 
+    text-transform: uppercase; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; display: block;
+  }
+  .label-action { color: var(--primary); }
+  .label-warning { color: var(--danger); }
+  
+  /* Improved List Spacing */
+  .med-list { list-style: none; padding: 0; margin: 0; }
+  .med-list li {
+    position: relative; padding-left: 24px; margin-bottom: 12px; font-size: 0.95rem; line-height: 1.6; color: #374151;
+  }
+  .med-list li::before {
+    content: "•"; position: absolute; left: 6px; color: #9ca3af; font-weight: bold; font-size: 1.2em; top: -2px;
+  }
+  
+  /* Emergency Highlight Box (Card Style) */
+  .call-doctor-box {
+    background: #fff1f2; 
+    border: 1px solid #fda4af; 
+    border-left: 5px solid #e11d48; 
+    padding: 16px;
+    border-radius: 8px; 
+    font-size: 0.95rem; 
+    color: #be123c; 
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(225, 29, 72, 0.1);
+  }
+  .call-doctor-box strong { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    margin-bottom: 8px; 
+    font-size: 1rem; 
+    color: #9f1239;
+  }
+  
+  /* Warning Label for Emergency Row */
+  .med-label-white { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 10px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Mobile Responsive Fixes */
+  @media (max-width: 600px) {
+    .container { padding: 0 10px; }
+    .med-header { padding: 15px; }
+    .med-title-group { gap: 10px; }
+    .med-info h3 { font-size: 1rem; }
+    .med-body { padding: 15px; }
+    .emergency-btn { font-size: 0.8rem; padding: 8px 12px; }
+    .header-section h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR (Standard) -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav"> 
+      <li><a href="homer.html" class="nav-link">Dashboard</a></li>
+      <li><a href="analyzerv2.html" class="nav-link">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link">Consultation</a></li>
+      <li><a href="editaccount.html" class="nav-link">Profile</a></li>
+      <li><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
+    </ul>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link">Dashboard</a>
+      <a href="analyzerv2.html" class="mobile-nav-link">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link">Consultation</a>
+      <div class="mobile-logout"><button onclick="logout()">Logout</button></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="container">
+    
+    <!-- HEADER & SEARCH -->
+    <div class="header-section">
+      <h2>Medical Reference Guide</h2>
+      <p>Trusted first aid protocols and home care advice.</p>
+      
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon" onclick="handleSearch({ type: 'click', key: 'Enter' })"></i>
+        <input type="text" id="searchInput" class="search-box" placeholder="Search conditions (e.g. Heart Attack, Burn, Snake Bite)..." onkeypress="handleSearch(event)">
+      </div>
+    </div>
+
+    <!-- EMERGENCY QUICK ACTIONS (Horizontal Scroll) -->
+    <div class="med-label-white">⚠️ Critical Emergency Protocols</div>
+    <div class="emergency-row">
+      <button class="emergency-btn" onclick="openCondition('Heart Attack')"><i class="fas fa-heart-crack"></i> Heart Attack</button>
+      <button class="emergency-btn" onclick="openCondition('Stroke')"><i class="fas fa-brain"></i> Stroke</button>
+      <button class="emergency-btn" onclick="openCondition('Choking')"><i class="fas fa-hands-holding-circle"></i> Choking</button>
+      <button class="emergency-btn" onclick="openCondition('Severe Bleeding')"><i class="fas fa-droplet"></i> Bleeding</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="filterCategory('all', this)">All</button>
+      <button class="tab-btn" onclick="filterCategory('First Aid', this)">First Aid</button>
+      <button class="tab-btn" onclick="filterCategory('Common Illness', this)">Common Illness</button>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="tips-grid" id="tipsGrid">
+      <!-- Generated by JS -->
+    </div>
+
+  </div>
+</div>
+
+<script src="auth-guard.js"></script>
+<script>
+// --- REALISTIC STATIC DATA ---
+const staticData = [
+  {
+    title: "Heart Attack (Atake sa Puso)",
+    category: "First Aid",
+    subtext: "Chest pain, shortness of breath",
+    icon: "fa-heart-pulse",
+    colorClass: "icon-red",
+    overview: "<strong>A heart attack happens when blood flow to the heart is blocked.</strong> Quick action saves lives.",
+    actions: [
+      "<strong>Call Emergency immediately.</strong> Do not ignore the symptoms.",
+      "<strong>Have the person sit down, rest, and try to keep calm.</strong>",
+      "<strong>Loosen any tight clothing.</strong>",
+      "<strong>If the person is not allergic to aspirin, give them one 325mg aspirin to chew</strong> (chewing works faster than swallowing).",
+      "<strong>Begin CPR</strong> if the person becomes unconscious and stops breathing."
+    ],
+    warnings: [
+      "<strong>Do NOT leave the person alone</strong> except to call for help.",
+      "<strong>Do NOT allow the person to deny the symptoms</strong> and convince you not to call for help."
+    ],
+    redFlags: "<strong>Sudden crushing chest pain, pain radiating to left arm/jaw, cold sweats.</strong>"
+  },
+  {
+    title: "Stroke",
+    category: "First Aid",
+    subtext: "Face drooping, arm weakness",
+    icon: "fa-brain",
+    colorClass: "icon-red",
+    overview: "<strong>Use the FAST method to spot a Stroke:</strong> Face drooping, Arm weakness, Speech difficulty, Time to call emergency.",
+    actions: [
+      "<strong>Call Emergency immediately.</strong> Note the time when symptoms started.",
+      "<strong>Keep the person comfortable and lying down on their side (recovery position)</strong> if unconscious but breathing.",
+      "<strong>Check for breathing and pulse regularly.</strong>",
+      "<strong>Reassure the person</strong> while waiting for the ambulance."
+    ],
+    warnings: [
+      "<strong>Do NOT give them food or water</strong> (they might choke due to swallowing difficulty).",
+      "<strong>Do NOT let them sleep or talk them out of going to the hospital.</strong>"
+    ],
+    redFlags: "<strong>Sudden numbness, confusion, trouble seeing, or severe headache with no known cause.</strong>"
+  },
+  {
+    title: "High Fever (Adults)",
+    category: "Common Illness",
+    subtext: "Temperature > 38°C",
+    icon: "fa-temperature-full",
+    colorClass: "icon-blue",
+    overview: "<strong>Fever is the body's natural defense against infection.</strong> Most low-grade fevers can be managed at home.",
+    actions: [
+      "<strong>Drink plenty of fluids</strong> (water, broth, oral rehydration salts) to prevent dehydration.",
+      "<strong>Rest is crucial.</strong> Avoid strenuous activities.",
+      "<strong>Dress in light clothing.</strong> Use a light blanket if chilling.",
+      "<strong>Take Paracetamol (500mg) every 4-6 hours</strong> for temperature > 38.5°C or discomfort."
+    ],
+    warnings: [
+      "<strong>Avoid alcohol baths or ice baths</strong> (can cause shivering which raises temp).",
+      "<strong>Do not bundle up in heavy blankets.</strong>"
+    ],
+    redFlags: "<strong>Difficulty breathing, severe headache, neck stiffness, confusion, or fever lasting more than 3 days.</strong>"
+  },
+  {
+    title: "Burns (Minor)",
+    category: "First Aid",
+    subtext: "Redness, mild swelling",
+    icon: "fa-fire",
+    colorClass: "icon-green",
+    overview: "<strong>First-degree burns affect only the outer layer of skin.</strong> They cause pain, redness, and swelling.",
+    actions: [
+      "<strong>Run cool (not cold) tap water over the burn</strong> for 10-20 minutes.",
+      "<strong>Remove rings or tight items</strong> from the burned area immediately before swelling starts.",
+      "<strong>Apply a moisturizer or aloe vera gel/lotion.</strong>",
+      "<strong>Cover the burn with a sterile gauze bandage loosely.</strong>"
+    ],
+    warnings: [
+      "<strong>Do NOT use ice directly on the burn</strong> (can damage tissue).",
+      "<strong>Do NOT apply butter, toothpaste, or egg whites.</strong>",
+      "<strong>Do NOT break blisters.</strong>"
+    ],
+    redFlags: "<strong>Signs of infection (oozing, increased redness), or if the burn covers a large area (hands, face, groin).</strong>"
+  },
+  {
+    title: "Hypertension Spike",
+    category: "Common Illness",
+    subtext: "High Blood Pressure",
+    icon: "fa-droplet",
+    colorClass: "icon-blue",
+    overview: "<strong>A sudden rise in BP.</strong> If BP is >180/120, it is a hypertensive crisis.",
+    actions: [
+      "<strong>Sit down and try to relax.</strong> Deep breathing can help.",
+      "<strong>Take your prescribed maintenance medication</strong> if you missed a dose.",
+      "<strong>Wait 5 minutes and check BP again.</strong>",
+      "<strong>Avoid coffee, salty foods, or cigarettes immediately.</strong>"
+    ],
+    warnings: [
+      "<strong>Do not panic,</strong> as anxiety raises BP further."
+    ],
+    redFlags: "<strong>BP > 180/120 accompanied by chest pain, shortness of breath, back pain, numbness/weakness, or change in vision.</strong>"
+  },
+  {
+    title: "Severe Bleeding",
+    category: "First Aid",
+    subtext: "Deep cuts, rapid blood loss",
+    icon: "fa-droplet",
+    colorClass: "icon-red",
+    overview: "<strong>Severe bleeding can be life-threatening.</strong> Control the bleeding immediately.",
+    actions: [
+        "<strong>Apply direct pressure on the wound</strong> using a clean cloth or gauze.",
+        "<strong>Keep pressure applied continuously.</strong> Do NOT check the wound.",
+        "<strong>If blood soaks through, add more layers on top.</strong>",
+        "<strong>Elevate the wound above the heart</strong> if possible.",
+        "<strong>Call Emergency immediately.</strong>"
+    ],
+    warnings: [
+        "<strong>Do NOT remove the original dressing</strong> if soaked; just add more.",
+        "<strong>Do NOT use a tourniquet</strong> unless you are trained."
+    ],
+    redFlags: "<strong>Blood spurting out, person becoming pale/cold (shock), bleeding won't stop after 10 minutes.</strong>"
+  },
+  {
+    title: "Choking",
+    category: "First Aid",
+    subtext: "Cannot breathe or speak",
+    icon: "fa-hands-holding-circle",
+    colorClass: "icon-red",
+    overview: "<strong>Airway blockage.</strong> Immediate action (Heimlich Maneuver) is needed.",
+    actions: [
+        "<strong>Stand behind the person and wrap arms around their waist.</strong>",
+        "<strong>Make a fist with one hand; place it just above the navel.</strong>",
+        "<strong>Grab the fist with the other hand and press inward and upward.</strong>",
+        "<strong>Repeat thrusts until the object pops out.</strong>",
+        "<strong>If unconscious, start CPR.</strong>"
+    ],
+    warnings: [
+        "<strong>Do NOT slap them on the back</strong> if they are coughing (let them cough it out)."
+    ],
+    redFlags: "<strong>Lips turning blue, loss of consciousness.</strong>"
+  }
+];
+
+let currentDisplayData = [...staticData];
+
+// --- RENDER LOGIC ---
+function renderTips(data) {
+  const container = document.getElementById('tipsGrid');
+  
+  if(data.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color: white;">No guides found. Try searching AI.</div>';
+      return;
+  }
+
+  container.innerHTML = data.map((item, index) => `
+    <div class="med-card">
+      <div class="med-header" onclick="toggleMed(${index})">
+        <div class="med-title-group">
+          <div class="med-icon-box ${item.colorClass || 'icon-blue'}">
+            <i class="fas ${item.icon || 'fa-notes-medical'}"></i>
+          </div>
+          <div class="med-info">
+            <h3>${item.title}</h3>
+            <p>${item.subtext}</p>
+          </div>
+        </div>
+        <i class="fas fa-chevron-down" id="icon-${index}" style="color:#9ca3af; transition: 0.3s"></i>
+      </div>
+      
+      <div class="med-content" id="content-${index}">
+        <div class="med-body">
+          <p style="margin-bottom: 25px; color:#4b5563; font-size: 1rem; line-height: 1.6;">${item.overview}</p>
+          
+          <div class="med-section">
+            <span class="med-label label-action"><i class="fas fa-check-circle"></i> Immediate Actions (Do's)</span>
+            <ul class="med-list">
+              ${(item.actions || []).map(act => `<li>${act}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="med-section">
+            <span class="med-label label-warning"><i class="fas fa-times-circle"></i> Avoid (Don'ts)</span>
+            <ul class="med-list">
+              ${(item.warnings || []).map(warn => `<li>${warn}</li>`).join('')}
+            </ul>
+          </div>
+
+          ${item.redFlags ? `
+            <div class="call-doctor-box">
+              <strong><i class="fas fa-phone-volume"></i> Seek Medical Help If:</strong>
+              <div style="line-height: 1.6;">${item.redFlags}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- TOGGLE FUNCTION ---
+function toggleMed(index) {
+  const content = document.getElementById(`content-${index}`);
+  const icon = document.getElementById(`icon-${index}`);
+  
+  // Close all others
+  const isClosed = !content.style.maxHeight;
+  document.querySelectorAll('.med-content').forEach(el => el.style.maxHeight = null);
+  document.querySelectorAll('.fa-chevron-down').forEach(el => el.style.transform = "rotate(0deg)");
+
+  if (isClosed) {
+    content.style.maxHeight = content.scrollHeight + "px";
+    icon.style.transform = "rotate(180deg)";
+    
+    // Smooth scroll to card after small delay to let it expand
+    setTimeout(() => {
+        const header = content.previousElementSibling;
+        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+}
+
+// --- AI SEARCH FUNCTION ---
+async function handleSearch(event) {
+    if (event.key !== 'Enter' && event.type !== 'click') return;
+    
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) {
+        currentDisplayData = [...staticData];
+        renderTips(currentDisplayData);
+        return;
+    }
+
+    // 1. Search Local First
+    const localMatch = staticData.filter(item => 
+        item.title.toLowerCase().includes(query.toLowerCase()) || 
+        item.overview.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (localMatch.length > 0) {
+        currentDisplayData = localMatch;
+        renderTips(localMatch);
+        return;
+    }
+
+    // 2. Ask AI if not found locally
+    const container = document.getElementById('tipsGrid');
+    container.innerHTML = `
+        <div style="text-align:center; padding: 40px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: white;"></i>
+            <p style="margin-top:15px; color:white;">Consulting GabayAI knowledge base for "${query}"...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('http://localhost:5000/first-aid', { // Ensure port matches server
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        });
+
+        const aiData = await response.json();
+        
+        // Add specific tag to AI result
+        const newTip = {
+            ...aiData,
+            category: "AI Generated",
+            // Fallbacks for UI safety
+            icon: aiData.icon || "fa-user-doctor",
+            colorClass: aiData.colorClass || "icon-blue"
+        };
+        
+        // Display AI result
+        renderTips([newTip]);
+        
+    } catch (error) {
+        console.error(error);
+        const container = document.getElementById('tipsGrid');
+        container.innerHTML = `
+            <div style="text-align:center; padding:20px; color:#ffcccc;">
+                <i class="fas fa-exclamation-circle"></i> Failed to retrieve AI advice. Please try again.
+            </div>`;
+    }
+}
+
+// --- FILTER TABS ---
+function filterCategory(cat, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const filtered = cat === 'all' ? staticData : staticData.filter(i => i.category === cat);
+  renderTips(filtered);
+}
+
+// --- OPEN FROM EMERGENCY BUTTONS ---
+function openCondition(name) {
+  const query = name.toLowerCase();
+  const index = staticData.findIndex(item => item.title.toLowerCase().includes(query));
+  
+  if (index !== -1) {
+    renderTips(staticData); // Reset view
+    setTimeout(() => {
+        toggleMed(index);
+        document.getElementById(`content-${index}`).scrollIntoView({behavior: "smooth", block: "center"});
+    }, 100);
+  }
+}
+
+// Initialize
+renderTips(staticData);
+
+// Navbar Logic
+function logout() { if (confirm('Are you sure?')) window.location.href = 'user_logout.php'; }
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('show');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+    const m = document.getElementById('mobileMenu');
+    const b = document.querySelector('.mobile-menu-btn');
+    if (b && !b.contains(e.target) && !m.contains(e.target)) {
+        m.classList.remove('show');
+        document.getElementById('hamburger').classList.remove('open');
+    }
+});
+</script>
+</body>
+</html>

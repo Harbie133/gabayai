@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Doctor Dashboard & Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    background: #174374;
+    color: white;
+    width: 250px;
+    min-width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 28px 0;
+    z-index: 1200;
+    transition: transform 0.3s ease;
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-left: 30px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  .sidebar nav {
+    flex: 1;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 13px 30px;
+    text-decoration: none;
+    color: #e1e8f0;
+    font-size: 1.07rem;
+    border-left: 4px solid transparent;
+    transition: background 0.15s, border-left-color 0.15s;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: #0e2c4a;
+    border-left-color: #16a085;
+    color: white;
+  }
+  .sidebar .logout {
+    margin-left: 30px;
+    color: #e57373;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  /* Hamburger button */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    cursor: pointer;
+    z-index: 1300; /* above sidebar */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    padding: 4px;
+    user-select: none;
+  }
+  @media (min-width: 901px) {
+    .hamburger {
+      display: none;
+    }
+  }
+  .hamburger div {
+    background: #000000;
+    border-radius: 2px;
+    height: 4px;
+    transition: all 0.4s ease;
+    transform-origin: center;
+    width: 100%;
+  }
+  /* New wave style animation */
+  .hamburger.active div:nth-child(1) {
+    width: 70%;
+    transform: translateY(6px);
+  }
+  .hamburger.active div:nth-child(2) {
+    width: 100%;
+    opacity: 0.6;
+  }
+  .hamburger.active div:nth-child(3) {
+    width: 50%;
+    transform: translateY(-6px);
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 36px 3vw 3vw 3vw;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    background: #f7fafc;
+  }
+  .main-content.full-width {
+    margin-left: 0;
+  }
+  /* Profile page styles */
+  .profile-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #174374;
+    margin-bottom: 24px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(210px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    min-height: 140px;
+    padding: 18px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-left: 5px solid #16a085;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .card-icon {
+    font-size: 2.8rem;
+    color: #16a085;
+    margin-bottom: 12px;
+  }
+  .card-content h3 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #2389c7;
+  }
+  /* Dashboard styles */
+  .dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .dashboard-header h1 {
+    font-size: 2rem;
+    color: #174374;
+    font-weight: 700;
+    margin: 0;
+  }
+  .dashboard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+    margin-bottom: 10px;
+  }
+  .dashboard-card {
+    background: #fff;
+    border-radius: 11px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 24px 22px;
+    min-width: 220px;
+    flex: 1 1 230px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 5px solid #16a085;
+  }
+  .dashboard-card h3 {
+    margin: 0 0 6px 0;
+    color: #2389c7;
+    font-size: 1.13rem;
+  }
+  .dashboard-card p {
+    margin: 0;
+    font-size: 1.9rem;
+    color: #174374;
+    font-weight: bold;
+  }
+  .dashboard-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 24px 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.05);
+    margin-bottom: 22px;
+  }
+  .dashboard-section h2 {
+    margin: 0 0 18px 0;
+    font-size: 1.2rem;
+    color: #16a085;
+  }
+  /* Responsive */
+  @media(max-width: 900px) {
+    .sidebar {
+      transform: translateX(-260px);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      left: 0;
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 20px 15px;
+    }
+    .dashboard-cards {
+      flex-direction: column;
+      gap: 1vw;
+    }
+  }
+  @media(max-width: 600px) {
+    body, .main-content { padding: 0;}
+    .dashboard-section { padding: 16px 8px; }
+    .dashboard-cards { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="logo">MEDI<span style="color:#16a085;">Care</span></div>
+    <nav>
+      <a href="DoctorDashboard.html" class="active">Dashboard</a>
+      <a href="DoctorProfile.html">Profile</a>
+      <a href="patients.html">Patients</a>
+      <a href="SymptomAnalysis.html">Symptom Analysis</a>
+      <a href="#">Teleconsultation</a>
+      <a href="notifications.html">Notifications</a>
+
+
+ 
+    </nav>
+    <div class="logout" onclick="alert('Logging out...')">Logout</div>
+  </div>
+
+  <div class="hamburger" id="hamburger" aria-label="Toggle Menu" role="button" tabindex="0">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <div class="dashboard-header">
+      <h1>Doctor Dashboard</h1>
+      <div><!-- Additional header content --></div>
+    </div>
+    <div class="dashboard-cards">
+      <div class="dashboard-card">
+        <h3>Patients</h3>
+        <p>32</p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Upcoming Appointments</h3>
+        <p>4</p>
+      </div>
+      <div class="dashboard-card">
+        <h3>New Reports</h3>
+        <p>2</p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Pending Prescriptions</h3>
+        <p>1</p>
+      </div>
+    </div>
+    <div class="dashboard-section">
+      <h2>Quick Actions</h2>
+      <ul>
+        <li>✔️ Review new symptom analysis reports</li>
+        <li>✔️ Check medication approval requests</li>
+        <li>✔️ Join next teleconsultation</li>
+        <li>✔️ View recent patient feedback</li>
+      </ul>
+    </div>
+    <div class="dashboard-section">
+      <h2>Recent Activities</h2>
+      <ul>
+        <li>Patient <strong>John Doe</strong> submitted symptoms for review.</li>
+        <li>Prescription approved for <strong>Jane Smith</strong>.</li>
+        <li>Consultation with <strong>Mary Lee</strong> scheduled for today 3PM.</li>
+        <li>Received follow-up alert for <strong>David Tan</strong>.</li>
+      </ul>
+    </div>
+    <div class="dashboard-section">
+      <h2>Analytics Snapshot</h2>
+      <ul>
+        <li>Most common symptom: <strong>Headache</strong></li>
+        <li>Most prescribed medicine: <strong>Paracetamol</strong></li>
+        <li>Patient rating average: <strong>4.7⭐</strong></li>
+      </ul>
+    </div>
+
+   
+  </div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  const mainContent = document.getElementById('mainContent');
+
+  function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    mainContent.classList.toggle('full-width');
+  }
+
+  hamburger.addEventListener('click', toggleSidebar);
+  hamburger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+</script>
+</body>
+</html>

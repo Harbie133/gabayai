@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>All Patients</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    background: #174374;
+    color: white;
+    width: 250px;
+    min-width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-left: 30px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  .sidebar nav a {
+    color: #e1e8f0;
+    padding: 13px 30px;
+    text-decoration: none;
+    display: block;
+    border-left: 4px solid transparent;
+    transition: background 0.15s, border-left-color 0.15s;
+    font-size: 1.07rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: #0e2c4a;
+    border-left-color: #16a085;
+    color: white;
+  }
+  .sidebar .logout {
+    margin-top: auto;
+    margin-left: 30px;
+    color: #e57373;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  /* Hamburger button */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    cursor: pointer;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    padding: 4px;
+  }
+  @media (min-width: 901px) {
+    .hamburger {
+      display: none;
+    }
+  }
+  .hamburger div {
+    background: #000000;
+    border-radius: 2px;
+    height: 4px;
+    transition: all 0.4s ease;
+    transform-origin: center;
+    width: 100%;
+  }
+  .hamburger.active div:nth-child(1) {
+    width: 70%;
+    transform: translateY(6px);
+  }
+  .hamburger.active div:nth-child(2) {
+    width: 100%;
+    opacity: 0.6;
+  }
+  .hamburger.active div:nth-child(3) {
+    width: 50%;
+    transform: translateY(-6px);
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 36px 3vw 3vw 3vw;
+    transition: margin-left 0.3s ease;
+  }
+  .main-content.full-width {
+    margin-left: 0;
+  }
+  .back-button {
+    background: none;
+    border: none;
+    color: #16a085;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .profile-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #174374;
+    margin-bottom: 24px;
+  }
+  /* Search section */
+  .search-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+    transition: border-color 0.3s ease;
+  }
+  .search-box input:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  /* Patients grid */
+  .patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .patient-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-left: 5px solid #16a085;
+    transition: box-shadow 0.3s ease;
+  }
+  .patient-card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .patient-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #16a085;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+  .patient-info {
+    flex: 1;
+  }
+  .patient-info h3 {
+    margin: 0 0 4px 0;
+    color: #174374;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .patient-info p {
+    margin: 2px 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  .patient-status {
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .status-active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .status-inactive {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  /* Patient stats */
+  .patient-stats {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  .stat-item h3 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #174374;
+    font-weight: 700;
+  }
+  .stat-item p {
+    margin: 4px 0 0 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  /* Responsive */
+  @media(max-width: 900px) {
+    .sidebar {
+      transform: translateX(-260px);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 20px 15px;
+    }
+    .patients-grid {
+      grid-template-columns: 1fr;
+    }
+    .patient-stats {
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+  <div class="logo">MEDI<span style="color:#16a085;">Care</span></div>
+  <nav>
+    <a href="DoctorDashboard.html">Dashboard</a>
+    <a href="DoctorProfile.html">Profile</a>
+    <a href="patients.html" class="active">Patients</a>
+    <a href="#">Symptom Analysis</a>
+    <a href="#">Medication/Prescriptions</a>
+    <a href="#">Teleconsultation</a>
+
+  </nav>
+  <div class="logout">Logout</div>
+</div>
+<div class="hamburger" id="hamburger" aria-label="Toggle Menu" role="button" tabindex="0">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+<div class="main-content" id="mainContent">
+  <button class="back-button" onclick="history.back()" aria-label="Go back to previous page">← Back</button>
+  <div class="profile-header">All Patients</div>
+  
+  <div class="patient-stats">
+    <div class="stat-item">
+      <h3>32</h3>
+      <p>Total Patients</p>
+    </div>
+    <div class="stat-item">
+      <h3>28</h3>
+      <p>Active</p>
+    </div>
+    <div class="stat-item">
+      <h3>4</h3>
+      <p>Follow-up</p>
+    </div>
+    <div class="stat-item">
+      <h3>7</h3>
+      <p>This Week</p>
+    </div>
+  </div>
+
+  <div class="search-section">
+    <div class="search-box">
+      <input type="text" placeholder="Search patients by name or ID..." id="searchInput">
+    </div>
+  </div>
+
+  <div class="patients-grid" id="patientsGrid">
+    <div class="patient-card" onclick="alert('View John Doe details')">
+      <div class="patient-avatar">JD</div>
+      <div class="patient-info">
+        <h3>John Doe</h3>
+        <p>ID: #P001 • Age: 45</p>
+        <p>Last Visit: 2 days ago</p>
+        <p>Condition: Hypertension</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Jane Smith details')">
+      <div class="patient-avatar">JS</div>
+      <div class="patient-info">
+        <h3>Jane Smith</h3>
+        <p>ID: #P002 • Age: 32</p>
+        <p>Last Visit: 1 week ago</p>
+        <p>Condition: Diabetes</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Mary Lee details')">
+      <div class="patient-avatar">ML</div>
+      <div class="patient-info">
+        <h3>Mary Lee</h3>
+        <p>ID: #P003 • Age: 28</p>
+        <p>Last Visit: 3 days ago</p>
+        <p>Condition: Migraine</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View David Tan details')">
+      <div class="patient-avatar">DT</div>
+      <div class="patient-info">
+        <h3>David Tan</h3>
+        <p>ID: #P004 • Age: 52</p>
+        <p>Last Visit: 2 weeks ago</p>
+        <p>Condition: Arthritis</p>
+      </div>
+      <div class="patient-status status-inactive">Follow-up</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Sarah Wilson details')">
+      <div class="patient-avatar">SW</div>
+      <div class="patient-info">
+        <h3>Sarah Wilson</h3>
+        <p>ID: #P005 • Age: 39</p>
+        <p>Last Visit: 5 days ago</p>
+        <p>Condition: Asthma</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Robert Chen details')">
+      <div class="patient-avatar">RC</div>
+      <div class="patient-info">
+        <h3>Robert Chen</h3>
+        <p>ID: #P006 • Age: 61</p>
+        <p>Last Visit: 1 day ago</p>
+        <p>Condition: Heart Disease</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Lisa Park details')">
+      <div class="patient-avatar">LP</div>
+      <div class="patient-info">
+        <h3>Lisa Park</h3>
+        <p>ID: #P007 • Age: 35</p>
+        <p>Last Visit: 4 days ago</p>
+        <p>Condition: Anxiety</p>
+      </div>
+      <div class="patient-status status-active">Active</div>
+    </div>
+
+    <div class="patient-card" onclick="alert('View Michael Brown details')">
+      <div class="patient-avatar">MB</div>
+      <div class="patient-info">
+        <h3>Michael Brown</h3>
+        <p>ID: #P008 • Age: 48</p>
+        <p>Last Visit: 1 week ago</p>
+        <p>Condition: Back Pain</p>
+      </div>
+      <div class="patient-status status-inactive">Follow-up</div>
+    </div>
+
+  </div>
+</div>
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  const mainContent = document.getElementById('mainContent');
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    mainContent.classList.toggle('full-width');
+  }
+  
+  hamburger.addEventListener('click', toggleSidebar);
+  hamburger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+
+  // Search functionality
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const patientCards = document.querySelectorAll('.patient-card');
+    
+    patientCards.forEach(card => {
+      const patientName = card.querySelector('h3').textContent.toLowerCase();
+      const patientId = card.querySelector('p').textContent.toLowerCase();
+      
+      if (patientName.includes(searchTerm) || patientId.includes(searchTerm)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+</script>
+</body>
+</html>

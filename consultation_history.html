@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Consultation History - Doctor Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    color: #2d3748;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar Styling */
+  .sidebar {
+    background: #3d5a80;
+    color: white;
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    z-index: 1200;
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.6rem;
+    padding: 30px 25px 20px 25px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar .logo span {
+    color: #98c1d9;
+  }
+  .sidebar nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 25px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .sidebar nav a i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: rgba(255,255,255,0.1);
+    border-left-color: #98c1d9;
+    color: white;
+  }
+  .sidebar .logout {
+    padding: 20px 25px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.9);
+  }
+  .sidebar .logout:hover {
+    background: rgba(0,0,0,0.2);
+    color: #ff6b6b;
+  }
+
+  /* Hamburger Menu */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    z-index: 1300;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hamburger div {
+    background: #3d5a80;
+    border-radius: 2px;
+    height: 3px;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 0;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.6rem;
+    color: #3d5a80;
+    font-weight: 600;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    color: #4a5568;
+  }
+  .user-info i {
+    font-size: 1.8rem;
+    color: #3d5a80;
+  }
+
+  /* Content Area */
+  .content-area {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Back Button */
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: white;
+    color: #3d5a80;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+  }
+  .back-button:hover {
+    background: #3d5a80;
+    color: white;
+    transform: translateX(-3px);
+  }
+
+  /* Search and Filter Section */
+  .search-filter-section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 25px;
+  }
+  .search-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .form-group label {
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .form-group input,
+  .form-group select {
+    padding: 12px 15px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #2d3748;
+    transition: all 0.2s ease;
+  }
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #3d5a80;
+    box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.1);
+  }
+  .btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+  }
+  .btn-secondary:hover {
+    background: #cbd5e0;
+  }
+
+  /* Consultation Timeline */
+  .consultation-container {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .consultation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .consultation-header h2 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    font-weight: 600;
+  }
+  .result-count {
+    font-size: 0.9rem;
+    color: #718096;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #e2e8f0;
+  }
+  .consultation-item {
+    position: relative;
+    margin-bottom: 30px;
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 25px;
+    border-left: 4px solid #3d5a80;
+    transition: all 0.3s ease;
+  }
+  .consultation-item:hover {
+    box-shadow: 0 4px 12px rgba(61, 90, 128, 0.1);
+    transform: translateX(5px);
+  }
+  .consultation-item::before {
+    content: '';
+    position: absolute;
+    left: -44px;
+    top: 30px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3d5a80;
+    border: 4px solid white;
+    box-shadow: 0 0 0 3px #e2e8f0;
+  }
+
+  .consultation-date {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #718096;
+    font-size: 0.9rem;
+  }
+  .consultation-date i {
+    color: #3d5a80;
+  }
+  .consultation-date strong {
+    color: #3d5a80;
+    font-size: 1rem;
+  }
+
+  .patient-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .patient-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #3d5a80, #293a52);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  .patient-details h3 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 3px;
+  }
+  .patient-details p {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+
+  .consultation-details {
+    display: grid;
+    gap: 15px;
+  }
+  .detail-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  .detail-section h4 {
+    font-size: 0.9rem;
+    color: #3d5a80;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .detail-section p {
+    font-size: 0.9rem;
+    color: #4a5568;
+    line-height: 1.6;
+  }
+
+  .consultation-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .btn-action {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-view {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  .btn-view:hover {
+    background: #0369a1;
+    color: white;
+  }
+  .btn-prescription {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+  .btn-prescription:hover {
+    background: #7c3aed;
+    color: white;
+  }
+  .btn-print {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .btn-print:hover {
+    background: #065f46;
+    color: white;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+  }
+  .empty-state h3 {
+    font-size: 1.3rem;
+    color: #4a5568;
+    margin-bottom: 10px;
+  }
+  .empty-state p {
+    color: #718096;
+    font-size: 0.95rem;
+  }
+
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
+  .spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3d5a80;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .search-controls {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hamburger {
+      display: flex;
+    }
+    .sidebar {
+      transform: translateX(-260px);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+    }
+    .search-controls {
+      grid-template-columns: 1fr;
+    }
+    .timeline {
+      padding-left: 20px;
+    }
+    .timeline::before {
+      left: 0;
+    }
+    .consultation-item::before {
+      left: -24px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .content-area {
+      padding: 15px;
+    }
+    .consultation-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo">MEDI<span>Care</span></div>
+    <nav>
+      <a href="doctor_dashboard.html">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a href="doctor_profile.html">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <a href="doctor_patients.html" class="active">
+        <i class="fas fa-users"></i> Patients
+      </a>
+      <a href="#">
+        <i class="fas fa-heartbeat"></i> Symptom Analysis
+      </a>
+      <a href="#">
+        <i class="fas fa-video"></i> Teleconsultation
+      </a>
+      <a href="#">
+        <i class="fas fa-bell"></i> Notifications
+      </a>
+    </nav>
+    <div class="logout" onclick="location.href='doctor_logout.php'">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <div class="hamburger" id="hamburger">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <h1>Consultation History</h1>
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>Dr. <span class="user-name" id="username">...</span></span>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      <!-- Back Button -->
+      <a href="doctor_patients.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Patient Management
+      </a>
+
+      <!-- Search and Filter Section -->
+      <div class="search-filter-section">
+        <div class="search-controls">
+          <div class="form-group">
+            <label for="searchInput">Search by Patient Name</label>
+            <input type="text" id="searchInput" placeholder="Enter patient name...">
+          </div>
+          <div class="form-group">
+            <label for="monthFilter">Month</label>
+            <select id="monthFilter">
+              <option value="">All Months</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="yearFilter">Year</label>
+            <select id="yearFilter">
+              <option value="">All Years</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="clearFilters()">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Consultation Container -->
+      <div class="consultation-container">
+        <div class="consultation-header">
+          <h2>Consultation Records</h2>
+          <span class="result-count" id="resultCount">Loading...</span>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-container">
+          <div>
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #718096; text-align: center;">Loading consultations...</p>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div id="consultationTimeline" class="timeline" style="display: none;">
+          <!-- Consultation items will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <i class="fas fa-history"></i>
+          <h3>No Consultations Found</h3>
+          <p>No consultation records match your search criteria</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  
+  hamburger.addEventListener('click', function() {
+    sidebar.classList.toggle('show');
+  });
+
+  let allConsultations = [];
+  let filteredConsultations = [];
+
+  // Fetch doctor session
+  window.addEventListener('DOMContentLoaded', function() {
+    fetch('get_doctor_session.php')
+      .then(response => response.json())
+      .then(data => {
+        if (data.logged_in) {
+          document.getElementById('username').textContent = data.username;
+          loadConsultations();
+        } else {
+          window.location.href = 'doctor_login.html';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        window.location.href = 'doctor_login.html';
+      });
+  });
+
+  // Load consultations
+  function loadConsultations() {
+    fetch('get_consultations.php')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          allConsultations = data.consultations;
+          filteredConsultations = allConsultations;
+          displayConsultations(filteredConsultations);
+        } else {
+          showEmptyState();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showEmptyState();
+      });
+  }
+
+  // Display consultations
+  function displayConsultations(consultations) {
+    document.getElementById('loadingState').style.display = 'none';
+    
+    if (consultations.length === 0) {
+      showEmptyState();
+      return;
+    }
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('consultationTimeline').style.display = 'block';
+    document.getElementById('resultCount').textContent = `${consultations.length} consultation${consultations.length !== 1 ? 's' : ''}`;
+
+    const timeline = document.getElementById('consultationTimeline');
+    timeline.innerHTML = '';
+
+    consultations.forEach(consultation => {
+      const initials = consultation.patient_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      const item = document.createElement('div');
+      item.className = 'consultation-item';
+      
+      item.innerHTML = `
+        <div class="consultation-date">
+          <i class="fas fa-calendar"></i>
+          <strong>${consultation.date}</strong> at ${consultation.time}
+        </div>
+
+        <div class="patient-info">
+          <div class="patient-avatar">${initials}</div>
+          <div class="patient-details">
+            <h3>${consultation.patient_name}</h3>
+            <p>Patient ID: ${consultation.patient_id}</p>
+          </div>
+        </div>
+
+        <div class="consultation-details">
+          <div class="detail-section">
+            <h4><i class="fas fa-stethoscope"></i> Chief Complaint</h4>
+            <p>${consultation.chief_complaint || 'Not specified'}</p>
+          </div>
+
+          <div class="detail-section">
+            <h4><i class="fas fa-diagnoses"></i> Diagnosis</h4>
+            <p>${consultation.diagnosis || 'Not specified'}</p>
+          </div>
+
+          <div class="detail-section">
+            <h4><i class="fas fa-prescription"></i> Prescription</h4>
+            <p>${consultation.prescription || 'No prescription provided'}</p>
+          </div>
+
+          <div class="detail-section">
+            <h4><i class="fas fa-notes-medical"></i> Notes</h4>
+            <p>${consultation.notes || 'No additional notes'}</p>
+          </div>
+        </div>
+
+        <div class="consultation-actions">
+          <button class="btn-action btn-view" onclick="viewConsultation('${consultation.id}')">
+            <i class="fas fa-eye"></i> View Details
+          </button>
+          <button class="btn-action btn-prescription" onclick="viewPrescription('${consultation.id}')">
+            <i class="fas fa-file-prescription"></i> Prescription
+          </button>
+          <button class="btn-action btn-print" onclick="printConsultation('${consultation.id}')">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      `;
+
+      timeline.appendChild(item);
+    });
+  }
+
+  // Show empty state
+  function showEmptyState() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('consultationTimeline').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('resultCount').textContent = 'No consultations found';
+  }
+
+  // Filter consultations
+  function filterConsultations() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const monthFilter = document.getElementById('monthFilter').value;
+    const yearFilter = document.getElementById('yearFilter').value;
+
+    filteredConsultations = allConsultations.filter(consultation => {
+      const matchesSearch = consultation.patient_name.toLowerCase().includes(searchTerm);
+      const matchesMonth = !monthFilter || consultation.month === monthFilter;
+      const matchesYear = !yearFilter || consultation.year === yearFilter;
+      
+      return matchesSearch && matchesMonth && matchesYear;
+    });
+
+    displayConsultations(filteredConsultations);
+  }
+
+  // Clear filters
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('monthFilter').value = '';
+    document.getElementById('yearFilter').value = '';
+    filteredConsultations = allConsultations;
+    displayConsultations(filteredConsultations);
+  }
+
+  // Event listeners for filters
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchInput').addEventListener('input', filterConsultations);
+    document.getElementById('monthFilter').addEventListener('change', filterConsultations);
+    document.getElementById('yearFilter').addEventListener('change', filterConsultations);
+  });
+
+  // Action functions
+  function viewConsultation(id) {
+    window.location.href = `view_consultation.html?id=${id}`;
+  }
+
+  function viewPrescription(id) {
+    window.open(`view_prescription.php?id=${id}`, '_blank');
+  }
+
+  function printConsultation(id) {
+    window.open(`print_consultation.php?id=${id}`, '_blank');
+  }
+</script>
+</body>
+</html>

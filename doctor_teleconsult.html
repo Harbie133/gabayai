@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teleconsultation - Doctor Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      height:100%;
+    }
+    body{
+      font-family:'Segoe UI',Arial,sans-serif;
+      background:linear-gradient(135deg,#f5f7fa 0%,#e4e8ec 100%);
+      color:#2d3748;
+      display:flex;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      background:#3d5a80;
+      color:#fff;
+      width:260px;
+      height:100vh;
+      position:fixed;
+      top:0;left:0;
+      display:flex;
+      flex-direction:column;
+      padding:0;
+      z-index:1200;
+      box-shadow:2px 0 10px rgba(0,0,0,.1);
+    }
+    .sidebar .logo{
+      font-weight:800;
+      font-size:1.6rem;
+      padding:30px 25px 20px;
+      letter-spacing:1px;
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
+    .sidebar .logo span{color:#98c1d9}
+    .sidebar nav{flex:1;padding:20px 0;overflow-y:auto}
+    .sidebar nav a{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 25px;
+      text-decoration:none;
+      color:rgba(255,255,255,.8);
+      font-size:.95rem;
+      border-left:3px solid transparent;
+      transition:all .2s ease;
+    }
+    .sidebar nav a i{width:20px;text-align:center;font-size:1.1rem}
+    .sidebar nav a:hover,
+    .sidebar nav a.active{
+      background:rgba(255,255,255,.1);
+      border-left-color:#98c1d9;
+      color:#fff;
+    }
+    .sidebar .logout{
+      padding:20px 25px;
+      border-top:1px solid rgba(255,255,255,.1);
+      cursor:pointer;
+      transition:background .2s;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:rgba(255,255,255,.9);
+    }
+    .sidebar .logout:hover{
+      background:rgba(0,0,0,.2);
+      color:#ff6b6b;
+    }
+
+    .main-content{
+      flex:1;
+      margin-left:260px;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .top-bar{
+      background:#fff;
+      padding:16px 24px;
+      box-shadow:0 2px 4px rgba(0,0,0,.05);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      z-index:100;
+    }
+    .top-bar h1{
+      font-size:1.6rem;
+      color:#3d5a80;
+      font-weight:600;
+    }
+    .user-info{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:1rem;
+      color:#4a5568;
+    }
+    .user-info i{font-size:1.8rem;color:#3d5a80}
+
+    .content-area{
+      flex:1;
+      padding:20px 30px 24px;
+      max-width:1200px;
+      width:100%;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .today-banner{
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      color:#fff;
+      padding:14px 18px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-shrink:0;
+    }
+    .today-banner i{font-size:1.6rem}
+    .today-banner h3{font-size:1.2rem;margin-bottom:4px}
+    .today-banner p{opacity:.9;font-size:.9rem}
+
+    /* CHAT LAYOUT FIXED HEIGHT */
+    .chat-layout{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:260px minmax(0,3.2fr) minmax(0,1.7fr);
+      gap:0;
+      align-items:stretch;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid #e2e8f0;
+      background:#fff;
+    }
+
+    @media(max-width:1100px){
+      .chat-layout{
+        grid-template-columns:240px minmax(0,3fr);
+      }
+      .side-panel{display:none;}
+    }
+    @media(max-width:800px){
+      .main-content{
+        margin-left:0;
+      }
+      .sidebar{
+        display:none;
+      }
+      .content-area{
+        padding:12px;
+      }
+      .chat-layout{
+        grid-template-columns:minmax(0,1fr);
+      }
+      .conversation-list{
+        height:220px;
+      }
+    }
+
+    .conversation-list{
+      border-right:1px solid #e5e7eb;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .conv-header{
+      padding:10px 12px;
+      border-bottom:1px solid #e5e7eb;
+      font-size:.85rem;
+      font-weight:600;
+      color:#4b5563;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-shrink:0;
+    }
+    .conv-items{flex:1;overflow-y:auto;}
+    .conv-empty{
+      font-size:.85rem;
+      color:#9ca3af;
+      text-align:center;
+      padding:24px 8px;
+    }
+    .conv-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .conv-item:hover{background:#f3f4f6;}
+    .conv-item.active{background:#e5edff;}
+    .conv-avatar{
+      width:32px;height:32px;border-radius:999px;
+      object-fit:cover;background:#e5e7eb;flex-shrink:0;
+    }
+    .conv-main{min-width:0;flex:1;}
+    .conv-name{
+      font-size:.86rem;
+      font-weight:500;
+      color:#111827;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+    .conv-preview{
+      font-size:.78rem;
+      color:#6b7280;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+    .conv-meta{
+      font-size:.72rem;
+      color:#9ca3af;
+      text-align:right;
+    }
+    .conv-status-pill{
+      display:inline-block;
+      margin-top:2px;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:.7rem;
+      background:#f3f4ff;
+      color:#4c6ef5;
+    }
+
+    .chat-panel{
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .chat-log{
+      flex:1;
+      padding:16px 12px;
+      overflow-y:auto;
+      background:#e4e6eb;
+      scroll-behavior:smooth;
+      min-height:0;
+    }
+    .chat-empty{
+      text-align:center;
+      padding:40px 10px;
+      color:#9ca3af;
+      font-size:.9rem;
+    }
+    .chat-empty i{
+      font-size:1.4rem;
+      margin-bottom:4px;
+      opacity:.6;
+    }
+    .bubble-wrap{
+      display:flex;
+      flex-direction:column;
+      margin-bottom:6px;
+    }
+    .bubble{
+      max-width:70%;
+      padding:8px 10px;
+      border-radius:18px;
+      margin:1px 0;
+      font-size:.9rem;
+      line-height:1.4;
+      word-wrap:break-word;
+    }
+    .me{
+      margin-left:auto;
+      background:#0084ff;
+      color:#fff;
+      border-bottom-right-radius:4px;
+    }
+    .them{
+      margin-right:auto;
+      background:#f0f0f0;
+      color:#050505;
+      border-bottom-left-radius:4px;
+    }
+    .meta{
+      font-size:.7rem;
+      opacity:.75;
+      margin-top:1px;
+      text-align:right;
+    }
+
+    .chat-input-wrap{
+      border-top:1px solid #d1d5db;
+      padding:8px 10px;
+      display:flex;
+      gap:8px;
+      background:#fff;
+      flex-shrink:0;
+    }
+    .chat-input{
+      flex:1;
+      border-radius:20px;
+      border:1px solid #e5e7eb;
+      padding:8px 12px;
+      outline:none;
+      font-size:.9rem;
+      background:#f0f2f5;
+      min-width:0;
+    }
+    .chat-input:focus{
+      border-color:#4c6ef5;
+      box-shadow:0 0 0 2px rgba(76,110,245,.2);
+      background:#fff;
+    }
+    .send-btn{
+      border:none;
+      border-radius:999px;
+      padding:0 14px;
+      background:#0084ff;
+      color:#fff;
+      font-weight:500;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:.85rem;
+      flex-shrink:0;
+    }
+    .send-btn[disabled]{opacity:.6;cursor:not-allowed;}
+
+    .side-panel{
+      background:#fff;
+      border-left:1px solid #e2e8f0;
+      padding:14px 14px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-width:0;
+    }
+    .side-panel h4{
+      margin:0 0 4px;
+      font-size:.9rem;
+      color:#111827;
+    }
+    .summary-item{
+      font-size:.85rem;
+      color:#4b5563;
+      margin:0 0 4px;
+      white-space:pre-line;
+    }
+    .pill-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .pill{
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4c6ef5;
+      font-size:.78rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar" id="sidebar">
+    <div class="logo">MEDI<span>Care</span></div>
+    <nav>
+      <a href="doctor_dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="doctor_profile.html"><i class="fas fa-user"></i> Profile</a>
+      <a href="doctor_patients.html"><i class="fas fa-users"></i> Patients</a>
+      <a href="#"><i class="fas fa-heartbeat"></i> Symptom Analysis</a>
+      <a href="doctor_teleconsult.html" class="active"><i class="fas fa-comments"></i> Teleconsultation</a>
+      <a href="doctor_appointments.html"><i class="fas fa-calendar-alt"></i> Appointments</a>
+      <a href="#"><i class="fas fa-bell"></i> Notifications</a>
+    </nav>
+    <div class="logout" onclick="location.href='doctor_logout.php'">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>Teleconsultation Chat</h1>
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>Dr. <span class="user-name" id="username">...</span></span>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div class="today-banner">
+        <i class="fas fa-comments"></i>
+        <div class="info">
+          <h3>Conversations with Patients</h3>
+          <p>Click a patient on the left to open the chat.</p>
+        </div>
+      </div>
+
+      <div class="chat-layout">
+        <div class="conversation-list">
+          <div class="conv-header">
+            <span>Conversations</span>
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div id="convItems" class="conv-items">
+            <div class="conv-empty">
+              No conversations yet.<br>
+              Patients will appear here after starting a consultation.
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-panel">
+          <div id="chatLog" class="chat-log">
+            <div class="chat-empty">
+              <i class="fas fa-comments"></i><br/>
+              Select a conversation on the left to start chatting.
+            </div>
+          </div>
+          <div class="chat-input-wrap">
+            <input id="msgInput" class="chat-input" type="text"
+                   placeholder="Type your message..." autocomplete="off">
+            <button id="sendBtn" class="send-btn">
+              <i class="fas fa-paper-plane"></i> Send
+            </button>
+          </div>
+        </div>
+
+        <div class="side-panel">
+          <div>
+            <h4>Patient</h4>
+            <p id="sidePatientName" class="summary-item">—</p>
+          </div>
+          <div>
+            <h4>Key info</h4>
+            <p id="sideInfo" class="summary-item">—</p>
+          </div>
+          <div>
+            <h4>Chief complaint</h4>
+            <p id="sideComplaint" class="summary-item">—</p>
+          </div>
+          <div>
+            <h4>Topics</h4>
+            <div id="sideTopics" class="pill-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="doctor-status.js"></script>
+
+<script>
+  const POLL_MS = 4000;
+
+  const chatLog       = document.getElementById('chatLog');
+  const msgInput      = document.getElementById('msgInput');
+  const sendBtn       = document.getElementById('sendBtn');
+  const convItemsEl   = document.getElementById('convItems');
+
+  const sidePatientName = document.getElementById('sidePatientName');
+  const sideInfo        = document.getElementById('sideInfo');
+  const sideComplaint   = document.getElementById('sideComplaint');
+  const sideTopics      = document.getElementById('sideTopics');
+
+  let consultationId    = null;
+  let lastMessageId     = 0;
+  let sessionDoctorName = '';
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = String(str ?? "");
+    return div.innerHTML;
+  }
+  function avatarUrl(name){
+    const safe = encodeURIComponent(name || "Patient");
+    return `https://ui-avatars.com/api/?name=${safe}&background=EEF2FF&color=3730A3&rounded=true&size=160`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    fetch('get_doctor_session.php')
+      .then(r => r.json())
+      .then(data => {
+        if (data.logged_in) {
+          sessionDoctorName = data.name_only || data.username || '';
+          document.getElementById('username').textContent = sessionDoctorName;
+          loadConversations();
+        } else {
+          alert('Please login');
+          window.location.href = 'doctor_login.html';
+        }
+      });
+  });
+
+  async function loadConversations(){
+    try{
+      const res = await fetch('get_doctor_conversations.php', {cache:'no-store'});
+      const data = await res.json();
+      convItemsEl.innerHTML = '';
+
+      if(!Array.isArray(data) || data.length === 0){
+        convItemsEl.innerHTML = `
+          <div class="conv-empty">
+            No conversations yet.<br>
+            Patients will appear here after starting a consultation.
+          </div>`;
+        consultationId = null;
+        msgInput.disabled = true;
+        sendBtn.disabled  = true;
+        return;
+      }
+
+      msgInput.disabled = false;
+      sendBtn.disabled  = false;
+
+      data.forEach(conv=>{
+        const item = document.createElement('div');
+        item.className = 'conv-item' +
+          (String(conv.consultation_id) === String(consultationId) ? ' active' : '');
+        item.addEventListener('click', () => selectConversation(conv, item));
+
+        const avatar = document.createElement('img');
+        avatar.className = 'conv-avatar';
+        avatar.src = avatarUrl(conv.patient_name);
+        avatar.alt = conv.patient_name || 'Patient';
+        item.appendChild(avatar);
+
+        const main = document.createElement('div');
+        main.className = 'conv-main';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'conv-name';
+        nameEl.textContent = conv.patient_name || 'Patient';
+        main.appendChild(nameEl);
+
+        const previewEl = document.createElement('div');
+        previewEl.className = 'conv-preview';
+        previewEl.textContent = conv.last_message || '(no messages yet)';
+        main.appendChild(previewEl);
+
+        if (conv.status) {
+          const pill = document.createElement('span');
+          pill.className = 'conv-status-pill';
+          pill.textContent = conv.status;
+          main.appendChild(pill);
+        }
+
+        item.appendChild(main);
+
+        const meta = document.createElement('div');
+        meta.className = 'conv-meta';
+        meta.textContent = conv.last_time || '';
+        item.appendChild(meta);
+
+        convItemsEl.appendChild(item);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  async function selectConversation(conv, item){
+    consultationId = conv.consultation_id;
+    lastMessageId  = 0;
+
+    document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+    if (item) item.classList.add('active');
+
+    chatLog.innerHTML = `
+      <div class="chat-empty">
+        <i class="fas fa-comments"></i><br/>
+        Conversation with ${escapeHtml(conv.patient_name || 'patient')}<br/>
+        You can start messaging now.
+      </div>
+    `;
+
+    loadConsultationDetails(conv.consultation_id);
+    pollMessages();
+  }
+
+  async function loadConsultationDetails(id){
+    try{
+      const res = await fetch('get_consultation.php?id=' + encodeURIComponent(id), {cache:'no-store'});
+      if(!res.ok) return;
+      const c = await res.json();
+
+      sidePatientName.textContent = c.patient_name || '—';
+
+      const infoParts = [];
+      if (c.patient_age) infoParts.push(c.patient_age + ' yrs');
+      if (c.patient_sex) infoParts.push(c.patient_sex);
+      if (c.duration)   infoParts.push(c.duration);
+      if (c.severity)   infoParts.push(c.severity);
+      sideInfo.textContent = infoParts.length ? infoParts.join(' · ') : '—';
+
+      sideComplaint.textContent = c.complaint || '—';
+
+      sideTopics.innerHTML = '';
+      if (c.topics_json) {
+        let topics;
+        try { topics = JSON.parse(c.topics_json); } catch(err){ topics = []; }
+        (topics || []).forEach(t=>{
+          const span = document.createElement('span');
+          span.className = 'pill';
+          span.textContent = t;
+          sideTopics.appendChild(span);
+        });
+      }
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function appendMessage(msg){
+    const empty = chatLog.querySelector('.chat-empty');
+    if(empty) empty.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-wrap';
+
+    const isMe = msg.sender === 'doctor';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
+
+    if (msg.text && msg.text.trim() !== '') {
+      const textDiv = document.createElement('div');
+      textDiv.innerHTML = escapeHtml(msg.text);
+      bubble.appendChild(textDiv);
+    }
+
+    if (msg.attachment && msg.attachment.file_path) {
+      const att = msg.attachment;
+      const url = att.file_path;
+
+      if (att.file_type && att.file_type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = att.file_name || 'attachment';
+        img.style.maxWidth = '220px';
+        img.style.borderRadius = '10px';
+        img.style.display = 'block';
+        img.style.marginTop = msg.text ? '6px' : '0';
+        img.style.cursor = 'pointer';
+        img.onclick = () => window.open(url, '_blank');
+        bubble.appendChild(img);
+      } else {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.display = 'inline-block';
+        link.style.marginTop = msg.text ? '6px' : '0';
+        link.textContent = att.file_name || 'Download attachment';
+        bubble.appendChild(link);
+      }
+    }
+
+    wrap.appendChild(bubble);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = msg.time || '';
+    wrap.appendChild(meta);
+
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text || !consultationId) return;
+
+    sendBtn.disabled = true;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    appendMessage({
+      id:'temp-'+now.getTime(),
+      sender:'doctor',
+      text,
+      time:timeStr
+    });
+
+    msgInput.value = '';
+
+    try{
+      await fetch('sendMessage.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          consultationId: consultationId,
+          sender: 'doctor',
+          message: text
+        })
+      });
+    }catch(e){
+      console.error(e);
+    }finally{
+      sendBtn.disabled = false;
+    }
+  }
+
+  async function pollMessages(){
+    if(!consultationId) return;
+    try{
+      const res = await fetch(
+        `getMessages.php?consultationId=${encodeURIComponent(consultationId)}&since=${encodeURIComponent(lastMessageId)}`,
+        {cache:'no-store'}
+      );
+      if(!res.ok) return;
+      const data = await res.json();
+      if(!Array.isArray(data)) return;
+      data.forEach(m=>{
+        lastMessageId = Math.max(lastMessageId, m.id);
+        appendMessage({
+          id: m.id,
+          sender: m.sender,
+          text: m.text,
+          time: m.time,
+          attachment: m.attachment || null
+        });
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  setInterval(pollMessages, POLL_MS);
+  setInterval(loadConversations, 10000);
+</script>
+
+</body>
+</html>

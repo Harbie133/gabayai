@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare WebRTC Teleconsultation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .login-screen, .call-screen {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .call-screen {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            flex-wrap: wrap;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-height: 500px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .video-box {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            aspect-ratio: 16/9;
+        }
+
+        .video-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .video-label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-bar {
+            padding: 15px 20px;
+            background: #e9ecef;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 0 20px 20px;
+        }
+
+        .participants-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .participant {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .participant-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 8px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Healthcare WebRTC Teleconsultation</h1>
+            <p>Secure Real-Time Video Communication for Medical Consultations</p>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Join Consultation Room</h2>
+            <form id="joinForm">
+                <div class="form-group">
+                    <label for="userName">Your Name:</label>
+                    <input type="text" id="userName" placeholder="Enter your name (e.g., Dr. Smith, Patient John)" required>
+                </div>
+                <div class="form-group">
+                    <label for="roomId">Room ID:</label>
+                    <input type="text" id="roomId" placeholder="Enter room ID or leave empty for random room">
+                </div>
+                <button type="submit" class="btn btn-primary">Join Consultation</button>
+            </form>
+        </div>
+
+        <!-- Call Screen -->
+        <div id="callScreen" class="call-screen">
+            <div class="controls">
+                <button id="toggleAudio" class="btn btn-warning">🔇 Mute Audio</button>
+                <button id="toggleVideo" class="btn btn-warning">📷 Disable Video</button>
+                <button id="shareScreen" class="btn btn-primary">🖥️ Share Screen</button>
+                <button id="leaveCall" class="btn btn-danger">📞 Leave Call</button>
+            </div>
+
+            <div class="video-container">
+                <div class="video-grid" id="videoGrid">
+                    <!-- Videos will be added here dynamically -->
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div>
+                    <strong>Room:</strong> <span id="currentRoom"></span>
+                    <span id="connectionStatus" class="status connecting">Connecting...</span>
+                </div>
+                <div>
+                    <strong>Participants:</strong> <span id="participantCount">1</span>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="participants-list">
+                    <h3>👥 Participants</h3>
+                    <div id="participantsList">
+                        <!-- Participants will be listed here -->
+                    </div>
+                </div>
+
+                <div class="participants-list">
+                    <h3>ℹ️ Connection Info</h3>
+                    <div id="connectionInfo" style="font-family: monospace; font-size: 12px; color: #666;">
+                        Initializing...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        class HealthcareWebRTC {
+            constructor() {
+                this.socket = null;
+                this.localStream = null;
+                this.peers = new Map();
+                this.currentUser = null;
+                this.currentRoom = null;
+                this.isAudioMuted = false;
+                this.isVideoMuted = false;
+                this.isScreenSharing = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    loginScreen: document.getElementById('loginScreen'),
+                    callScreen: document.getElementById('callScreen'),
+                    joinForm: document.getElementById('joinForm'),
+                    userName: document.getElementById('userName'),
+                    roomId: document.getElementById('roomId'),
+                    toggleAudio: document.getElementById('toggleAudio'),
+                    toggleVideo: document.getElementById('toggleVideo'),
+                    shareScreen: document.getElementById('shareScreen'),
+                    leaveCall: document.getElementById('leaveCall'),
+                    videoGrid: document.getElementById('videoGrid'),
+                    currentRoom: document.getElementById('currentRoom'),
+                    connectionStatus: document.getElementById('connectionStatus'),
+                    participantCount: document.getElementById('participantCount'),
+                    participantsList: document.getElementById('participantsList'),
+                    connectionInfo: document.getElementById('connectionInfo')
+                };
+            }
+
+            setupEventListeners() {
+                this.elements.joinForm.addEventListener('submit', (e) => this.handleJoin(e));
+                this.elements.toggleAudio.addEventListener('click', () => this.toggleAudio());
+                this.elements.toggleVideo.addEventListener('click', () => this.toggleVideo());
+                this.elements.shareScreen.addEventListener('click', () => this.toggleScreenShare());
+                this.elements.leaveCall.addEventListener('click', () => this.leaveCall());
+            }
+
+            async handleJoin(e) {
+                e.preventDefault();
+                
+                const userName = this.elements.userName.value.trim();
+                let roomId = this.elements.roomId.value.trim();
+                
+                if (!userName) {
+                    alert('Please enter your name');
+                    return;
+                }
+                
+                if (!roomId) {
+                    roomId = 'room-' + Math.random().toString(36).substr(2, 9);
+                }
+                
+                this.currentUser = { name: userName, id: this.generateUserId() };
+                this.currentRoom = roomId;
+                
+                try {
+                    await this.initializeMedia();
+                    this.initializeSocket();
+                    this.showCallScreen();
+                } catch (error) {
+                    console.error('Failed to initialize:', error);
+                    alert('Could not access camera/microphone: ' + error.message);
+                }
+            }
+
+            async initializeMedia() {
+                this.updateConnectionInfo('Accessing camera and microphone...');
+                
+                this.localStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 }
+                    },
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    }
+                });
+
+                // Add local video
+                this.addVideoElement(this.currentUser.id, this.currentUser.name + ' (You)', this.localStream, true);
+                this.updateConnectionInfo('Camera and microphone ready');
+            }
+
+            initializeSocket() {
+                this.updateConnectionInfo('Connecting to server...');
+                
+                this.socket = io();
+                
+                this.socket.on('connect', () => {
+                    console.log('Connected to server');
+                    this.updateConnectionInfo('Connected to server, joining room...');
+                    this.socket.emit('join-room', this.currentRoom, this.currentUser.id, this.currentUser.name);
+                    this.updateStatus('Connected', 'connected');
+                });
+
+                this.socket.on('existing-users', (users) => {
+                    console.log('Existing users:', users);
+                    users.forEach(user => {
+                        this.createPeerConnection(user.userId, false);
+                        this.addParticipant(user.userId, user.userName);
+                    });
+                    this.updateParticipantCount();
+                });
+
+                this.socket.on('user-connected', (user) => {
+                    console.log('User connected:', user);
+                    this.createPeerConnection(user.userId, true);
+                    this.addParticipant(user.userId, user.userName);
+                    this.updateParticipantCount();
+                });
+
+                this.socket.on('user-disconnected', (user) => {
+                    console.log('User disconnected:', user);
+                    this.removePeer(user.userId);
+                    this.removeParticipant(user.userId);
+                    this.updateParticipantCount();
+                });
+
+                this.socket.on('offer', async (data) => {
+                    console.log('Received offer from:', data.from);
+                    const peer = this.peers.get(data.from);
+                    if (peer) {
+                        await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+                        const answer = await peer.createAnswer();
+                        await peer.setLocalDescription(answer);
+                        this.socket.emit('answer', {
+                            answer: answer,
+                            to: data.from,
+                            from: this.currentUser.id
+                        });
+                    }
+                });
+
+                this.socket.on('answer', async (data) => {
+                    console.log('Received answer from:', data.from);
+                    const peer = this.peers.get(data.from);
+                    if (peer) {
+                        await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+                    }
+                });
+
+                this.socket.on('ice-candidate', async (data) => {
+                    const peer = this.peers.get(data.from);
+                    if (peer) {
+                        await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    }
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('Disconnected from server');
+                    this.updateStatus('Disconnected', 'disconnected');
+                    this.updateConnectionInfo('Disconnected from server');
+                });
+
+                this.socket.on('connect_error', (error) => {
+                    console.error('Connection error:', error);
+                    this.updateStatus('Connection Error', 'disconnected');
+                    this.updateConnectionInfo('Connection error: ' + error.message);
+                });
+            }
+
+            createPeerConnection(userId, isInitiator) {
+                const config = {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
+                    ]
+                };
+
+                const peerConnection = new RTCPeerConnection(config);
+
+                // Add local stream
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, this.localStream);
+                    });
+                }
+
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('Remote stream received from:', userId);
+                    const [remoteStream] = event.streams;
+                    this.addVideoElement(userId, `User ${userId.substr(0, 8)}`, remoteStream, false);
+                };
+
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        this.socket.emit('ice-candidate', {
+                            candidate: event.candidate,
+                            to: userId,
+                            from: this.currentUser.id
+                        });
+                    }
+                };
+
+                // Connection state monitoring
+                peerConnection.onconnectionstatechange = () => {
+                    console.log(`Connection state with ${userId}:`, peerConnection.connectionState);
+                    this.updateConnectionInfo(`Peer ${userId.substr(0, 8)}: ${peerConnection.connectionState}`);
+                };
+
+                this.peers.set(userId, peerConnection);
+
+                // Create offer if initiator
+                if (isInitiator) {
+                    this.createOffer(userId, peerConnection);
+                }
+
+                return peerConnection;
+            }
+
+            async createOffer(userId, peerConnection) {
+                try {
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+                    this.socket.emit('offer', {
+                        offer: offer,
+                        to: userId,
+                        from: this.currentUser.id
+                    });
+                } catch (error) {
+                    console.error('Error creating offer:', error);
+                }
+            }
+
+            addVideoElement(userId, name, stream, isMuted) {
+                // Remove existing video if any
+                const existingVideo = document.getElementById(`video-${userId}`);
+                if (existingVideo) {
+                    existingVideo.remove();
+                }
+
+                const videoBox = document.createElement('div');
+                videoBox.className = 'video-box';
+                videoBox.id = `video-${userId}`;
+
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.muted = isMuted;
+
+                const label = document.createElement('div');
+                label.className = 'video-label';
+                label.textContent = name;
+
+                videoBox.appendChild(video);
+                videoBox.appendChild(label);
+                this.elements.videoGrid.appendChild(videoBox);
+            }
+
+            addParticipant(userId, userName) {
+                const participant = document.createElement('div');
+                participant.className = 'participant';
+                participant.id = `participant-${userId}`;
+                participant.innerHTML = `
+                    <div class="participant-status"></div>
+                    <span>${userName}</span>
+                `;
+                this.elements.participantsList.appendChild(participant);
+            }
+
+            removeParticipant(userId) {
+                const participant = document.getElementById(`participant-${userId}`);
+                if (participant) {
+                    participant.remove();
+                }
+            }
+
+            removePeer(userId) {
+                const peer = this.peers.get(userId);
+                if (peer) {
+                    peer.close();
+                    this.peers.delete(userId);
+                }
+
+                const videoElement = document.getElementById(`video-${userId}`);
+                if (videoElement) {
+                    videoElement.remove();
+                }
+            }
+
+            toggleAudio() {
+                if (!this.localStream) return;
+                
+                const audioTrack = this.localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    this.isAudioMuted = !audioTrack.enabled;
+                    this.elements.toggleAudio.textContent = this.isAudioMuted ? '🔊 Unmute Audio' : '🔇 Mute Audio';
+                    this.elements.toggleAudio.className = this.isAudioMuted ? 'btn btn-danger' : 'btn btn-warning';
+                    
+                    if (this.socket) {
+                        this.socket.emit('toggle-audio', { muted: this.isAudioMuted });
+                    }
+                }
+            }
+
+            toggleVideo() {
+                if (!this.localStream) return;
+                
+                const videoTrack = this.localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    this.isVideoMuted = !videoTrack.enabled;
+                    this.elements.toggleVideo.textContent = this.isVideoMuted ? '📹 Enable Video' : '📷 Disable Video';
+                    this.elements.toggleVideo.className = this.isVideoMuted ? 'btn btn-danger' : 'btn btn-warning';
+                    
+                    if (this.socket) {
+                        this.socket.emit('toggle-video', { videoOff: this.isVideoMuted });
+                    }
+                }
+            }
+
+            async toggleScreenShare() {
+                if (!this.isScreenSharing) {
+                    try {
+                        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                            video: { cursor: 'always' },
+                            audio: true
+                        });
+                        
+                        const videoTrack = screenStream.getVideoTracks()[0];
+                        
+                        // Replace video track for all peer connections
+                        for (const [userId, peerConnection] of this.peers) {
+                            const sender = peerConnection.getSenders().find(s => 
+                                s.track && s.track.kind === 'video'
+                            );
+                            if (sender) {
+                                await sender.replaceTrack(videoTrack);
+                            }
+                        }
+                        
+                        // Update local video
+                        const localVideo = document.querySelector(`#video-${this.currentUser.id} video`);
+                        if (localVideo) {
+                            localVideo.srcObject = screenStream;
+                        }
+                        
+                        this.isScreenSharing = true;
+                        this.elements.shareScreen.textContent = '📹 Stop Sharing';
+                        this.elements.shareScreen.className = 'btn btn-danger';
+                        
+                        videoTrack.addEventListener('ended', () => {
+                            this.stopScreenShare();
+                        });
+                        
+                    } catch (error) {
+                        console.error('Screen share error:', error);
+                        alert('Could not start screen sharing: ' + error.message);
+                    }
+                } else {
+                    this.stopScreenShare();
+                }
+            }
+
+            async stopScreenShare() {
+                if (this.localStream) {
+                    const videoTrack = this.localStream.getVideoTracks()[0];
+                    
+                    // Replace screen share track with camera track for all peer connections
+                    for (const [userId, peerConnection] of this.peers) {
+                        const sender = peerConnection.getSenders().find(s => 
+                            s.track && s.track.kind === 'video'
+                        );
+                        if (sender && videoTrack) {
+                            await sender.replaceTrack(videoTrack);
+                        }
+                    }
+                    
+                    // Update local video back to camera
+                    const localVideo = document.querySelector(`#video-${this.currentUser.id} video`);
+                    if (localVideo) {
+                        localVideo.srcObject = this.localStream;
+                    }
+                }
+                
+                this.isScreenSharing = false;
+                this.elements.shareScreen.textContent = '🖥️ Share Screen';
+                this.elements.shareScreen.className = 'btn btn-primary';
+            }
+
+            leaveCall() {
+                // Close all peer connections
+                for (const [userId, peerConnection] of this.peers) {
+                    peerConnection.close();
+                }
+                this.peers.clear();
+
+                // Stop local stream
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => track.stop());
+                    this.localStream = null;
+                }
+
+                // Disconnect socket
+                if (this.socket) {
+                    this.socket.disconnect();
+                    this.socket = null;
+                }
+
+                // Clear video grid
+                this.elements.videoGrid.innerHTML = '';
+                this.elements.participantsList.innerHTML = '';
+
+                // Show login screen
+                this.showLoginScreen();
+            }
+
+            showCallScreen() {
+                this.elements.loginScreen.style.display = 'none';
+                this.elements.callScreen.style.display = 'block';
+                this.elements.currentRoom.textContent = this.currentRoom;
+                
+                // Add local user to participants
+                this.addParticipant(this.currentUser.id, this.currentUser.name + ' (You)');
+                this.updateParticipantCount();
+            }
+
+            showLoginScreen() {
+                this.elements.loginScreen.style.display = 'block';
+                this.elements.callScreen.style.display = 'none';
+                
+                // Reset form
+                this.elements.userName.value = '';
+                this.elements.roomId.value = '';
+                
+                // Reset button states
+                this.isAudioMuted = false;
+                this.isVideoMuted = false;
+                this.isScreenSharing = false;
+                this.elements.toggleAudio.textContent = '🔇 Mute Audio';
+                this.elements.toggleAudio.className = 'btn btn-warning';
+                this.elements.toggleVideo.textContent = '📷 Disable Video';
+                this.elements.toggleVideo.className = 'btn btn-warning';
+                this.elements.shareScreen.textContent = '🖥️ Share Screen';
+                this.elements.shareScreen.className = 'btn btn-primary';
+            }
+
+            updateStatus(message, type) {
+                this.elements.connectionStatus.textContent = message;
+                this.elements.connectionStatus.className = `status ${type}`;
+            }
+
+            updateParticipantCount() {
+                const count = this.elements.participantsList.children.length;
+                this.elements.participantCount.textContent = count;
+            }
+
+            updateConnectionInfo(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                this.elements.connectionInfo.innerHTML += `<br>[${timestamp}] ${message}`;
+                this.elements.connectionInfo.scrollTop = this.elements.connectionInfo.scrollHeight;
+            }
+
+            generateUserId() {
+                return 'user-' + Math.random().toString(36).substr(2, 16);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing Healthcare WebRTC Application');
+            window.webrtcApp = new HealthcareWebRTC();
+        });
+    </script>
+</body>
+</html>

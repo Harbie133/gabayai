@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Consultation Room - GabayAI</title>
+  <link rel="stylesheet" href="consultation.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script defer src="consultation.js"></script>
+  <script defer src="dashboard.js"></script>
+  <link rel="stylesheet" href="logout.css">
+</head>
+<body>
+   <header class="navbar">
+        <div class="logo">
+            <h2>GabayAI</h2>
+        </div>
+
+        <div class="hamburger" id="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+
+        <nav id="nav-menu">
+            <ul>
+                <li><a href="dashboard.html">dashboard</a></li>
+                <li><a href="analyzer.html">Symptom Analyzer</a></li>
+                <li><a href="teleconsultation.html">Teleconsultation</a></li>
+                <li><a href="profile.html">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+
+  <main class="main-content">
+  <section class="virtual-room">
+
+    <!-- Back Button -->
+    <div class="back-button">
+      <button onclick="window.history.back();">Back</button>
+    </div>
+
+    <div class="room-header">
+      <h2>Virtual Consultation Room</h2>
+      <p>Patient: <strong>Juan Dela Cruz</strong> | Scheduled: <strong>Sep 7, 2025 - 10:00 AM</strong></p>
+    </div>
+
+    <div class="room-body">
+      <!-- Video Container -->
+      <div class="video-container">
+        <div class="video-placeholder">
+          <p>Doctor Video</p>
+        </div>
+        <div class="video-placeholder">
+          <p>Patient Video</p>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="video-controls">
+          <button id="toggleMic">🎤 Mute</button>
+          <button id="toggleCam">📷 Video Off</button>
+          <button id="endCall">⛔ End Call</button>
+        </div>
+      </div>
+
+      <!-- Chat Panel -->
+      <div class="chat-panel">
+        <h3>Chat</h3>
+        <div class="chat-messages" id="chatMessages"></div>
+        <input type="text" id="chatInput" placeholder="Type your message...">
+        <button id="sendMessage">Send</button>
+      </div>
+    </div>
+
+    <!-- Notes / Prescriptions -->
+    <div class="consultation-notes">
+      <h3>Doctor's Notes</h3>
+      <textarea placeholder="Write notes or prescriptions here..."></textarea>
+    </div>
+
+  </section>
+</main>
+
+  </main>
+</body>
+</html>

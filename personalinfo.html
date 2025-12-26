@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal Information - GabayAI</title>
+  <link rel="stylesheet" href="navbar.css"/>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: #fff;
+      padding: 35px 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      width: 650px;
+      max-width: 95%;
+      margin: 40px auto 50px;
+    }
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #4c6ef5;
+      font-weight: 600;
+      font-size: 24px;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    h2:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: #4c6ef5;
+      border-radius: 3px;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #4a5568;
+      font-size: 14px;
+    }
+    
+    form label .optional {
+      color: #9ca3af;
+      font-weight: 400;
+      font-size: 12px;
+    }
+    
+    form input,
+    form select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #f8f9fa;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-weight: 400;
+    }
+    
+    form input:focus,
+    form select:focus {
+      border-color: #4c6ef5;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(76,110,245,0.15);
+      background: #fff;
+    }
+    
+    form select:disabled {
+      background: #e9ecef;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    
+    .error-message {
+      color: #e53e3e;
+      font-size: 13px;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .invalid {
+      border-color: #e53e3e !important;
+      box-shadow: 0 0 0 3px rgba(229,62,62,0.15) !important;
+      background: #fff5f5 !important;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideDown 0.3s ease;
+      font-size: 14px;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .alert.show {
+      display: block;
+    }
+    
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+    
+    button[type="submit"] {
+      background: #4c6ef5;
+      color: #fff;
+      border: none;
+      padding: 14px 26px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(76,110,245,0.15);
+      display: block;
+      margin: 30px auto 0;
+      width: 100%;
+      text-align: center;
+      position: relative;
+    }
+    
+    button[type="submit"]:hover:not(:disabled) {
+      background: #3b5bdb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(76,110,245,0.2);
+    }
+    
+    button[type="submit"]:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4c6ef5;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      display: none;
+    }
+    
+    .loading .loading-text {
+      display: inline;
+    }
+    
+    .loading .default-text {
+      display: none;
+    }
+    
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .loading-overlay.show {
+      display: flex;
+    }
+    
+    .loading-content {
+      text-align: center;
+    }
+    
+    .loading-content .spinner {
+      width: 50px;
+      height: 50px;
+      border-width: 5px;
+      margin: 0 auto 15px;
+    }
+
+    /* Custom Modal Styles */
+    .custom-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .custom-modal-overlay.active {
+      display: flex;
+    }
+    .custom-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalSlideDown 0.3s ease;
+      position: relative;
+    }
+    .custom-modal-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .custom-modal-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    .custom-modal-icon.info {
+      background: #e3f2fd;
+      color: #2196f3;
+    }
+    .custom-modal-icon.warning {
+      background: #fff3cd;
+      color: #ff9800;
+    }
+    .custom-modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0;
+    }
+    .custom-modal-message {
+      font-size: 15px;
+      color: #4a5568;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+    .custom-modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .custom-modal-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .custom-modal-btn-confirm {
+      background: #4c6ef5;
+      color: white;
+    }
+    .custom-modal-btn-confirm:hover {
+      background: #3b5bdb;
+      transform: translateY(-1px);
+    }
+    .custom-modal-btn-cancel {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+    .custom-modal-btn-cancel:hover {
+      background: #cbd5e0;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes modalSlideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px 20px;
+        width: 90%;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .custom-modal {
+        padding: 20px;
+      }
+      .custom-modal-buttons {
+        flex-direction: column;
+      }
+      .custom-modal-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Modal -->
+  <div class="custom-modal-overlay" id="customModal">
+    <div class="custom-modal">
+      <div class="custom-modal-header">
+        <div class="custom-modal-icon" id="modalIcon">
+          <span id="modalIconSymbol">?</span>
+        </div>
+        <h3 class="custom-modal-title" id="modalTitle">Confirm Action</h3>
+      </div>
+      <p class="custom-modal-message" id="modalMessage"></p>
+      <div class="custom-modal-buttons">
+        <button class="custom-modal-btn custom-modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+        <button class="custom-modal-btn custom-modal-btn-confirm" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p style="color: #4a5568; font-size: 16px;">Loading your information...</p>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="homer.html" class="navbar-logo">GabayAI</a>
+      <ul class="navbar-nav">
+        <li><a href="homer.html" class="nav-link">Dashboard</a></li>
+        <li><a href="analyzer.html" class="nav-link">Analyzer</a></li>
+        <li><a href="consult.html" class="nav-link">Consultation</a></li>
+        <li><a href="profile.html" class="nav-link active">Profile</a></li>
+        <li>
+          <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </li>
+      </ul>
+
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="mobile-menu-items">
+        <a href="homer.html" class="mobile-nav-link">Dashboard</a>
+        <a href="analyzer.html" class="mobile-nav-link">Analyzer</a>
+        <a href="consult.html" class="mobile-nav-link">Consultation</a>
+        <a href="profile.html" class="mobile-nav-link active">Profile</a>
+        
+        <div class="mobile-logout">
+          <button onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Personal Information</h2>
+    
+    <div class="alert alert-success" id="successAlert"></div>
+    <div class="alert alert-error" id="errorAlert"></div>
+    
+    <form id="personalInfoForm" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="lastName">Last Name *</label>
+          <input type="text" id="lastName" name="last_name" placeholder="Enter last name" required />
+          <div class="error-message" id="lastNameError">Please enter your last name.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="firstName">First Name *</label>
+          <input type="text" id="firstName" name="first_name" placeholder="Enter first name" required />
+          <div class="error-message" id="firstNameError">Please enter your first name.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="middleInitial">Middle Initial <span class="optional">(Optional)</span></label>
+          <input type="text" id="middleInitial" name="middle_initial" placeholder="M.I." maxlength="5" />
+        </div>
+
+        <div class="form-group">
+          <label for="dob">Date of Birth *</label>
+          <input type="date" id="dob" name="date_of_birth" required />
+          <div class="error-message" id="dobError">Please select your date of birth.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender *</label>
+          <select id="gender" name="gender" required>
+            <option value="" disabled selected>Select your gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          <div class="error-message" id="genderError">Please select your gender.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="contactNumber">Contact Number *</label>
+          <input type="tel" id="contactNumber" name="phone" placeholder="e.g. +63 912 345 6789" required />
+          <div class="error-message" id="contactNumberError">Please enter your contact number.</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="email">Email Address <span class="optional">(Optional)</span></label>
+          <input type="email" id="email" name="email" placeholder="your.email@example.com" />
+          <div class="error-message" id="emailError">Please enter a valid email address.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="region">Region *</label>
+          <select id="region" name="region" required>
+            <option value="" disabled selected>Select Region</option>
+          </select>
+          <div class="error-message" id="regionError">Please select a region.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="city">City/Municipality *</label>
+          <select id="city" name="city" required disabled>
+            <option value="" disabled selected>Select Region First</option>
+          </select>
+          <div class="error-message" id="cityError">Please select a city/municipality.</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="barangay">Barangay *</label>
+          <select id="barangay" name="barangay" required disabled>
+            <option value="" disabled selected>Select City First</option>
+          </select>
+          <div class="error-message" id="barangayError">Please select a barangay.</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="address">Street Address <span class="optional">(Optional)</span></label>
+          <input type="text" id="address" name="address" placeholder="House/Building No., Street Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="postalCode">Postal Code <span class="optional">(Optional)</span></label>
+          <input type="text" id="postalCode" name="postal_code" placeholder="e.g. 1234" maxlength="10" />
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn">
+        <span class="default-text">Save Information</span>
+        <span class="loading-text"><span class="spinner"></span>Saving...</span>
+      </button>
+    </form>
+  </div>
+
+
+    <script src="auth-guard.js"></script>
+    <script src="analyzer.js"></script>  
+
+
+  <script>
+    // User logout function (only clears user sessions, not doctor sessions)
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'user_logout.php';
+    }
+}
+
+// FIXED: Mobile menu toggle - now uses 'show' class instead of 'active'
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');  // Changed from 'active' to 'show'
+    hamburger.classList.toggle('open');   // Changed from 'active' to 'open'
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+        if (mobileMenu.classList.contains('show')) {
+            mobileMenu.classList.remove('show');
+            hamburger.classList.remove('open');
+        }
+    }
+});
+    // Custom Modal Elements
+    const customModal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalIconSymbol = document.getElementById('modalIconSymbol');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+    // Custom Confirm Function
+    function customConfirm(message, title = 'Confirm Action', type = 'info') {
+      return new Promise((resolve) => {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        // Set icon based on type
+        modalIcon.className = 'custom-modal-icon ' + type;
+        if (type === 'info') {
+          modalIconSymbol.textContent = '?';
+        } else if (type === 'warning') {
+          modalIconSymbol.textContent = '⚠';
+        }
+        
+        modalConfirmBtn.className = 'custom-modal-btn custom-modal-btn-confirm';
+        modalConfirmBtn.textContent = 'Confirm';
+        
+        customModal.classList.add('active');
+        
+        const handleConfirm = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(true);
+        };
+        
+        const handleCancel = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(false);
+        };
+        
+        modalConfirmBtn.addEventListener('click', handleConfirm);
+        modalCancelBtn.addEventListener('click', handleCancel);
+        
+        // Close on overlay click
+        customModal.addEventListener('click', function(e) {
+          if (e.target === customModal) {
+            handleCancel();
+          }
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      checkAuthentication();
+      loadRegions();
+      loadPersonalInfo();
+    });
+
+    function checkAuthentication() {
+      fetch('get_user_session.php')
+        .then(response => response.json())
+        .then(data => {
+          if (!data.logged_in) {
+            window.location.href = 'login.html';
+          }
+        })
+        .catch(error => {
+          console.error('Auth error:', error);
+          window.location.href = 'login.html';
+        });
+    }
+
+    function loadRegions() {
+      fetch('get_locations.php?type=regions')
+        .then(response => {
+          if (!response.ok) throw new Error('Network error');
+          return response.json();
+        })
+        .then(data => {
+          const regionSelect = document.getElementById('region');
+          
+          if (!Array.isArray(data)) {
+            console.error('Invalid data:', data);
+            showAlert('error', 'Failed to load regions. Please refresh.');
+            return;
+          }
+          
+          regionSelect.innerHTML = '<option value="" disabled selected>Select Region</option>';
+          
+          data.forEach(region => {
+            const option = document.createElement('option');
+            option.value = region.code;
+            option.textContent = region.name;
+            option.dataset.regionName = region.name;
+            regionSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('error', 'Failed to load regions. Please check your connection.');
+        });
+    }
+
+    function loadCitiesByRegion(regionCode) {
+      const citySelect = document.getElementById('city');
+      const barangaySelect = document.getElementById('barangay');
+      
+      citySelect.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+      citySelect.disabled = true;
+      barangaySelect.innerHTML = '<option value="" disabled selected>Select City First</option>';
+      barangaySelect.disabled = true;
+
+      fetch(`get_locations.php?type=cities&code=${encodeURIComponent(regionCode)}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Network error');
+          return response.json();
+        })
+        .then(data => {
+          if (data.error) {
+            console.error('API Error:', data.error);
+            citySelect.innerHTML = '<option value="" disabled selected>Error loading cities</option>';
+            showAlert('error', 'Failed to load cities for this region.');
+            return;
+          }
+          
+          if (!Array.isArray(data) || data.length === 0) {
+            citySelect.innerHTML = '<option value="" disabled selected>No cities available</option>';
+            return;
+          }
+          
+          citySelect.innerHTML = '<option value="" disabled selected>Select City/Municipality</option>';
+          
+          data.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city.code;
+            option.textContent = city.name;
+            option.dataset.cityName = city.name;
+            citySelect.appendChild(option);
+          });
+          
+          citySelect.disabled = false;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          citySelect.innerHTML = '<option value="" disabled selected>Connection error</option>';
+          showAlert('error', 'Connection error. Please try again.');
+        });
+    }
+
+    function loadBarangays(cityCode) {
+      const barangaySelect = document.getElementById('barangay');
+      
+      barangaySelect.innerHTML = '<option value="" disabled selected>Loading barangays...</option>';
+      barangaySelect.disabled = true;
+
+      fetch(`get_locations.php?type=barangays&code=${encodeURIComponent(cityCode)}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Network error');
+          return response.json();
+        })
+        .then(data => {
+          if (data.error) {
+            console.error('API Error:', data.error);
+            barangaySelect.innerHTML = '<option value="" disabled selected>Error loading barangays</option>';
+            return;
+          }
+          
+          if (!Array.isArray(data) || data.length === 0) {
+            barangaySelect.innerHTML = '<option value="" disabled selected>No barangays available</option>';
+            return;
+          }
+          
+          barangaySelect.innerHTML = '<option value="" disabled selected>Select Barangay</option>';
+          
+          data.forEach(barangay => {
+            const option = document.createElement('option');
+            option.value = barangay.code;
+            option.textContent = barangay.name;
+            option.dataset.barangayName = barangay.name;
+            barangaySelect.appendChild(option);
+          });
+          
+          barangaySelect.disabled = false;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          barangaySelect.innerHTML = '<option value="" disabled selected>Connection error</option>';
+        });
+    }
+
+    document.getElementById('region').addEventListener('change', function() {
+      if (this.value) loadCitiesByRegion(this.value);
+    });
+
+    document.getElementById('city').addEventListener('change', function() {
+      if (this.value) loadBarangays(this.value);
+    });
+
+    function loadPersonalInfo() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('show');
+
+      fetch('get_personal_info.php')
+        .then(response => response.json())
+        .then(data => {
+          overlay.classList.remove('show');
+          
+          if (data.success && data.data) {
+            const d = data.data;
+            
+            if (d.last_name) document.getElementById('lastName').value = d.last_name;
+            if (d.first_name) document.getElementById('firstName').value = d.first_name;
+            if (d.middle_initial) document.getElementById('middleInitial').value = d.middle_initial;
+            if (d.date_of_birth) document.getElementById('dob').value = d.date_of_birth;
+            if (d.gender) document.getElementById('gender').value = d.gender;
+            if (d.phone) document.getElementById('contactNumber').value = d.phone;
+            if (d.email) document.getElementById('email').value = d.email;
+            if (d.address) document.getElementById('address').value = d.address;
+            if (d.postal_code) document.getElementById('postalCode').value = d.postal_code;
+            
+            if (d.region_code) {
+              setTimeout(() => {
+                document.getElementById('region').value = d.region_code;
+                loadCitiesByRegion(d.region_code);
+                
+                if (d.city_code) {
+                  setTimeout(() => {
+                    document.getElementById('city').value = d.city_code;
+                    loadBarangays(d.city_code);
+                    
+                    if (d.barangay_code) {
+                      setTimeout(() => {
+                        document.getElementById('barangay').value = d.barangay_code;
+                      }, 500);
+                    }
+                  }, 1000);
+                }
+              }, 500);
+            }
+          }
+        })
+        .catch(error => {
+          overlay.classList.remove('show');
+          console.error('Error:', error);
+        });
+    }
+
+    const form = document.getElementById('personalInfoForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function resetErrors() {
+      document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+      document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    }
+
+    function showAlert(type, message) {
+      const successAlert = document.getElementById('successAlert');
+      const errorAlert = document.getElementById('errorAlert');
+      
+      successAlert.classList.remove('show');
+      errorAlert.classList.remove('show');
+      
+      if (type === 'success') {
+        successAlert.textContent = message;
+        successAlert.classList.add('show');
+        setTimeout(() => successAlert.classList.remove('show'), 5000);
+      } else {
+        errorAlert.textContent = message;
+        errorAlert.classList.add('show');
+        setTimeout(() => errorAlert.classList.remove('show'), 7000);
+      }
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      resetErrors();
+
+      let valid = true;
+      const fields = {
+        lastName: 'Please enter your last name.',
+        firstName: 'Please enter your first name.',
+        dob: 'Please select your date of birth.',
+        gender: 'Please select your gender.',
+        contactNumber: 'Please enter your contact number.',
+        region: 'Please select a region.',
+        city: 'Please select a city/municipality.',
+        barangay: 'Please select a barangay.'
+      };
+
+      for (let [id, msg] of Object.entries(fields)) {
+        const field = document.getElementById(id);
+        if (!field.value.trim()) {
+          field.classList.add('invalid');
+          document.getElementById(id + 'Error').textContent = msg;
+          document.getElementById(id + 'Error').style.display = 'block';
+          valid = false;
+        }
+      }
+
+      const email = document.getElementById('email');
+      if (email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+        email.classList.add('invalid');
+        document.getElementById('emailError').style.display = 'block';
+        valid = false;
+      }
+
+      if (valid) {
+        // Show confirmation modal
+        const confirmed = await customConfirm(
+          'Do you want to save your personal information? This will update your profile.',
+          'Save Personal Information',
+          'info'
+        );
+
+        if (confirmed) {
+          savePersonalInfo();
+        }
+      }
+    });
+
+    function savePersonalInfo() {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+
+      const formData = new FormData(form);
+      const regionSelect = document.getElementById('region');
+      const citySelect = document.getElementById('city');
+      const barangaySelect = document.getElementById('barangay');
+      
+      formData.append('region_code', regionSelect.value);
+      formData.append('region_name', regionSelect.options[regionSelect.selectedIndex].dataset.regionName);
+      formData.append('city_code', citySelect.value);
+      formData.append('city_name', citySelect.options[citySelect.selectedIndex].dataset.cityName);
+      formData.append('barangay_code', barangaySelect.value);
+      formData.append('barangay_name', barangaySelect.options[barangaySelect.selectedIndex].dataset.barangayName);
+
+      fetch('update_personal_info.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+
+        if (data.success) {
+          showAlert('success', '✓ Personal information saved successfully!');
+          setTimeout(() => loadPersonalInfo(), 1000);
+        } else {
+          showAlert('error', '✗ ' + (data.message || 'Failed to save'));
+        }
+      })
+      .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        console.error('Error:', error);
+        showAlert('error', '✗ An error occurred. Please try again.');
+      });
+    }
+
+    async function logout() {
+      const confirmed = await customConfirm(
+        'Are you sure you want to logout?',
+        'Confirm Logout',
+        'warning'
+      );
+      
+      if (confirmed) {
+        fetch('logout.php').then(() => window.location.href = 'login.html');
+      }
+    }
+
+    document.getElementById('middleInitial').addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+  </script>
+
+
+</body>
+</html>

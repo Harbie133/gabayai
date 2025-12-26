@@ -1,0 +1,425 @@
+/* Emergency Contacts Page CSS */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding-top: 80px;
+  color: #2d3748;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  background: #fff;
+  max-width: 900px;
+  width: 90%;
+  margin: 40px auto 50px;
+  padding: 35px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+/* Headings */
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: #4c6ef5;
+  margin-bottom: 30px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 60px;
+  height: 3px;
+  background: #4c6ef5;
+  border-radius: 3px;
+  transform: translateX(-50%);
+}
+
+/* Grid layout for form elements */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+form label {
+  display: block;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.help-text {
+  font-size: 12px;
+  font-style: italic;
+  color: #718096;
+  margin-top: 4px;
+}
+
+/* Inputs and selects */
+form input,
+form select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+form input:focus,
+form select:focus {
+  border-color: #4c6ef5;
+  box-shadow: 0 0 0 3px rgba(76,110,245,0.15);
+  background: #fff;
+  outline: none;
+}
+
+/* Validation Messages */
+.error-message {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-top: 5px;
+  display: none;
+}
+
+.invalid {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
+/* Button Group */
+.btn-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Buttons */
+button[type="submit"],
+.btn-cancel {
+  cursor: pointer;
+  border: none;
+  padding: 14px 26px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 6px rgba(76, 110, 245, 0.15);
+  transition: all 0.2s ease;
+}
+
+button[type="submit"] {
+  background: #4c6ef5;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: #3b5bdb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(76, 110, 245, 0.2);
+}
+
+button[type="submit"]:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: #718096;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #4a5568;
+}
+
+/* Contacts List */
+.contacts-list {
+  margin-top: 40px;
+}
+
+.contacts-list h3 {
+  font-weight: 600;
+  font-size: 20px;
+  color: #2d3748;
+  margin-bottom: 10px;
+}
+
+.contact-counter {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 20px;
+}
+
+.contact-card {
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.contact-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-info-item label {
+  font-size: 12px;
+  color: #718096;
+  margin-bottom: 4px;
+}
+
+.contact-info-item span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+/* Contact Actions */
+.contact-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-edit {
+  background: #4c6ef5;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #3b5bdb;
+}
+
+.btn-delete {
+  background: #e53e3e;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c53030;
+}
+
+/* Empty State */
+.no-contacts {
+  text-align: center;
+  color: #718096;
+  font-size: 15px;
+  padding: 40px;
+}
+
+/* Success Message */
+.success-message {
+  background: #38a169;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  display: none;
+}
+
+/* Custom Modal Styles */
+.custom-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.custom-modal-overlay.active {
+  display: flex;
+}
+
+.custom-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: slideDown 0.3s ease;
+  position: relative;
+}
+
+.custom-modal-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.custom-modal-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.custom-modal-icon.info {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.custom-modal-icon.warning {
+  background: #fff3cd;
+  color: #ff9800;
+}
+
+.custom-modal-icon.danger {
+  background: #ffebee;
+  color: #f44336;
+}
+
+.custom-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.custom-modal-message {
+  font-size: 15px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.custom-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.custom-modal-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.custom-modal-btn-confirm {
+  background: #4c6ef5;
+  color: white;
+}
+
+.custom-modal-btn-confirm:hover {
+  background: #3b5bdb;
+  transform: translateY(-1px);
+}
+
+.custom-modal-btn-cancel {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.custom-modal-btn-cancel:hover {
+  background: #cbd5e0;
+}
+
+.custom-modal-btn-delete {
+  background: #e53e3e;
+  color: white;
+}
+
+.custom-modal-btn-delete:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes slideDown {
+  from {transform: translateY(-50px); opacity: 0;}
+  to {transform: translateY(0); opacity: 1;}
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 25px 20px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .btn-group {
+    flex-direction: column;
+  }
+  button[type="submit"],
+  .btn-cancel {
+    width: 100%;
+  }
+  .custom-modal {
+    padding: 20px;
+  }
+  .custom-modal-buttons {
+    flex-direction: column;
+  }
+  .custom-modal-btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,119 @@
+.main-content {
+    padding: 20px;
+  }
+  
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  /* Optional spacing tweak for cards section */
+  .cards {
+    margin-bottom: 25px;
+  }
+  
+  /* Health Tips section */
+  .tips-section {
+    margin-top: 10px;
+  }
+  
+  .tips-header h2 {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+  }
+  
+  .tips-header p {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  
+  /* Carousel */
+  .tips-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .tips-arrow {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .tips-arrow:hover {
+    background: #f0f0f0;
+  }
+  
+  .tips-slides {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Slide */
+  .tip-slide {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border: 1px solid #e5e5e5;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    position: absolute;
+    inset: 0;
+  }
+  
+  .tip-slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    position: relative;
+  }
+  
+  .tip-slide h3 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  
+  .tip-slide p {
+    font-size: 0.9rem;
+    color: #444;
+  }
+  
+  .tip-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #0066cc;
+  }
+  
+  /* Mobile */
+  @media (max-width: 600px) {
+    .tips-header h2 {
+      font-size: 1.2rem;
+    }
+  
+    .tips-carousel {
+      gap: 4px;
+    }
+  
+    .tips-slides {
+      max-width: 100%;
+    }
+  
+    .tip-slide {
+      padding: 12px 12px;
+    }
+  }
+  

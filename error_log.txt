@@ -1,0 +1,1 @@
+[19-Oct-2025 08:46:45 Europe/Berlin] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\GABAYAI\save_medical_info.php on line 11

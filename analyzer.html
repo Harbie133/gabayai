@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symptom Analyzer - GabayAI</title>
+<link rel="stylesheet" href="navbar.css">
+<link rel="stylesheet" href="analyzer.css">
+</head>
+<body>
+<!-- <CHANGE> Added responsive navbar -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav">
+      <li><a href="homer.html" class="nav-link ">Dashboard</a></li>
+      <li><a href="analyzer.html" class="nav-link active">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link ">Consultation</a></li>
+      <li><a href="profile.html" class="nav-link">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
+      <a href="analyzer.html" class="mobile-nav-link active">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link ">Consultation</a>
+      <a href="profile.html" class="mobile-nav-link ">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- <CHANGE> Wrapped main content in container -->
+<div class="main-content">
+<div class="container">
+  <h2>Symptom Analyzer</h2>
+
+  <!-- Step 1 -->
+  <div class="step active" id="step1">
+    <div class="form-group">
+      <div class="section-label">Personal Information</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="age">Age</label>
+          <!-- <CHANGE> Changed min from 0 to 1 to prevent zero values -->
+          <input type="number" id="age" placeholder="Enter age" min="1" max="130" oninput="validateAge(this)">
+          <div id="age-error" class="error-message">Please enter a valid age between 1 and 130</div>
+        </div>
+        <div class="form-field">
+          <label for="gender">Gender</label>
+          <select id="gender">
+            <option value="">Select gender</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Body Measurements</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="height">Height (cm)</label>
+          <!-- <CHANGE> Changed min from 0 to 1 to prevent zero values -->
+          <input type="number" id="height" placeholder="Height in cm" min="1" oninput="validatePositiveNumber(this, 'height-error')">
+          <div id="height-error" class="error-message">Please enter a valid height</div>
+        </div>
+        <div class="form-field">
+          <label for="weight">Weight (kg)</label>
+          <!-- <CHANGE> Changed min from 0 to 1 to prevent zero values -->
+          <input type="number" id="weight" placeholder="Weight in kg" min="1" oninput="validatePositiveNumber(this, 'weight-error')">
+          <div id="weight-error" class="error-message">Please enter a valid weight</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Vital Signs</div>
+      <div class="form-field">
+        <label for="bp">Blood Pressure</label>
+        <input type="text" id="bp" placeholder="e.g. 120/80 mmHg">
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button onclick="validateStep1()">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" id="step2">
+    <label for="symptoms">Describe your symptoms</label>
+    <textarea id="symptoms" placeholder="Please describe your symptoms in detail, including when they started, their severity, and any factors that make them better or worse..."></textarea>
+    <div class="button-group">
+      <button onclick="prevStep(2)">Back</button>
+      <button onclick="analyzeSymptoms()">Analyze Symptoms</button>
+    </div>
+    <div class="analyzing" id="analyzing">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+      </div>
+      <div class="analyzing-text">Analyzing your symptoms...</div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" id="step3">
+    <h3>Health Assessment Results</h3>
+    <div class="results" id="results"></div>
+    <div class="button-group">
+      <button onclick="prevStep(3)">Back to Symptoms</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<script src="auth-guard.js"></script>
+<script src="analyzer.js"></script>
+<script>
+// User logout function (only clears user sessions, not doctor sessions)
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'user_logout.php';
+    }
+}
+
+// FIXED: Mobile menu toggle - now uses 'show' class instead of 'active'
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');  // Changed from 'active' to 'show'
+    hamburger.classList.toggle('open');   // Changed from 'active' to 'open'
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+        if (mobileMenu.classList.contains('show')) {
+            mobileMenu.classList.remove('show');
+            hamburger.classList.remove('open');
+        }
+    }
+});
+
+// Sync patient data with doctor's patient list
+window.addEventListener('DOMContentLoaded', function() {
+    syncPatientData();
+});
+
+function syncPatientData() {
+    fetch('sync_patient_data.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Patient data synced:', data);
+        })
+        .catch(error => {
+            console.error('Error syncing patient data:', error);
+        });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Prescriptions - Doctor Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    color: #2d3748;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar Styling */
+  .sidebar {
+    background: #3d5a80;
+    color: white;
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    z-index: 1200;
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.6rem;
+    padding: 30px 25px 20px 25px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar .logo span {
+    color: #98c1d9;
+  }
+  .sidebar nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 25px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .sidebar nav a i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: rgba(255,255,255,0.1);
+    border-left-color: #98c1d9;
+    color: white;
+  }
+  .sidebar .logout {
+    padding: 20px 25px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.9);
+  }
+  .sidebar .logout:hover {
+    background: rgba(0,0,0,0.2);
+    color: #ff6b6b;
+  }
+
+  /* Hamburger Menu */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    z-index: 1300;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hamburger div {
+    background: #3d5a80;
+    border-radius: 2px;
+    height: 3px;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 0;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.6rem;
+    color: #3d5a80;
+    font-weight: 600;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    color: #4a5568;
+  }
+  .user-info i {
+    font-size: 1.8rem;
+    color: #3d5a80;
+  }
+
+  /* Content Area */
+  .content-area {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Back Button */
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: white;
+    color: #3d5a80;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+  }
+  .back-button:hover {
+    background: #3d5a80;
+    color: white;
+    transform: translateX(-3px);
+  }
+
+  /* Layout Grid */
+  .prescription-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 25px;
+  }
+
+  /* Card Styling */
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card h3 {
+    font-size: 1.2rem;
+    color: #2d3748;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .card h3 i {
+    color: #3d5a80;
+  }
+
+  /* Form Styling */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .form-group label .required {
+    color: #ef4444;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #3d5a80;
+    box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.1);
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  /* Autocomplete Dropdown */
+  .autocomplete-wrapper {
+    position: relative;
+  }
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #cbd5e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 1000;
+  }
+  .autocomplete-dropdown.show {
+    display: block;
+  }
+  .autocomplete-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .autocomplete-item:hover {
+    background: #f7fafc;
+  }
+  .autocomplete-item.active {
+    background: #3d5a80;
+    color: white;
+  }
+
+  /* Quick Select Buttons */
+  .quick-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .quick-btn {
+    padding: 6px 12px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quick-btn:hover {
+    background: #3d5a80;
+    color: white;
+  }
+
+  /* Medication List */
+  .medication-list {
+    margin-bottom: 20px;
+  }
+  .medication-item {
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid #3d5a80;
+  }
+  .medication-info h4 {
+    font-size: 1rem;
+    color: #2d3748;
+    margin-bottom: 5px;
+  }
+  .medication-info p {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+  .btn-remove {
+    width: 30px;
+    height: 30px;
+    background: #fee2e2;
+    color: #991b1b;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  .btn-remove:hover {
+    background: #991b1b;
+    color: white;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: #3d5a80;
+    color: white;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-primary:hover {
+    background: #2d4560;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(61, 90, 128, 0.3);
+  }
+  .btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .btn-secondary:hover {
+    background: #cbd5e0;
+  }
+
+  /* Prescription List */
+  .prescriptions-list {
+    display: grid;
+    gap: 15px;
+  }
+  .prescription-card {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid #7c3aed;
+    transition: all 0.3s ease;
+  }
+  .prescription-card:hover {
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+    transform: translateX(5px);
+  }
+  .prescription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+  }
+  .prescription-patient h4 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 5px;
+  }
+  .prescription-patient p {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+  .prescription-date {
+    font-size: 0.85rem;
+    color: #718096;
+    text-align: right;
+  }
+  .prescription-medications {
+    margin-bottom: 15px;
+  }
+  .prescription-medications h5 {
+    font-size: 0.9rem;
+    color: #3d5a80;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .medication-tag {
+    display: inline-block;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  .prescription-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .btn-action {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-view {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  .btn-view:hover {
+    background: #0369a1;
+    color: white;
+  }
+  .btn-print {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .btn-print:hover {
+    background: #065f46;
+    color: white;
+  }
+
+  /* Success Message */
+  .success-message {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .success-message.show {
+    display: flex;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 900px) {
+    .hamburger {
+      display: flex;
+    }
+    .sidebar {
+      transform: translateX(-260px);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+    }
+    .prescription-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .content-area {
+      padding: 15px;
+    }
+    .prescription-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo">MEDI<span>Care</span></div>
+    <nav>
+      <a href="doctor_dashboard.html">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a href="doctor_profile.html">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <a href="doctor_patients.html" class="active">
+        <i class="fas fa-users"></i> Patients
+      </a>
+      <a href="#">
+        <i class="fas fa-heartbeat"></i> Symptom Analysis
+      </a>
+      <a href="#">
+        <i class="fas fa-video"></i> Teleconsultation
+      </a>
+      <a href="#">
+        <i class="fas fa-bell"></i> Notifications
+      </a>
+    </nav>
+    <div class="logout" onclick="location.href='doctor_logout.php'">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <div class="hamburger" id="hamburger">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <h1>Prescriptions</h1>
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>Dr. <span class="user-name" id="username">John Doe</span></span>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      <!-- Back Button -->
+      <a href="doctor_patients.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Patient Management
+      </a>
+
+      <!-- Layout Grid -->
+      <div class="prescription-layout">
+        <!-- Create Prescription Form -->
+        <div>
+          <div class="card">
+            <h3><i class="fas fa-prescription"></i> Create Prescription</h3>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message">
+              <i class="fas fa-check-circle"></i>
+              <span>Prescription created successfully!</span>
+            </div>
+
+            <form id="prescriptionForm">
+              <!-- Patient Selection -->
+              <div class="form-group">
+                <label for="patientSelect">Select Patient <span class="required">*</span></label>
+                <select id="patientSelect" required>
+                  <option value="">Loading patients...</option>
+                </select>
+              </div>
+
+              <!-- Diagnosis with Autocomplete -->
+              <div class="form-group">
+                <label for="diagnosis">Diagnosis <span class="required">*</span></label>
+                <div class="autocomplete-wrapper">
+                  <input type="text" id="diagnosis" required placeholder="Start typing or select below...">
+                  <div id="diagnosisDropdown" class="autocomplete-dropdown"></div>
+                </div>
+                <div class="quick-select">
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Upper Respiratory Tract Infection')">URTI</button>
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Hypertension')">Hypertension</button>
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Diabetes Mellitus Type 2')">Diabetes</button>
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Acute Gastroenteritis')">Gastroenteritis</button>
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Urinary Tract Infection')">UTI</button>
+                  <button type="button" class="quick-btn" onclick="setDiagnosis('Allergic Rhinitis')">Allergic Rhinitis</button>
+                </div>
+              </div>
+
+              <!-- Medication Name with Autocomplete -->
+              <div class="form-group">
+                <label for="medicationName">Medication Name <span class="required">*</span></label>
+                <div class="autocomplete-wrapper">
+                  <input type="text" id="medicationName" placeholder="Start typing medication name...">
+                  <div id="medicationDropdown" class="autocomplete-dropdown"></div>
+                </div>
+                <div class="quick-select">
+                  <button type="button" class="quick-btn" onclick="setMedication('Amoxicillin 500mg')">Amoxicillin</button>
+                  <button type="button" class="quick-btn" onclick="setMedication('Paracetamol 500mg')">Paracetamol</button>
+                  <button type="button" class="quick-btn" onclick="setMedication('Ibuprofen 400mg')">Ibuprofen</button>
+                  <button type="button" class="quick-btn" onclick="setMedication('Cetirizine 10mg')">Cetirizine</button>
+                  <button type="button" class="quick-btn" onclick="setMedication('Metformin 500mg')">Metformin</button>
+                  <button type="button" class="quick-btn" onclick="setMedication('Losartan 50mg')">Losartan</button>
+                </div>
+              </div>
+
+              <!-- Dosage & Frequency -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="dosage">Dosage</label>
+                  <select id="dosage">
+                    <option value="1 tablet">1 tablet</option>
+                    <option value="2 tablets">2 tablets</option>
+                    <option value="1 capsule">1 capsule</option>
+                    <option value="2 capsules">2 capsules</option>
+                    <option value="5ml">5ml</option>
+                    <option value="10ml">10ml</option>
+                    <option value="1 teaspoon">1 teaspoon</option>
+                    <option value="1 tablespoon">1 tablespoon</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="frequency">Frequency</label>
+                  <select id="frequency">
+                    <option value="Once daily">Once daily</option>
+                    <option value="Twice daily">Twice daily</option>
+                    <option value="3 times daily">3 times daily</option>
+                    <option value="4 times daily">4 times daily</option>
+                    <option value="Every 6 hours">Every 6 hours</option>
+                    <option value="Every 8 hours">Every 8 hours</option>
+                    <option value="As needed">As needed</option>
+                    <option value="Before meals">Before meals</option>
+                    <option value="After meals">After meals</option>
+                    <option value="At bedtime">At bedtime</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Duration -->
+              <div class="form-group">
+                <label for="duration">Duration</label>
+                <select id="duration">
+                  <option value="3 days">3 days</option>
+                  <option value="5 days">5 days</option>
+                  <option value="7 days">7 days</option>
+                  <option value="10 days">10 days</option>
+                  <option value="14 days">14 days</option>
+                  <option value="21 days">21 days</option>
+                  <option value="30 days">30 days</option>
+                  <option value="60 days">60 days</option>
+                  <option value="90 days">90 days</option>
+                  <option value="Until follow-up">Until follow-up</option>
+                </select>
+              </div>
+
+              <!-- Instructions -->
+              <div class="form-group">
+                <label for="instructions">Instructions</label>
+                <select id="instructions">
+                  <option value="Take with food">Take with food</option>
+                  <option value="Take on empty stomach">Take on empty stomach</option>
+                  <option value="Take with plenty of water">Take with plenty of water</option>
+                  <option value="May cause drowsiness">May cause drowsiness</option>
+                  <option value="Avoid alcohol">Avoid alcohol</option>
+                  <option value="Complete the full course">Complete the full course</option>
+                  <option value="Do not exceed recommended dose">Do not exceed recommended dose</option>
+                  <option value="Store in cool dry place">Store in cool dry place</option>
+                </select>
+              </div>
+
+              <!-- Add Medication Button -->
+              <button type="button" class="btn btn-secondary" onclick="addMedication()">
+                <i class="fas fa-plus"></i> Add Medication
+              </button>
+
+              <!-- Added Medications List -->
+              <div id="medicationList" class="medication-list" style="margin-top: 20px; display: none;">
+                <h4 style="font-size: 0.95rem; color: #4a5568; margin-bottom: 10px;">Added Medications:</h4>
+                <div id="medicationsContainer"></div>
+              </div>
+
+              <!-- Additional Notes -->
+              <div class="form-group" style="margin-top: 20px;">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" placeholder="Any additional notes or warnings..."></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Prescription
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Recent Prescriptions List -->
+        <div>
+          <div class="card">
+            <h3><i class="fas fa-list"></i> Recent Prescriptions</h3>
+            <div class="prescriptions-list" id="prescriptionsList">
+              <p style="text-align: center; color: #a0aec0; padding: 40px;">Loading prescriptions...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  
+  hamburger.addEventListener('click', () => sidebar.classList.toggle('show'));
+
+  let addedMedications = [];
+  let allPrescriptions = [];
+  let selectedAppointment = null;
+
+  // Common diagnoses database
+  const commonDiagnoses = [
+    'Upper Respiratory Tract Infection',
+    'Hypertension',
+    'Diabetes Mellitus Type 2',
+    'Acute Gastroenteritis',
+    'Urinary Tract Infection',
+    'Allergic Rhinitis',
+    'Asthma',
+    'Pneumonia',
+    'Acute Bronchitis',
+    'Migraine',
+    'Tension Headache',
+    'Back Pain',
+    'Arthritis',
+    'Dermatitis',
+    'Conjunctivitis',
+    'Otitis Media',
+    'Pharyngitis',
+    'Sinusitis',
+    'Dyslipidemia',
+    'Anxiety Disorder',
+    'Depression',
+    'Insomnia',
+    'Gastroesophageal Reflux Disease',
+    'Peptic Ulcer',
+    'Acute Diarrhea',
+    'Constipation'
+  ];
+
+  // Common medications database
+  const commonMedications = [
+    'Amoxicillin 500mg',
+    'Amoxicillin 250mg',
+    'Paracetamol 500mg',
+    'Ibuprofen 400mg',
+    'Cetirizine 10mg',
+    'Metformin 500mg',
+    'Metformin 850mg',
+    'Losartan 50mg',
+    'Losartan 100mg',
+    'Amlodipine 5mg',
+    'Amlodipine 10mg',
+    'Omeprazole 20mg',
+    'Omeprazole 40mg',
+    'Azithromycin 500mg',
+    'Ciprofloxacin 500mg',
+    'Levofloxacin 500mg',
+    'Salbutamol Inhaler',
+    'Montelukast 10mg',
+    'Loratadine 10mg',
+    'Mefenamic Acid 500mg',
+    'Aspirin 80mg',
+    'Clopidogrel 75mg',
+    'Atorvastatin 20mg',
+    'Simvastatin 20mg',
+    'Insulin Glargine',
+    'Metoclopramide 10mg',
+    'Ranitidine 150mg',
+    'Doxycycline 100mg'
+  ];
+
+  // Load data on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, fetching patients...');
+    loadPatients();
+    loadPrescriptions();
+    setupAutocomplete();
+  });
+
+  // Setup autocomplete for diagnosis and medication
+  function setupAutocomplete() {
+    const diagnosisInput = document.getElementById('diagnosis');
+    const diagnosisDropdown = document.getElementById('diagnosisDropdown');
+    const medicationInput = document.getElementById('medicationName');
+    const medicationDropdown = document.getElementById('medicationDropdown');
+
+    // Diagnosis autocomplete
+    diagnosisInput.addEventListener('input', function() {
+      const value = this.value.toLowerCase();
+      if (value.length < 2) {
+        diagnosisDropdown.classList.remove('show');
+        return;
+      }
+
+      const matches = commonDiagnoses.filter(d => 
+        d.toLowerCase().includes(value)
+      );
+
+      if (matches.length > 0) {
+        diagnosisDropdown.innerHTML = matches.map(m => 
+          `<div class="autocomplete-item" onclick="setDiagnosis('${m}')">${m}</div>`
+        ).join('');
+        diagnosisDropdown.classList.add('show');
+      } else {
+        diagnosisDropdown.classList.remove('show');
+      }
+    });
+
+    // Medication autocomplete
+    medicationInput.addEventListener('input', function() {
+      const value = this.value.toLowerCase();
+      if (value.length < 2) {
+        medicationDropdown.classList.remove('show');
+        return;
+      }
+
+      const matches = commonMedications.filter(m => 
+        m.toLowerCase().includes(value)
+      );
+
+      if (matches.length > 0) {
+        medicationDropdown.innerHTML = matches.map(m => 
+          `<div class="autocomplete-item" onclick="setMedication('${m}')">${m}</div>`
+        ).join('');
+        medicationDropdown.classList.add('show');
+      } else {
+        medicationDropdown.classList.remove('show');
+      }
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!diagnosisInput.contains(e.target)) {
+        diagnosisDropdown.classList.remove('show');
+      }
+      if (!medicationInput.contains(e.target)) {
+        medicationDropdown.classList.remove('show');
+      }
+    });
+  }
+
+  // Set diagnosis from quick button or autocomplete
+  function setDiagnosis(value) {
+    document.getElementById('diagnosis').value = value;
+    document.getElementById('diagnosisDropdown').classList.remove('show');
+  }
+
+  // Set medication from quick button or autocomplete
+  function setMedication(value) {
+    document.getElementById('medicationName').value = value;
+    document.getElementById('medicationDropdown').classList.remove('show');
+  }
+
+  // Load patients
+  function loadPatients() {
+    console.log('Fetching patients from API...');
+    
+    fetch('get_combined_patients.php')
+      .then(res => {
+        console.log('Response status:', res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log('Patients data received:', data);
+        
+        if (data.success) {
+          const select = document.getElementById('patientSelect');
+          select.innerHTML = '';
+          
+          if (data.patients && data.patients.length > 0) {
+            select.innerHTML = '<option value="">Choose patient...</option>';
+            
+            data.patients.forEach(patient => {
+              const sourceIcon = '👤';
+              const statusBadge = patient.appointment_status === 'confirmed' ? '✓' : 
+                                 patient.appointment_status === 'pending' ? '⏳' : '🔄';
+              
+              const displayName = `${sourceIcon} ${patient.name} - ${statusBadge} ${patient.appointment_date} ${patient.appointment_time}`;
+              
+              const option = document.createElement('option');
+              option.value = patient.id;
+              option.textContent = displayName;
+              option.dataset.appointmentId = patient.appointment_id;
+              option.dataset.appointmentDate = patient.appointment_date;
+              option.dataset.appointmentTime = patient.appointment_time;
+              option.dataset.patientName = patient.name;
+              select.appendChild(option);
+            });
+            
+            console.log('✓ Loaded', data.patients.length, 'patients');
+          } else {
+            select.innerHTML = '<option value="">No patients with appointments found</option>';
+            console.warn('No patients returned from API');
+          }
+        } else {
+          console.error('API returned error:', data.message);
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        alert('Failed to load patients. Check browser console (F12) for details.');
+      });
+  }
+
+  // Handle patient selection
+  document.getElementById('patientSelect').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+      selectedAppointment = {
+        id: selectedOption.dataset.appointmentId,
+        date: selectedOption.dataset.appointmentDate,
+        time: selectedOption.dataset.appointmentTime,
+        patientName: selectedOption.dataset.patientName
+      };
+      console.log('Selected appointment:', selectedAppointment);
+    } else {
+      selectedAppointment = null;
+    }
+  });
+
+  // Load prescriptions
+  function loadPrescriptions() {
+    console.log('Fetching prescriptions...');
+    
+    fetch('get_prescriptions.php')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Prescriptions data:', data);
+        
+        if (data.success) {
+          allPrescriptions = data.prescriptions || [];
+          displayPrescriptions();
+        } else {
+          document.getElementById('prescriptionsList').innerHTML = 
+            '<p style="text-align: center; color: #a0aec0; padding: 40px;">No prescriptions yet</p>';
+        }
+      })
+      .catch(err => {
+        console.error('Prescriptions fetch error:', err);
+        document.getElementById('prescriptionsList').innerHTML = 
+          '<p style="text-align: center; color: #ef4444; padding: 40px;">Error loading prescriptions</p>';
+      });
+  }
+
+  function displayPrescriptions() {
+    const container = document.getElementById('prescriptionsList');
+    container.innerHTML = '';
+
+    if (allPrescriptions.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: #a0aec0; padding: 40px;">No prescriptions yet</p>';
+      return;
+    }
+
+    allPrescriptions.forEach(rx => {
+      const date = new Date(rx.prescription_date).toLocaleDateString('en-US', 
+        { month: 'short', day: 'numeric', year: 'numeric' });
+      
+      container.innerHTML += `
+        <div class="prescription-card">
+          <div class="prescription-header">
+            <div class="prescription-patient">
+              <h4>👤 ${rx.patient_name || 'Unknown'}</h4>
+              <p>${rx.diagnosis || 'No diagnosis'}</p>
+            </div>
+            <div class="prescription-date"><i class="fas fa-calendar"></i> ${date}</div>
+          </div>
+          <div class="prescription-medications">
+            <h5>Medications:</h5>
+            ${(rx.medications || []).map(m => `<span class="medication-tag"><i class="fas fa-pills"></i> ${m.name}</span>`).join('')}
+          </div>
+          <div class="prescription-actions">
+            <button class="btn-action btn-view" onclick="viewPrescription(${rx.prescription_id})">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn-action btn-print" onclick="printPrescription(${rx.prescription_id})">
+              <i class="fas fa-print"></i> Print
+            </button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function addMedication() {
+    const name = document.getElementById('medicationName').value.trim();
+    if (!name) {
+      alert('Please enter medication name');
+      return;
+    }
+
+    addedMedications.push({
+      name: name,
+      dosage: document.getElementById('dosage').value,
+      frequency: document.getElementById('frequency').value,
+      duration: document.getElementById('duration').value,
+      instructions: document.getElementById('instructions').value
+    });
+
+    document.getElementById('medicationName').value = '';
+    displayAddedMedications();
+  }
+
+  function displayAddedMedications() {
+    const container = document.getElementById('medicationsContainer');
+    const listDiv = document.getElementById('medicationList');
+
+    if (addedMedications.length === 0) {
+      listDiv.style.display = 'none';
+      return;
+    }
+
+    listDiv.style.display = 'block';
+    container.innerHTML = '';
+
+    addedMedications.forEach((med, index) => {
+      container.innerHTML += `
+        <div class="medication-item">
+          <div class="medication-info">
+            <h4>${med.name}</h4>
+            <p>${med.dosage} • ${med.frequency} • ${med.duration}</p>
+          </div>
+          <button class="btn-remove" onclick="removeMedication(${index})">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+    });
+  }
+
+  function removeMedication(index) {
+    addedMedications.splice(index, 1);
+    displayAddedMedications();
+  }
+
+  // Submit prescription
+  document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const patientId = document.getElementById('patientSelect').value;
+    const diagnosis = document.getElementById('diagnosis').value;
+
+    if (!patientId || !diagnosis) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (addedMedications.length === 0) {
+      alert('Please add at least one medication');
+      return;
+    }
+
+    if (!selectedAppointment || !selectedAppointment.id) {
+      alert('No appointment selected for this patient');
+      return;
+    }
+
+    console.log('Submitting prescription:', {
+      patient_id: patientId,
+      appointment_id: selectedAppointment.id,
+      diagnosis: diagnosis,
+      medications: addedMedications
+    });
+
+    fetch('create_prescription.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_id: patientId,
+        appointment_id: selectedAppointment.id,
+        diagnosis: diagnosis,
+        notes: document.getElementById('notes').value,
+        medications: addedMedications
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Create prescription response:', data);
+      
+      if (data.success) {
+        document.getElementById('successMessage').classList.add('show');
+        setTimeout(() => {
+          document.getElementById('successMessage').classList.remove('show');
+        }, 3000);
+
+        document.getElementById('prescriptionForm').reset();
+        addedMedications = [];
+        selectedAppointment = null;
+        displayAddedMedications();
+        loadPrescriptions();
+        loadPatients();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error('Submit error:', err);
+      alert('Failed to create prescription');
+    });
+  });
+
+  function viewPrescription(id) {
+    const rx = allPrescriptions.find(p => p.prescription_id === id);
+    if (!rx) return;
+
+    let meds = (rx.medications || []).map(m => 
+      `${m.name}\n  Dosage: ${m.dosage}\n  Frequency: ${m.frequency}\n  Duration: ${m.duration}`
+    ).join('\n\n');
+
+    alert(`PRESCRIPTION #${id}\n\nPatient: ${rx.patient_name}\nDiagnosis: ${rx.diagnosis}\n\nMEDICATIONS:\n${meds}\n\nNotes: ${rx.additional_notes || 'None'}`);
+  }
+
+  function printPrescription(id) {
+    alert('Print prescription #' + id);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Professional Details Form</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    justify-content: center;
+    padding: 3vw;
+    min-height: 100vh;
+  }
+  .form-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 24px 28px;
+    max-width: 500px;
+    width: 100%;
+  }
+  .form-card h2 {
+    color: #174374;
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+  .form-description {
+    font-size: 1rem;
+    color: #506a82;
+    margin-bottom: 18px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  label {
+    font-weight: 600;
+    color: #2389c7;
+    margin-bottom: 6px;
+    display: block;
+  }
+  input[type="text"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+    transition: border-color 0.3s ease;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  button {
+    background-color: #16a085;
+    color: white;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button.reset {
+    background-color: #ccc;
+    color: #c92525;
+  }
+  button.reset:hover {
+    background-color: #aaa;
+  }
+  .back-button {
+    background: none;
+    border: none;
+    color: #16a085;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .back-button:hover,
+  .back-button:focus {
+    color: #0e6655;
+  }
+</style>
+</head>
+<body>
+  <div class="form-card" role="main" aria-labelledby="formTitle">
+    <button class="back-button" onclick="history.back()">← Back</button>
+    <h2 id="formTitle">Professional Details</h2>
+    <p class="form-description">Please update your professional information below.</p>
+    
+    <form id="professionalDetailsForm" method="POST" action="save_professional.php">
+      <div>
+        <label for="specialization">Specialization</label>
+        <select id="specialization" name="specialization" required>
+          <option value="">-- Select Specialization --</option>
+          <?php
+            $conn = new mysqli("localhost", "root", "", "gabayai");
+            if ($conn->connect_error) {
+              die("Connection failed: " . $conn->connect_error);
+            }
+            $sql = "SELECT id, specialization_name FROM specialization_list";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+              while ($row = $result->fetch_assoc()) {
+                echo "<option value='" . $row['id'] . "'>" . htmlspecialchars($row['specialization_name']) . "</option>";
+              }
+            } else {
+              echo "<option value=''>No specializations found</option>";
+            }
+            $conn->close();
+          ?>
+        </select>
+      </div>
+
+      <div>
+        <label for="yearsExperience">Years of Experience</label>
+        <input type="number" id="yearsExperience" name="yearsExperience" min="0" max="80" placeholder="E.g. 10" required />
+      </div>
+
+      <div>
+        <label for="clinicName">Medical Center</label>
+        <input type="text" id="clinicName" name="clinicName" placeholder="Poblacion Center Muntinlupa" />
+      </div>
+
+      <div>
+        <label for="officeAddress">Address</label>
+        <textarea id="officeAddress" name="officeAddress" placeholder="Poblacion Muntinlupa"></textarea>
+      </div>
+
+      <div class="buttons">
+        <button type="reset" class="reset">Reset</button>
+        <button type="submit">Save Details</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

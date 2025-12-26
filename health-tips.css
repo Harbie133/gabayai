@@ -1,0 +1,68 @@
+.main-content {
+    padding: 20px;
+  }
+  
+  .tips-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .tips-page-container h1 {
+    font-size: 1.7rem;
+    margin-bottom: 10px;
+  }
+  
+  .language-toggle {
+    margin-bottom: 12px;
+  }
+  
+  .language-toggle button {
+    padding: 6px 12px;
+    margin-right: 6px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #f7f7f7;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  .language-toggle button.active {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+  
+  .tip-status {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 12px;
+  }
+  
+  .tip-body p {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+  
+  .tip-body ul {
+    margin-left: 20px;
+    margin-bottom: 8px;
+  }
+  
+  .tip-body li {
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+  }
+  
+  .tip-disclaimer {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #b22222;
+  }
+  
+  @media (max-width: 600px) {
+    .tips-page-container h1 {
+      font-size: 1.4rem;
+    }
+  }
+  

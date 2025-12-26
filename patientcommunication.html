@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Patient Communication</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    color: #244050;
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    background: #174374;
+    color: white;
+    width: 250px;
+    min-width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .sidebar.hide {
+    transform: translateX(-260px);
+  }
+  .sidebar .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-left: 30px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  .sidebar nav a {
+    color: #e1e8f0;
+    padding: 13px 30px;
+    text-decoration: none;
+    display: block;
+    border-left: 4px solid transparent;
+    transition: background 0.15s, border-left-color 0.15s;
+    font-size: 1.07rem;
+  }
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
+    background: #0e2c4a;
+    border-left-color: #16a085;
+    color: white;
+  }
+  .sidebar .logout {
+    margin-top: auto;
+    margin-left: 30px;
+    color: #e57373;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  /* Hamburger button */
+  .hamburger {
+    width: 30px;
+    height: 24px;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    cursor: pointer;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    padding: 4px;
+  }
+  @media (min-width: 901px) {
+    .hamburger {
+      display: none;
+    }
+  }
+  .hamburger div {
+    background: #000000;
+    border-radius: 2px;
+    height: 4px;
+    transition: all 0.4s ease;
+    transform-origin: center;
+    width: 100%;
+  }
+  .hamburger.active div:nth-child(1) {
+    width: 70%;
+    transform: translateY(6px);
+  }
+  .hamburger.active div:nth-child(2) {
+    width: 100%;
+    opacity: 0.6;
+  }
+  .hamburger.active div:nth-child(3) {
+    width: 50%;
+    transform: translateY(-6px);
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 36px 3vw 3vw 3vw;
+    transition: margin-left 0.3s ease;
+  }
+  .main-content.full-width {
+    margin-left: 0;
+  }
+  .back-button {
+    background: none;
+    border: none;
+    color: #16a085;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    text-decoration: none;
+  }
+  .profile-header {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #174374;
+    margin-bottom: 24px;
+  }
+  /* Communication controls */
+  .communication-controls {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 2px solid #16a085;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #244050;
+    background: #f9fefc;
+  }
+  .search-input:focus {
+    border-color: #2389c7;
+    outline: none;
+    background: #fff;
+  }
+  .compose-btn {
+    background-color: #16a085;
+    color: white;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+  }
+  .compose-btn:hover {
+    background-color: #13876e;
+  }
+  /* Communication stats */
+  .communication-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 18px;
+    text-align: center;
+    border-left: 5px solid #16a085;
+  }
+  .stat-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    color: #174374;
+    font-weight: 700;
+  }
+  .stat-card p {
+    margin: 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  /* Message filters */
+  .message-filters {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #506a82;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+  .filter-btn.active {
+    border-color: #16a085;
+    background: #16a085;
+    color: white;
+  }
+  .filter-btn:hover:not(.active) {
+    border-color: #16a085;
+    color: #16a085;
+  }
+  /* Conversations list */
+  .conversations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .conversation-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 18px;
+    border-left: 5px solid #16a085;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+    position: relative;
+  }
+  .conversation-card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .conversation-card.unread {
+    border-left-color: #3b82f6;
+    background: #fafbff;
+  }
+  .conversation-card.unread::after {
+    content: '';
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 10px;
+    height: 10px;
+    background: #3b82f6;
+    border-radius: 50%;
+  }
+  .conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .conversation-patient {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .patient-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #16a085;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  .patient-info h4 {
+    margin: 0 0 4px 0;
+    color: #174374;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .patient-info p {
+    margin: 0;
+    color: #506a82;
+    font-size: 0.9rem;
+  }
+  .conversation-time {
+    color: #506a82;
+    font-size: 0.8rem;
+  }
+  .conversation-preview {
+    color: #506a82;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .conversation-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .message-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .tag-appointment {
+    background: #e6fffa;
+    color: #16a085;
+  }
+  .tag-prescription {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .tag-followup {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .tag-general {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+  .tag-urgent {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  /* Quick actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .action-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(34, 67, 116, 0.06);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+    border-left: 5px solid #16a085;
+  }
+  .action-card:hover {
+    box-shadow: 0 4px 16px rgba(22, 160, 133, 0.3);
+  }
+  .action-card .icon {
+    font-size: 2rem;
+    color: #16a085;
+    margin-bottom: 8px;
+  }
+  .action-card h4 {
+    margin: 0;
+    color: #174374;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  /* Responsive */
+  @media(max-width: 900px) {
+    .sidebar {
+      transform: translateX(-260px);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 20px 15px;
+    }
+    .communication-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .conversation-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+    .message-filters {
+      justify-content: center;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+  <div class="logo">MEDI<span style="color:#16a085;">Care</span></div>
+  <nav>
+    <a href="DoctorDashboard.html">Dashboard</a>
+    <a href="DoctorProfile.html">Profile</a>
+    <a href="patients.html" class="active">Patients</a>
+    <a href="#">Symptom Analysis</a>
+    <a href="#">Medication/Prescriptions</a>
+    <a href="#">Teleconsultation</a>
+    <a href="notifications.html">Notifications</a>
+    <a href="#">Analytics</a>
+    <a href="#">Settings</a>
+    <a href="#">Support</a>
+  </nav>
+  <div class="logout">Logout</div>
+</div>
+<div class="hamburger" id="hamburger" aria-label="Toggle Menu" role="button" tabindex="0">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+<div class="main-content" id="mainContent">
+  <button class="back-button" onclick="history.back()" aria-label="Go back to previous page">← Back</button>
+  <div class="profile-header">Patient Communication</div>
+  
+  <div class="communication-controls">
+    <input type="text" class="search-input" placeholder="Search conversations..." id="searchInput">
+    <button class="compose-btn" onclick="alert('Compose New Message')">+ Compose Message</button>
+  </div>
+
+  <div class="communication-stats">
+    <div class="stat-card">
+      <h3>18</h3>
+      <p>Total Messages</p>
+    </div>
+    <div class="stat-card">
+      <h3>5</h3>
+      <p>Unread</p>
+    </div>
+    <div class="stat-card">
+      <h3>3</h3>
+      <p>Awaiting Response</p>
+    </div>
+    <div class="stat-card">
+      <h3>2</h3>
+      <p>Urgent</p>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <div class="action-card" onclick="alert('Send Appointment Reminder')">
+      <div class="icon">📅</div>
+      <h4>Appointment Reminders</h4>
+    </div>
+    <div class="action-card" onclick="alert('Send Follow-up Message')">
+      <div class="icon">🔄</div>
+      <h4>Follow-up Messages</h4>
+    </div>
+    <div class="action-card" onclick="alert('Send Prescription Reminder')">
+      <div class="icon">💊</div>
+      <h4>Prescription Reminders</h4>
+    </div>
+    <div class="action-card" onclick="alert('View Message Templates')">
+      <div class="icon">📝</div>
+      <h4>Message Templates</h4>
+    </div>
+  </div>
+
+  <div class="message-filters">
+    <button class="filter-btn active" onclick="filterMessages('all')">All</button>
+    <button class="filter-btn" onclick="filterMessages('unread')">Unread</button>
+    <button class="filter-btn" onclick="filterMessages('appointment')">Appointments</button>
+    <button class="filter-btn" onclick="filterMessages('prescription')">Prescriptions</button>
+    <button class="filter-btn" onclick="filterMessages('urgent')">Urgent</button>
+  </div>
+
+  <div class="conversations-list" id="conversationsList">
+    <div class="conversation-card unread" data-category="urgent" onclick="openConversation('P001')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">JD</div>
+          <div class="patient-info">
+            <h4>John Doe</h4>
+            <p>#P001 • Age: 45</p>
+          </div>
+        </div>
+        <div class="conversation-time">2 hours ago</div>
+      </div>
+      <div class="conversation-preview">
+        "Doctor, I've been experiencing some unusual side effects from the new medication. My blood pressure readings have been higher than usual..."
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-urgent">Urgent</span>
+        <span class="message-tag tag-prescription">Prescription</span>
+      </div>
+    </div>
+
+    <div class="conversation-card unread" data-category="appointment" onclick="openConversation('P002')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">JS</div>
+          <div class="patient-info">
+            <h4>Jane Smith</h4>
+            <p>#P002 • Age: 32</p>
+          </div>
+        </div>
+        <div class="conversation-time">5 hours ago</div>
+      </div>
+      <div class="conversation-preview">
+        "Hi Dr. Smith, I need to reschedule my appointment for tomorrow due to a work emergency. Are there any slots available next week?"
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-appointment">Appointment</span>
+      </div>
+    </div>
+
+    <div class="conversation-card" data-category="followup" onclick="openConversation('P003')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">ML</div>
+          <div class="patient-info">
+            <h4>Mary Lee</h4>
+            <p>#P003 • Age: 28</p>
+          </div>
+        </div>
+        <div class="conversation-time">1 day ago</div>
+      </div>
+      <div class="conversation-preview">
+        "Thank you for the follow-up. My migraine episodes have decreased significantly since starting the new treatment plan."
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-followup">Follow-up</span>
+      </div>
+    </div>
+
+    <div class="conversation-card unread" data-category="prescription" onclick="openConversation('P004')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">DT</div>
+          <div class="patient-info">
+            <h4>David Tan</h4>
+            <p>#P004 • Age: 52</p>
+          </div>
+        </div>
+        <div class="conversation-time">1 day ago</div>
+      </div>
+      <div class="conversation-preview">
+        "Good morning Doctor, my prescription for arthritis medication is running low. Could you please send a refill to my pharmacy?"
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-prescription">Prescription</span>
+      </div>
+    </div>
+
+    <div class="conversation-card" data-category="general" onclick="openConversation('P005')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">SW</div>
+          <div class="patient-info">
+            <h4>Sarah Wilson</h4>
+            <p>#P005 • Age: 39</p>
+          </div>
+        </div>
+        <div class="conversation-time">2 days ago</div>
+      </div>
+      <div class="conversation-preview">
+        "I wanted to update you on my asthma symptoms. The inhaler you prescribed has been working well, and I haven't had any attacks recently."
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-general">General</span>
+      </div>
+    </div>
+
+    <div class="conversation-card unread" data-category="urgent" onclick="openConversation('P006')">
+      <div class="conversation-header">
+        <div class="conversation-patient">
+          <div class="patient-avatar">RC</div>
+          <div class="patient-info">
+            <h4>Robert Chen</h4>
+            <p>#P006 • Age: 61</p>
+          </div>
+        </div>
+        <div class="conversation-time">3 days ago</div>
+      </div>
+      <div class="conversation-preview">
+        "Doctor, I'm experiencing chest pain and shortness of breath. Should I come in for an emergency appointment or go to the ER?"
+      </div>
+      <div class="conversation-tags">
+        <span class="message-tag tag-urgent">Urgent</span>
+        <span class="message-tag tag-followup">Follow-up</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  const mainContent = document.getElementById('mainContent');
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    mainContent.classList.toggle('full-width');
+  }
+  
+  hamburger.addEventListener('click', toggleSidebar);
+  hamburger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+
+  // Filter messages
+  function filterMessages(category) {
+    const conversations = document.querySelectorAll('.conversation-card');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    // Update active filter button
+    filterBtns.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide conversations
+    conversations.forEach(conversation => {
+      if (category === 'all') {
+        conversation.style.display = 'block';
+      } else if (category === 'unread') {
+        conversation.style.display = conversation.classList.contains('unread') ? 'block' : 'none';
+      } else {
+        const tags = conversation.querySelectorAll('.message-tag');
+        let hasCategory = false;
+        tags.forEach(tag => {
+          if (tag.textContent.toLowerCase().includes(category)) {
+            hasCategory = true;
+          }
+        });
+        conversation.style.display = hasCategory ? 'block' : 'none';
+      }
+    });
+  }
+
+  // Search functionality
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const conversations = document.querySelectorAll('.conversation-card');
+    
+    conversations.forEach(conversation => {
+      const patientName = conversation.querySelector('.patient-info h4').textContent.toLowerCase();
+      const messagePreview = conversation.querySelector('.conversation-preview').textContent.toLowerCase();
+      
+      if (patientName.includes(searchTerm) || messagePreview.includes(searchTerm)) {
+        conversation.style.display = 'block';
+      } else {
+        conversation.style.display = 'none';
+      }
+    });
+  });
+
+  // Open conversation
+  function openConversation(patientId) {
+    alert(`Opening conversation with patient ${patientId}`);
+    // In a real app, this would open a detailed conversation view
+  }
+</script>
+</body>
+</html>

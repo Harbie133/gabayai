@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Medical Information - GabayAI</title>
+  <link rel="stylesheet" href="navbar.css"/>
+    <link rel="stylesheet" href="medicalinfo.css"/>
+  
+</head>
+<body>
+
+  <!-- Custom Modal -->
+  <div class="custom-modal-overlay" id="customModal">
+    <div class="custom-modal">
+      <div class="custom-modal-header">
+        <div class="custom-modal-icon" id="modalIcon">
+          <span id="modalIconSymbol">?</span>
+        </div>
+        <h3 class="custom-modal-title" id="modalTitle">Confirm Action</h3>
+      </div>
+      <p class="custom-modal-message" id="modalMessage"></p>
+      <div class="custom-modal-buttons">
+        <button class="custom-modal-btn custom-modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+        <button class="custom-modal-btn custom-modal-btn-confirm" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-spinner"></div>
+  </div>
+<!-- <CHANGE> Added responsive navbar -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <a href="homer.html" class="navbar-logo">GabayAI</a>
+    <ul class="navbar-nav"> 
+      <li><a href="homer.html" class="nav-link ">Dashboard</a></li>
+      <li><a href="analyzer.html" class="nav-link ">Analyzer</a></li>
+      <li><a href="consult.html" class="nav-link ">Consultation</a></li>
+      <li><a href="profile.html" class="nav-link active">Profile</a></li>
+      <li>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </li>
+    </ul>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-items">
+      <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
+      <a href="analyzer.html" class="mobile-nav-link ">Analyzer</a>
+      <a href="consult.html" class="mobile-nav-link ">Consultation</a>
+      <a href="profile.html" class="mobile-nav-link active">Profile</a>
+      
+      <!-- Mobile Logout Button -->
+      <div class="mobile-logout">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <div class="container">
+    <h2>Medical Information</h2>
+    
+    <div class="alert alert-success" id="successAlert"></div>
+    <div class="alert alert-error" id="errorAlert"></div>
+    <div class="alert alert-info" id="infoAlert"></div>
+    
+    <form id="medicalInfoForm" novalidate>
+      
+      <div class="form-section">
+        <h3>Basic Medical Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bloodType">
+              Blood Type <span class="required">*</span>
+            </label>
+            <select id="bloodType" name="bloodType" required>
+              <option value="" disabled selected>Select blood type</option>
+              <option value="A+">A+</option>
+              <option value="A-">A−</option>
+              <option value="B+">B+</option>
+              <option value="B-">B−</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB−</option>
+              <option value="O+">O+</option>
+              <option value="O-">O−</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+            <div class="error-message" id="bloodTypeError">Please select your blood type.</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="height">Height (cm)</label>
+            <input type="number" id="height" name="height" step="0.01" placeholder="e.g., 170.5" min="0" max="300" />
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" name="weight" step="0.01" placeholder="e.g., 65.5" min="0" max="500" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Allergies</h3>
+        <label>Select all that apply:</label>
+        
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_none" name="allergies[]" value="None" onchange="handleNoneCheckbox(this, 'allergies')">
+            <label for="allergy_none">No Known Allergies</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_penicillin" name="allergies[]" value="Penicillin">
+            <label for="allergy_penicillin">Penicillin</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_nsaids" name="allergies[]" value="NSAIDs (Ibuprofen, Aspirin)">
+            <label for="allergy_nsaids">NSAIDs (Ibuprofen, Aspirin)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_seafood" name="allergies[]" value="Seafood">
+            <label for="allergy_seafood">Seafood</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_peanuts" name="allergies[]" value="Peanuts">
+            <label for="allergy_peanuts">Peanuts</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_eggs" name="allergies[]" value="Eggs">
+            <label for="allergy_eggs">Eggs</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_milk" name="allergies[]" value="Milk/Dairy">
+            <label for="allergy_milk">Milk/Dairy</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_dust" name="allergies[]" value="Dust Mites">
+            <label for="allergy_dust">Dust Mites</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_pollen" name="allergies[]" value="Pollen">
+            <label for="allergy_pollen">Pollen</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_pets" name="allergies[]" value="Animal Dander">
+            <label for="allergy_pets">Animal Dander</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_latex" name="allergies[]" value="Latex">
+            <label for="allergy_latex">Latex</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_insects" name="allergies[]" value="Insect Stings">
+            <label for="allergy_insects">Insect Stings</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="allergy_other" name="allergies[]" value="Other" onchange="toggleOtherInput('allergy_other', 'allergyOtherInput')">
+            <label for="allergy_other">Other</label>
+          </div>
+        </div>
+        
+        <div class="other-input" id="allergyOtherInput">
+          <input type="text" id="allergy_other_text" placeholder="Please specify other allergies" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Chronic Conditions</h3>
+        <label>Select all that apply:</label>
+        
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_none" name="chronic_conditions[]" value="None" onchange="handleNoneCheckbox(this, 'chronic_conditions')">
+            <label for="condition_none">No Known Conditions</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_hypertension" name="chronic_conditions[]" value="Hypertension">
+            <label for="condition_hypertension">Hypertension</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_diabetes" name="chronic_conditions[]" value="Diabetes">
+            <label for="condition_diabetes">Diabetes</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_asthma" name="chronic_conditions[]" value="Asthma">
+            <label for="condition_asthma">Asthma</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_copd" name="chronic_conditions[]" value="COPD">
+            <label for="condition_copd">COPD</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_heart" name="chronic_conditions[]" value="Heart Disease">
+            <label for="condition_heart">Heart Disease</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_kidney" name="chronic_conditions[]" value="Kidney Disease">
+            <label for="condition_kidney">Kidney Disease</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_thyroid" name="chronic_conditions[]" value="Thyroid Disorder">
+            <label for="condition_thyroid">Thyroid Disorder</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_arthritis" name="chronic_conditions[]" value="Arthritis">
+            <label for="condition_arthritis">Arthritis</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_gerd" name="chronic_conditions[]" value="GERD/Acid Reflux">
+            <label for="condition_gerd">GERD/Acid Reflux</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_migraine" name="chronic_conditions[]" value="Migraine">
+            <label for="condition_migraine">Migraine</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="condition_other" name="chronic_conditions[]" value="Other" onchange="toggleOtherInput('condition_other', 'conditionOtherInput')">
+            <label for="condition_other">Other</label>
+          </div>
+        </div>
+        
+        <div class="other-input" id="conditionOtherInput">
+          <input type="text" id="condition_other_text" placeholder="Please specify other conditions" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Current Medications</h3>
+        <label>Select all medications you are currently taking:</label>
+        
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_none" name="medications[]" value="None" onchange="handleNoneCheckbox(this, 'medications')">
+            <label for="med_none">Not Taking Any Medications</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_paracetamol" name="medications[]" value="Paracetamol (Biogesic)">
+            <label for="med_paracetamol">Paracetamol (Biogesic)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_ibuprofen" name="medications[]" value="Ibuprofen (Medicol)">
+            <label for="med_ibuprofen">Ibuprofen (Medicol)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_amoxicillin" name="medications[]" value="Amoxicillin">
+            <label for="med_amoxicillin">Amoxicillin</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_cefalexin" name="medications[]" value="Cefalexin">
+            <label for="med_cefalexin">Cefalexin</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_metformin" name="medications[]" value="Metformin (for Diabetes)">
+            <label for="med_metformin">Metformin (for Diabetes)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_losartan" name="medications[]" value="Losartan (for Hypertension)">
+            <label for="med_losartan">Losartan (for Hypertension)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_amlodipine" name="medications[]" value="Amlodipine (Norvasc)">
+            <label for="med_amlodipine">Amlodipine (Norvasc)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_salbutamol" name="medications[]" value="Salbutamol (Ventolin)">
+            <label for="med_salbutamol">Salbutamol (Ventolin)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_cetirizine" name="medications[]" value="Cetirizine (Allerta)">
+            <label for="med_cetirizine">Cetirizine (Allerta)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_omeprazole" name="medications[]" value="Omeprazole (Losec)">
+            <label for="med_omeprazole">Omeprazole (Losec)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_atorvastatin" name="medications[]" value="Atorvastatin (Lipitor)">
+            <label for="med_atorvastatin">Atorvastatin (Lipitor)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_aspirin" name="medications[]" value="Aspirin">
+            <label for="med_aspirin">Aspirin</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_mefenamic" name="medications[]" value="Mefenamic Acid (Dolfenal)">
+            <label for="med_mefenamic">Mefenamic Acid (Dolfenal)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_vitamins" name="medications[]" value="Multivitamins">
+            <label for="med_vitamins">Multivitamins</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="med_other" name="medications[]" value="Other" onchange="toggleOtherInput('med_other', 'medOtherInput')">
+            <label for="med_other">Other</label>
+          </div>
+        </div>
+        
+        <div class="other-input" id="medOtherInput">
+          <textarea id="med_other_text" rows="3" placeholder="Please specify other medications with dosage (e.g., Medication Name 500mg twice daily)"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Past Medical History (Optional)</h3>
+        
+        <div class="form-group">
+          <label for="medicalHistory">Past Illnesses, Surgeries, or Hospitalizations</label>
+          <textarea id="medicalHistory" name="medicalHistory" placeholder="Describe past illnesses, surgeries, or significant medical events (Leave blank if none - will default to N/A)"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="familyMedicalHistory">Family Medical History</label>
+          <textarea id="familyMedicalHistory" name="familyMedicalHistory" placeholder="List relevant family medical history (e.g., parents with diabetes, heart disease, cancer, etc.) - Leave blank if none - will default to N/A"></textarea>
+        </div>
+      </div>
+
+      <div class="submit-wrapper">
+        <button type="submit" id="submitBtn">
+          <span class="button-text">Save Medical Information</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+  
+
+
+  <script src="navbar.js"></script>
+    <script src="auth-guard.js"></script>
+
+  <script>
+
+    // User logout function (only clears user sessions, not doctor sessions)
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'user_logout.php';
+    }
+}
+
+// FIXED: Mobile menu toggle - now uses 'show' class instead of 'active'
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    mobileMenu.classList.toggle('show');  // Changed from 'active' to 'show'
+    hamburger.classList.toggle('open');   // Changed from 'active' to 'open'
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
+        if (mobileMenu.classList.contains('show')) {
+            mobileMenu.classList.remove('show');
+            hamburger.classList.remove('open');
+        }
+    }
+});
+
+
+
+    const form = document.getElementById('medicalInfoForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const pageLoader = document.getElementById('pageLoader');
+    const successAlert = document.getElementById('successAlert');
+    const errorAlert = document.getElementById('errorAlert');
+    const infoAlert = document.getElementById('infoAlert');
+    const bloodType = document.getElementById('bloodType');
+    const bloodTypeError = document.getElementById('bloodTypeError');
+
+    // Custom Modal Elements
+    const customModal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalIconSymbol = document.getElementById('modalIconSymbol');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+    // Custom Confirm Function
+    function customConfirm(message, title = 'Confirm Action', type = 'info') {
+      return new Promise((resolve) => {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        // Set icon based on type
+        modalIcon.className = 'custom-modal-icon ' + type;
+        if (type === 'info') {
+          modalIconSymbol.textContent = '?';
+        } else if (type === 'warning') {
+          modalIconSymbol.textContent = '⚠';
+        }
+        
+        modalConfirmBtn.className = 'custom-modal-btn custom-modal-btn-confirm';
+        modalConfirmBtn.textContent = 'Confirm';
+        
+        customModal.classList.add('active');
+        
+        const handleConfirm = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(true);
+        };
+        
+        const handleCancel = () => {
+          customModal.classList.remove('active');
+          modalConfirmBtn.removeEventListener('click', handleConfirm);
+          modalCancelBtn.removeEventListener('click', handleCancel);
+          resolve(false);
+        };
+        
+        modalConfirmBtn.addEventListener('click', handleConfirm);
+        modalCancelBtn.addEventListener('click', handleCancel);
+        
+        // Close on overlay click
+        customModal.addEventListener('click', function(e) {
+          if (e.target === customModal) {
+            handleCancel();
+          }
+        });
+      });
+    }
+
+    function handleNoneCheckbox(noneCheckbox, groupName) {
+      const allCheckboxes = document.querySelectorAll(`input[name="${groupName}[]"]`);
+      if (noneCheckbox.checked) {
+        allCheckboxes.forEach(cb => {
+          if (cb !== noneCheckbox) cb.checked = false;
+        });
+      }
+    }
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      if (!checkbox.value.includes('None')) {
+        checkbox.addEventListener('change', function() {
+          const groupName = this.name;
+          const noneCheckbox = document.querySelector(`input[name="${groupName}"][value="None"]`);
+          if (noneCheckbox && this.checked) noneCheckbox.checked = false;
+        });
+      }
+    });
+
+    function toggleOtherInput(checkboxId, inputId) {
+      const checkbox = document.getElementById(checkboxId);
+      const inputDiv = document.getElementById(inputId);
+      if (checkbox.checked) {
+        inputDiv.classList.add('show');
+      } else {
+        inputDiv.classList.remove('show');
+        const input = inputDiv.querySelector('input, textarea');
+        if (input) input.value = '';
+      }
+    }
+
+    function showAlert(type, message) {
+      hideAllAlerts();
+      const alert = type === 'success' ? successAlert : type === 'error' ? errorAlert : infoAlert;
+      alert.textContent = message;
+      alert.classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (type === 'success') {
+        setTimeout(() => alert.classList.remove('show'), 5000);
+      }
+    }
+
+    function hideAllAlerts() {
+      successAlert.classList.remove('show');
+      errorAlert.classList.remove('show');
+      infoAlert.classList.remove('show');
+    }
+
+    function resetErrors() {
+      bloodType.classList.remove('invalid');
+      bloodTypeError.style.display = 'none';
+    }
+
+    function getCheckedValues(name) {
+      const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+      let values = Array.from(checkboxes).map(cb => cb.value);
+      
+      if (name === 'allergies[]' && values.includes('Other')) {
+        const otherText = document.getElementById('allergy_other_text').value.trim();
+        if (otherText) {
+          values = values.filter(v => v !== 'Other');
+          values.push('Other: ' + otherText);
+        }
+      }
+      
+      if (name === 'chronic_conditions[]' && values.includes('Other')) {
+        const otherText = document.getElementById('condition_other_text').value.trim();
+        if (otherText) {
+          values = values.filter(v => v !== 'Other');
+          values.push('Other: ' + otherText);
+        }
+      }
+      
+      if (name === 'medications[]' && values.includes('Other')) {
+        const otherText = document.getElementById('med_other_text').value.trim();
+        if (otherText) {
+          values = values.filter(v => v !== 'Other');
+          values.push('Other: ' + otherText);
+        }
+      }
+      
+      return values.join('; ');
+    }
+
+    async function loadMedicalInfo() {
+      pageLoader.classList.add('show');
+      
+      try {
+        const response = await fetch('get_medical_info.php');
+        const text = await response.text();
+        
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          console.error('Response is not JSON:', text);
+          throw new Error('Server returned invalid data');
+        }
+        
+        if (result.success && result.data) {
+          const data = result.data;
+          
+          if (data.blood_group) document.getElementById('bloodType').value = data.blood_group;
+          if (data.height) document.getElementById('height').value = data.height;
+          if (data.weight) document.getElementById('weight').value = data.weight;
+          
+          if (data.allergies) {
+            data.allergies.split('; ').forEach(allergy => {
+              const checkbox = Array.from(document.querySelectorAll('input[name="allergies[]"]'))
+                .find(cb => cb.value === allergy || allergy.includes(cb.value));
+              if (checkbox) checkbox.checked = true;
+              
+              if (allergy.startsWith('Other: ')) {
+                document.getElementById('allergy_other').checked = true;
+                document.getElementById('allergy_other_text').value = allergy.replace('Other: ', '');
+                document.getElementById('allergyOtherInput').classList.add('show');
+              }
+            });
+          }
+          
+          if (data.chronic_conditions) {
+            data.chronic_conditions.split('; ').forEach(condition => {
+              const checkbox = Array.from(document.querySelectorAll('input[name="chronic_conditions[]"]'))
+                .find(cb => cb.value === condition || condition.includes(cb.value));
+              if (checkbox) checkbox.checked = true;
+              
+              if (condition.startsWith('Other: ')) {
+                document.getElementById('condition_other').checked = true;
+                document.getElementById('condition_other_text').value = condition.replace('Other: ', '');
+                document.getElementById('conditionOtherInput').classList.add('show');
+              }
+            });
+          }
+          
+          if (data.current_medications) {
+            data.current_medications.split('; ').forEach(med => {
+              const checkbox = Array.from(document.querySelectorAll('input[name="medications[]"]'))
+                .find(cb => cb.value === med || med.includes(cb.value));
+              if (checkbox) checkbox.checked = true;
+              
+              if (med.startsWith('Other: ')) {
+                document.getElementById('med_other').checked = true;
+                document.getElementById('med_other_text').value = med.replace('Other: ', '');
+                document.getElementById('medOtherInput').classList.add('show');
+              }
+            });
+          }
+          
+          if (data.medical_history && data.medical_history !== 'N/A') {
+            document.getElementById('medicalHistory').value = data.medical_history;
+          }
+          if (data.family_medical_history && data.family_medical_history !== 'N/A') {
+            document.getElementById('familyMedicalHistory').value = data.family_medical_history;
+          }
+        }
+      } catch (error) {
+        console.error('Load error:', error);
+      } finally {
+        pageLoader.classList.remove('show');
+      }
+    }
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      resetErrors();
+      hideAllAlerts();
+
+      if (!bloodType.value) {
+        bloodType.classList.add('invalid');
+        bloodTypeError.style.display = 'block';
+        showAlert('error', 'Please select your blood type.');
+        return;
+      }
+
+      // Show confirmation modal
+      const confirmed = await customConfirm(
+        'Do you want to save your medical information? This will update your health profile.',
+        'Save Medical Information',
+        'info'
+      );
+
+      if (!confirmed) {
+        return; // User cancelled
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+
+      try {
+        const formData = new FormData();
+        formData.append('bloodType', document.getElementById('bloodType').value);
+        formData.append('height', document.getElementById('height').value);
+        formData.append('weight', document.getElementById('weight').value);
+        formData.append('allergies', getCheckedValues('allergies[]'));
+        formData.append('chronicConditions', getCheckedValues('chronic_conditions[]'));
+        formData.append('currentMedications', getCheckedValues('medications[]'));
+        
+        const medicalHistory = document.getElementById('medicalHistory').value.trim();
+        const familyMedicalHistory = document.getElementById('familyMedicalHistory').value.trim();
+        formData.append('medicalHistory', medicalHistory || 'N/A');
+        formData.append('familyMedicalHistory', familyMedicalHistory || 'N/A');
+
+        const response = await fetch('save_medical_info.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const text = await response.text();
+        
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          console.error('Response is not JSON:', text);
+          throw new Error('Server error');
+        }
+
+        if (result.success) {
+          showAlert('success', result.message || 'Medical information saved successfully!');
+          setTimeout(() => loadMedicalInfo(), 1000);
+        } else {
+          showAlert('error', result.message || 'Failed to save');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        showAlert('error', error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', loadMedicalInfo);
+  </script>
+  
+
+</body>
+</html>
