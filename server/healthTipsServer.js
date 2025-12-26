@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // --- BASIC SERVER SETUP ---
 const app = express();
@@ -8,19 +8,19 @@ app.use(cors());
 app.use(express.json());
 
 // --- GEMINI SETUP ---
-// Para sa dev, pwede mo munang ilagay direkta yung key dito.
-// Mas maganda long-term: process.env.GEMINI_API_KEY
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDo-t8o02JFU_qSSrrm2m-z_czcSe43UtA";
 
-if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_REAL_GEMINI_KEY_HERE") {
-  console.warn("⚠️ GEMINI_API_KEY is not set or still default. Please set it before using /api/health-tips.");
+// Dapat naka-set sa .env at sa Render env vars:
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error("❌ GEMINI_API_KEY is not set. Please set it in your environment variables.");
+  process.exit(1);
 }
 
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-// Piliin mo kung anong model ang available sa key mo.
-// Safe choices: 'gemini-2.0-flash-001' o 'gemini-1.5-flash'
 const MODEL_NAME = "gemini-2.0-flash-001";
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
 function buildHealthTipsPrompt(topic, languageMode) {
   return `
@@ -59,17 +59,11 @@ app.post("/api/health-tips", async (req, res) => {
 
     const prompt = buildHealthTipsPrompt(topic, language);
 
-    const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-    });
+    // New @google/generative-ai call pattern
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    const text = response.text;
     let parsed;
     try {
       parsed = JSON.parse(text);

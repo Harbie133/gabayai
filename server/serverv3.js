@@ -5,7 +5,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import OpenAI from "openai"; 
+import OpenAI from "openai";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -20,7 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ API KEY (Hardcoded temporarily for stability during defense)
+// ✅ API KEY (from .env / Render env)
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 // ✅ ULTIMATE 30-MODEL DEFENSE LIST
@@ -67,8 +67,8 @@ const FREE_MODELS = [
 ];
 
 console.log("------------------------------------------------");
-if (!OPENROUTER_KEY) {
-  console.error("❌ ERROR: Missing OPENROUTER_KEY");
+if (!OPENROUTER_API_KEY) {
+  console.error("❌ ERROR: Missing OPENROUTER_API_KEY");
   process.exit(1);
 } else {
   console.log("🔑 API Key Loaded");
@@ -79,9 +79,9 @@ console.log("------------------------------------------------");
 
 const client = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: OPENROUTER_KEY,
+  apiKey: OPENROUTER_API_KEY,
   defaultHeaders: {
-    "HTTP-Referer": "http://localhost:5000",
+    "HTTP-Referer": "http://localhost:5000", // update to prod URL sa Render kung gusto mo
     "X-Title": "GabayAI Analyzer V3 Capstone",
   },
 });
@@ -146,28 +146,36 @@ function safeJsonParse(raw, numericStep, lang) {
   const buildFallback = () => {
     // A. Step 1 (Questions)
     if (numericStep === 1) return lang === "tl" ? fallbackQuestionsTl() : fallbackQuestionsEn();
-    
-    // B. First Aid Request (numericStep === 99) -> THIS FIXES "UNDEFINED"
+
+    // B. First Aid Request (numericStep === 99)
     if (numericStep === 99) {
-       return {
-          title: "Advice Unavailable",
-          subtext: "Please consult a doctor",
-          overview: "We could not generate specific advice at this moment.",
-          category: "General",
-          icon: "fa-user-doctor",
-          colorClass: "icon-blue",
-          actions: ["Go to the nearest clinic or hospital if urgent.", "Call emergency services if life-threatening."],
-          warnings: ["Do not rely solely on AI for emergencies."],
-          redFlags: "Severe pain, loss of consciousness, heavy bleeding."
-       };
+      return {
+        title: "Advice Unavailable",
+        subtext: "Please consult a doctor",
+        overview: "We could not generate specific advice at this moment.",
+        category: "General",
+        icon: "fa-user-doctor",
+        colorClass: "icon-blue",
+        actions: [
+          "Go to the nearest clinic or hospital if urgent.",
+          "Call emergency services if life-threatening."
+        ],
+        warnings: ["Do not rely solely on AI for emergencies."],
+        redFlags: "Severe pain, loss of consciousness, heavy bleeding."
+      };
     }
 
     // C. Default: Step 2 (Analysis)
     return {
       urgency_level: "Urgent Care",
-      triage_message: lang === "tl" ? "Hindi maproseso ang resulta. Magpakonsulta." : "Result processing failed. Consult a doctor.",
+      triage_message: lang === "tl"
+        ? "Hindi maproseso ang resulta. Magpakonsulta."
+        : "Result processing failed. Consult a doctor.",
       drug_interaction_warning: "None",
-      red_flags: [lang === "tl" ? "Technical error." : "Technical error.", lang === "tl" ? disclaimerTl : disclaimerEn],
+      red_flags: [
+        lang === "tl" ? "Technical error." : "Technical error.",
+        lang === "tl" ? disclaimerTl : disclaimerEn
+      ],
       conditions: [{
         name: "General Assessment Needed",
         overview: lang === "tl" ? "Kailangan ng check-up." : "Check-up needed.",
@@ -181,16 +189,13 @@ function safeJsonParse(raw, numericStep, lang) {
 
   if (!raw) return buildFallback();
 
-  // Clean String
   let str = typeof raw === "string" ? raw.trim() : JSON.stringify(raw);
   str = str.replace(/``````/g, "").trim();
 
   try {
-    // 1. Try Direct Parse
     const parsed = JSON.parse(str);
     return parsed;
   } catch (e) {
-    // 2. Try Extraction (find first { and last })
     try {
       const start = str.indexOf("{");
       const end = str.lastIndexOf("}");
@@ -207,31 +212,26 @@ function safeJsonParse(raw, numericStep, lang) {
 // 4. CALL MODEL WITH LOOP (AUTO-SWITCHING LOGIC)
 // ==========================================================
 async function callModelWithLoop(payload, numericStep, lang) {
-  // Loop through ALL 30 models until one works
   for (const modelId of FREE_MODELS) {
     try {
       console.log(`📡 Trying Model: ${modelId}...`);
       payload.model = modelId;
-      
-      // Set timeout slightly shorter to fail faster on bad models
+
       const completion = await client.chat.completions.create(payload);
       const reply = completion.choices[0]?.message?.content || "{}";
 
       if (!reply || reply.length < 5) throw new Error("Empty reply received");
 
       console.log(`✅ Success with ${modelId}!`);
-      console.log(`🤖 Reply snippet:`, reply.slice(0, 60).replace(/\n/g, " ") + "...");
-      return safeJsonParse(reply, numericStep, lang);
+      console.log("🤖 Reply snippet:", reply.slice(0, 60).replace(/\n/g, " ") + "...");
 
+      return safeJsonParse(reply, numericStep, lang);
     } catch (error) {
-      // 429 = Rate Limit, 404 = Not Found, 503 = Overloaded, 400 = Invalid ID
       const status = error.status || "Unknown";
       console.warn(`⚠️ Failed ${modelId} (Status: ${status}): ${error.message}`);
-      // Continue to next model in loop...
     }
   }
 
-  // If ALL 30 models failed
   console.error("❌ ALL 30 MODELS FAILED. Returning fallback.");
   return safeJsonParse("{}", numericStep, lang);
 }
@@ -248,12 +248,12 @@ app.post("/analyze", async (req, res) => {
 
   const numericStep = Number(step) || 2;
   const lang = detectLanguage(symptoms);
-  console.log(`\n📥 Input: "${symptoms.slice(0,40)}..." | Lang: ${lang.toUpperCase()} | Step: ${numericStep}`);
+  console.log(`\n📥 Input: "${symptoms.slice(0, 40)}..." | Lang: ${lang.toUpperCase()} | Step: ${numericStep}`);
 
   try {
     let prompt = "";
 
-    // ========== STEP 1: FOLLOW-UP QUESTIONS ==========
+    // STEP 1 – QUESTIONS
     if (numericStep === 1) {
       prompt = (lang === "tl" ? `
 You are a medical AI assistant. User Language: TAGALOG.
@@ -268,9 +268,11 @@ IMPORTANT: Return ONLY valid JSON. No markdown code blocks.
       `).trim();
     }
 
-    // ========== STEP 2: DIAGNOSIS (FULL DETAILED PROMPT) ==========
+    // STEP 2 – DIAGNOSIS
     else {
-      const history = (answers || []).map(a => `Q: ${a.question}\nA: ${a.answer}`).join("\n");
+      const history = (answers || [])
+        .map(a => `Q: ${a.question}\nA: ${a.answer}`)
+        .join("\n");
 
       prompt = (lang === "tl" ? `
 You are an expert medical AI (GabayAI). 
@@ -369,7 +371,6 @@ TASK 5 – JSON OUTPUT (STRICT):
 
     const parsed = await callModelWithLoop(payload, numericStep, lang);
     res.json(parsed);
-
   } catch (err) {
     console.error("❌ Server Error:", err.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -377,61 +378,59 @@ TASK 5 – JSON OUTPUT (STRICT):
 });
 
 // ==========================================================
-// 6. NEW ROUTE: FIRST AID AI GENERATOR (/first-aid) - IMPROVED PROMPT
+// 6. NEW ROUTE: FIRST AID AI GENERATOR (/first-aid)
 // ==========================================================
 app.post("/first-aid", async (req, res) => {
   const { query } = req.body;
-  
+
   if (!query) return res.status(400).json({ error: "Query required" });
 
   console.log(`🚑 Generating DETAILED First Aid for: "${query}"`);
 
-  // --- UPDATED PROMPT FOR MORE DETAILS & HTML BOLD TAGS ---
   const prompt = `
-    You are an expert Medical First Aid AI.
-    Task: Provide a COMPREHENSIVE and DETAILED first aid guide for: "${query}".
-    Language: English (Professional but easy to understand).
-    
-    IMPORTANT FORMATTING RULE:
-    - Use HTML <strong> tags to HIGHLIGHT key actions, medicines, or warnings.
-    - Example: "<strong>Apply direct pressure</strong> to the wound."
-    
-    Structure Requirements:
-    - "overview": Provide a 2-sentence medical summary of what the condition is. (Highlight the condition name with <strong>).
-    - "actions": Provide 5-7 detailed steps. Each step should explain 'HOW' and 'WHY'. Use <strong> for the main verb/action.
-    - "warnings": List 3 critical things to AVOID. Use <strong> for "Do NOT".
-    - "redFlags": List specific signs that require 911/Emergency transport immediately. Use <strong> for the symptoms.
+You are an expert Medical First Aid AI.
+Task: Provide a COMPREHENSIVE and DETAILED first aid guide for: "${query}".
+Language: English (Professional but easy to understand).
 
-    Output JSON format ONLY:
-    {
-      "title": "Medical Name of Condition",
-      "subtext": "Brief main symptoms (e.g. 'Heavy bleeding, pain')",
-      "overview": "Detailed summary... <strong>Condition Name</strong> is...",
-      "category": "Emergency" or "Home Care" or "First Aid",
-      "icon": "fa-kit-medical",
-      "colorClass": "icon-red" (if dangerous) or "icon-blue" (if mild) or "icon-green" (if safe),
-      "actions": [
-        "Step 1: <strong>Wash the wound</strong> with soap and water...",
-        "Step 2: <strong>Apply pressure</strong> if bleeding continues...",
-        "Step 3: Detail..."
-      ],
-      "warnings": ["<strong>Do NOT</strong> do X because...", "Avoid <strong>Y</strong>..."],
-      "redFlags": "Go to hospital if: <strong>Symptom A</strong>, <strong>Symptom B</strong> occurs."
-    }
-  `;
+IMPORTANT FORMATTING RULE:
+- Use HTML <strong> tags to HIGHLIGHT key actions, medicines, or warnings.
+- Example: "<strong>Apply direct pressure</strong> to the wound."
+
+Structure Requirements:
+- "overview": Provide a 2-sentence medical summary of what the condition is. (Highlight the condition name with <strong>).
+- "actions": Provide 5-7 detailed steps. Each step should explain 'HOW' and 'WHY'. Use <strong> for the main verb/action.
+- "warnings": List 3 critical things to AVOID. Use <strong> for "Do NOT".
+- "redFlags": List specific signs that require 911/Emergency transport immediately. Use <strong> for the symptoms.
+
+Output JSON format ONLY:
+{
+  "title": "Medical Name of Condition",
+  "subtext": "Brief main symptoms (e.g. 'Heavy bleeding, pain')",
+  "overview": "Detailed summary... <strong>Condition Name</strong> is...",
+  "category": "Emergency" or "Home Care" or "First Aid",
+  "icon": "fa-kit-medical",
+  "colorClass": "icon-red" (if dangerous) or "icon-blue" (if mild) or "icon-green" (if safe),
+  "actions": [
+    "Step 1: <strong>Wash the wound</strong> with soap and water...",
+    "Step 2: <strong>Apply pressure</strong> if bleeding continues...",
+    "Step 3: Detail..."
+  ],
+  "warnings": ["<strong>Do NOT</strong> do X because...", "Avoid <strong>Y</strong>..."],
+  "redFlags": "Go to hospital if: <strong>Symptom A</strong>, <strong>Symptom B</strong> occurs."
+}
+`;
 
   const payload = {
     messages: [
       { role: "system", content: "You are a First Aid API. Output STRICT JSON with HTML <strong> tags." },
       { role: "user", content: prompt },
     ],
-    temperature: 0.2, 
+    temperature: 0.2,
     max_tokens: 1200,
   };
 
   try {
-    // IMPORTANT: Pass '99' to indicate First Aid parsing mode
-    const result = await callModelWithLoop(payload, 99, "en"); 
+    const result = await callModelWithLoop(payload, 99, "en");
     res.json(result);
   } catch (err) {
     console.error("First Aid Error:", err);
@@ -445,7 +444,7 @@ app.post("/first-aid", async (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n✅ GabayAI v3 (OpenRouter FREE) running on http://localhost:${PORT}`);
-  console.log(`📡 Models: 30-Model Ultimate Defense System Active`);
-  console.log(`🛡️ Priority: Mistral > Nvidia > Llama > Gemini > Experimental`);
-  console.log(`🌐 Languages: Tagalog & English\n`);
+  console.log("📡 Models: 30-Model Ultimate Defense System Active");
+  console.log("🛡️ Priority: Mistral > Nvidia > Llama > Gemini > Experimental");
+  console.log("🌐 Languages: Tagalog & English\n");
 });
