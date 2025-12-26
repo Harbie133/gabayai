@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ API KEY (Hardcoded temporarily for stability during defense)
-const OPENROUTER_KEY = "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";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 // ✅ ULTIMATE 30-MODEL DEFENSE LIST
 const FREE_MODELS = [
