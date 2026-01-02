@@ -6,7 +6,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
 // SUPABASE - DELETE db.php
-$SUPABASE_URL = 'https://supabase.com/dashboard/org/lozvxujqqkjrohypwcvo';
+$SUPABASE_URL = 'https://supabase.com/dashboard/project/uborgrghdgvaumcqzxhr';
 $SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVib3JncmdoZGd2YXVtY3F6eGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNTI5NDYsImV4cCI6MjA4MjkyODk0Nn0.ntDzyoE3WFp-LaihnJNeBcsf-cJ-v1luEjW0kcm57yY'; // from eye icon
 
 require 'PHPMailer/Exception.php';
