@@ -1,700 +1,1675 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GabayAI</title>
-    <link rel="stylesheet" href="landingpage.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Analyzer Section Styling */
-        .analyzer-section {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GabayAI - AI-Powered Symptom Analyzer</title>
 
-        .analyzer-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 50px;
-            border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-        }
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        .analyzer-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: 700;
-        }
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; line-height: 1.6; overflow-x: hidden; background: #fff; }
 
-        .analyzer-subtitle {
-            text-align: center;
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-            color: #666;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    /* ============ NAVBAR ============ */
+    .navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      z-index: 10000;
+      padding: 1.2rem 0;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+      transition: all 0.4s ease;
+    }
+    .navbar.scrolled {
+      padding: 0.8rem 0;
+      box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    }
 
-        /* Form Steps - Changed from .step to .form-step */
-        .form-step {
-            display: none;
-        }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      gap: 1rem;
+    }
 
-        .form-step.active {
-            display: block;
-            animation: fadeIn 0.5s ease-in;
-        }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2c5aa0;
+      text-decoration: none;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .nav-logo i { font-size: 2rem; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-        /* Form Groups */
-        .form-group {
-            margin-bottom: 30px;
-        }
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 2.5rem;
+      align-items: center;
+    }
 
-        .section-label {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #2c5aa0;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e8ecff;
-        }
+    .nav-menu a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      font-size: 1.05rem;
+      transition: all 0.3s ease;
+      position: relative;
+      padding: 0.5rem 0;
+    }
+    .nav-menu a:hover { color: #667eea; }
+    .nav-menu a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 3px;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    .nav-menu a:hover::after { width: 100%; }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
+    .nav-cta {
+      background: linear-gradient(135deg, #667eea, #764ba2) !important;
+      color: white !important;
+      padding: 0.8rem 2rem !important;
+      border-radius: 50px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      white-space: nowrap;
+    }
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
 
-        .form-field {
-            display: flex;
-            flex-direction: column;
-        }
+    /* Hamburger */
+    .nav-toggle {
+      display: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+    .nav-toggle:hover { background: rgba(102,126,234,0.08); }
+    .nav-toggle i { font-size: 1.4rem; color: #2c5aa0; }
 
-        .form-field label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 1rem;
-        }
+    /* Mobile dropdown */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding: 1rem 0;
+      z-index: 9999;
+    }
+    .mobile-menu.open { display: block; }
 
-        .form-field input,
-        .form-field select,
-        .form-field textarea {
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #fafbfc;
-        }
+    .mobile-menu ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0 1.5rem;
+    }
+    .mobile-menu a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.95rem 0.75rem;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .mobile-menu a:hover { background: rgba(102,126,234,0.08); color: #2c5aa0; }
+    .mobile-menu .mobile-cta {
+      margin-top: 0.5rem;
+      padding: 0 1.5rem;
+    }
+    .mobile-menu .mobile-cta a {
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    }
 
-        .form-field input:focus,
-        .form-field select:focus,
-        .form-field textarea:focus {
-            outline: none;
-            border-color: #2c5aa0;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
-        }
+    /* ============ HERO SECTION ============ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+      position: relative;
+      padding-top: 80px;
+      isolation: isolate;
+    }
 
-        .form-field input.invalid {
-            border-color: #dc3545;
-            background: #fff5f5;
-        }
+    .hero-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(102,126,234,0.1) 0%, transparent 50%);
+      z-index: 1;
+    }
 
-        .form-field textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-        }
+    .hero-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 4rem;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 2;
+    }
 
-        /* Error Messages */
-        .error-message {
-            color: #dc3545;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            display: none;
-        }
+    .hero-content {
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.3s forwards;
+    }
+    .hero-content h1 {
+      font-size: clamp(2.6rem, 5vw, 4.5rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #2c5aa0, #667eea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+    }
+    .hero-content p {
+      font-size: 1.25rem;
+      color: #555;
+      margin-bottom: 2.2rem;
+      line-height: 1.8;
+    }
 
-        /* Buttons */
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-        }
+    /* aligned buttons */
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
 
-        button {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 150px;
-        }
+    .btn-primary, .btn-secondary {
+      padding: 1.05rem 2.2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transition: all 0.35s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      border: none;
+      cursor: pointer;
+      min-width: 220px;
+      height: 54px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 25px 50px rgba(102, 126, 234, 0.5);
+    }
+    .btn-secondary {
+      background: white;
+      color: #2c5aa0;
+      border: 2px solid #2c5aa0;
+    }
+    .btn-secondary:hover {
+      background: #2c5aa0;
+      color: white;
+      transform: translateY(-3px);
+    }
 
-        button:first-child {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
+    .hero-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: fadeInRight 1s ease-out 0.5s forwards;
+    }
 
-        button:first-child:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
+    .floating-card {
+      background: white;
+      padding: 3rem 2.5rem;
+      border-radius: 30px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: floatAnimation 6s ease-in-out infinite;
+    }
+    .floating-card i {
+      font-size: 4.5rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+    .floating-card h3 { font-size: 1.5rem; color: #333; margin-bottom: 0.5rem; }
+    .floating-card p { color: #666; font-size: 1rem; }
 
-        button:not(:first-child) {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
+    /* ============ FEATURES SECTION ============ */
+    .features {
+      padding: 120px 0;
+      background: white;
+      position: relative;
+      z-index: 10;
+    }
 
-        button:not(:first-child):hover {
-            background: #667eea;
-            color: white;
-        }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
 
-        /* Loading/Analyzing State */
-        #analyzing {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin: 40px 0;
-        }
+    .section-title {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 4rem;
+      position: relative;
+      opacity: 0;
+    }
+    .section-title.reveal { animation: fadeInUp 0.8s ease-out forwards; }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 5px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 3px;
+    }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2.5rem;
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .feature-card {
+      background: white;
+      padding: 3rem 2.5rem;
+      border-radius: 25px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    .feature-card.reveal { animation: fadeInUp 0.8s ease-out forwards; }
+    .feature-card:nth-child(2).reveal { animation-delay: 0.2s; }
+    .feature-card:nth-child(3).reveal { animation-delay: 0.4s; }
 
-        .analyzing-text {
-            font-size: 1.1rem;
-            color: #667eea;
-            font-weight: 500;
-        }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      transform: scaleX(0);
+      transition: transform 0.5s ease;
+    }
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-card:hover { transform: translateY(-15px); box-shadow: 0 35px 90px rgba(0,0,0,0.15); }
 
-        /* Results */
-        #results {
-            margin: 20px 0;
-        }
+    .feature-icon {
+      width: 110px;
+      height: 110px;
+      background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.8rem;
+      font-size: 3rem;
+      color: #2c5aa0;
+      transition: all 0.4s ease;
+    }
+    .feature-card:hover .feature-icon { transform: rotateY(360deg); }
 
-        /* Condition Cards */
-        .card {
-            background: white;
-            border-left: 4px solid #4a90e2;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+    .feature-card h3 { font-size: 1.6rem; font-weight: 600; color: #333; margin-bottom: 1rem; }
+    .feature-card p { color: #666; font-size: 1.05rem; line-height: 1.7; }
 
-        .card h3 {
-            color: #4a90e2;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+    /* ============ WHY CHOOSE SECTION ============ */
+    .why-choose {
+      padding: 120px 0;
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+      position: relative;
+      z-index: 10;
+    }
+    .why-choose-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .why-choose-text { opacity: 0; }
+    .why-choose-text.reveal { animation: fadeInLeft 0.8s ease-out forwards; }
+    .why-choose-text h2 { font-size: 2.5rem; color: #333; margin-bottom: 1.5rem; }
+    .why-choose-text p { font-size: 1.1rem; color: #666; margin-bottom: 2rem; line-height: 1.8; }
+    .benefits-list { list-style: none; }
+    .benefits-list li { display: flex; align-items: start; margin-bottom: 1.2rem; font-size: 1.05rem; color: #555; }
+    .benefits-list i { color: #4CAF50; font-size: 1.3rem; margin-right: 1rem; margin-top: 0.2rem; }
 
-        .card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    .why-choose-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      opacity: 0;
+    }
+    .why-choose-stats.reveal { animation: fadeInRight 0.8s ease-out forwards; }
 
-        .card li {
-            color: #555;
-            margin-bottom: 8px;
-            padding-left: 15px;
-            position: relative;
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
+    .stat-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      transition: all 0.4s ease;
+    }
+    .stat-card:hover { transform: translateY(-10px); box-shadow: 0 30px 80px rgba(0,0,0,0.15); }
+    .stat-card i {
+      font-size: 3rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .stat-card h3 { font-size: 2.5rem; color: #2c5aa0; font-weight: 700; margin-bottom: 0.5rem; }
+    .stat-card p { color: #666; font-size: 1rem; }
 
-        .card li::before {
-            content: "•";
-            color: #4a90e2;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
+    /* ============ HOW IT WORKS ============ */
+    .how-it-works {
+      padding: 120px 0;
+      background: white;
+      position: relative;
+      z-index: 10;
+    }
+    .steps-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+    .step {
+      text-align: center;
+      padding: 2.5rem 2rem;
+      background: white;
+      border-radius: 25px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      position: relative;
+      transition: all 0.5s ease;
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    .step.reveal { animation: scaleIn 0.6s ease-out forwards; }
+    .step:nth-child(2).reveal { animation-delay: 0.15s; }
+    .step:nth-child(3).reveal { animation-delay: 0.3s; }
+    .step:nth-child(4).reveal { animation-delay: 0.45s; }
 
-        /* RED CARD for Important Health Notices */
-        .card.red-flags {
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            border-left: 6px solid #dc3545;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
-            position: relative;
-            text-align: center;
-        }
+    .step-number {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+    }
+    .step:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 30px 80px rgba(0,0,0,0.15); }
+    .step h3 { font-size: 1.4rem; color: #333; margin-bottom: 1rem; }
+    .step p { color: #666; font-size: 1.05rem; }
 
-        .card.red-flags::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
-            border-radius: 8px 8px 0 0;
-        }
+    /* ============ ANALYZER SECTION (landing design) ============ */
+    .analyzer-section {
+      padding: 120px 0;
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+      position: relative;
+      z-index: 10;
+    }
 
-        .card.red-flags h3 {
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .analyzer-container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, #ffffff, #f8f9ff);
+      padding: 4rem 3rem;
+      border-radius: 30px;
+      box-shadow: 0 30px 100px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
 
-        .card.red-flags h3::before {
-            content: "⚠️";
-            margin-right: 10px;
-            font-size: 1.3rem;
-        }
+    .analyzer-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(102,126,234,0.08) 0%, transparent 70%);
+      animation: rotate 25s linear infinite;
+    }
 
-        .card.red-flags ul {
-            text-align: center;
-        }
+    .analyzer-title {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #2c5aa0, #667eea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 2;
+    }
 
-        .card.red-flags li {
-            color: white;
-            font-weight: 500;
-            padding: 8px 0;
-            text-align: center;
-        }
+    .analyzer-subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 2.25rem;
+      position: relative;
+      z-index: 2;
+    }
 
-        .card.red-flags li::before {
-            content: "•";
-            color: white;
-            font-weight: bold;
-            margin-right: 8px;
-            position: static;
-        }
+    /* Steps */
+    .step-form {
+      display: none;
+      position: relative;
+      z-index: 2;
+    }
+    .step-form.active {
+      display: block;
+      animation: fadeInUp 0.6s ease-out;
+    }
 
-        /* Progress Indicator */
-        .analyzer-progress {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-            gap: 10px;
-        }
+    .form-group { margin-bottom: 2rem; }
+    .section-label {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #2c5aa0;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid #e8ecff;
+    }
 
-        .analyzer-progress-step {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e1e5e9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
-        }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
 
-        .analyzer-progress-step.active {
-            background: #667eea;
-            color: white;
-        }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+    }
 
-        .analyzer-progress-step.completed {
-            background: #4CAF50;
-            color: white;
-        }
+    .form-field label {
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: #333;
+      font-size: 1rem;
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .analyzer-container {
-                padding: 30px 20px;
-                margin: 0 20px;
-            }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      padding: 1rem;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      background: #fafbfc;
+    }
 
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
 
-            .button-group {
-                flex-direction: column;
-                align-items: center;
-            }
+    .form-field textarea { min-height: 140px; resize: vertical; }
 
-            button {
-                width: 200px;
-            }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
 
-            .analyzer-title {
-                font-size: 2rem;
-            }
-        }
-    </style>
+    .btnx {
+      padding: 1rem 2.2rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 220px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .btnx.primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    .btnx.primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .btnx.ghost {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+    .btnx.ghost:hover { background: #667eea; color: white; }
+
+    /* Follow-up questions block */
+    .followup-section { display: none; }
+
+    .followup-hint {
+      margin-top: 0.5rem;
+      color: #667;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    /* Analyzing */
+    .analyzing {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin: 2.5rem 0 0;
+    }
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .analyzing-text {
+      margin-top: 1.2rem;
+      font-size: 1.05rem;
+      color: #667eea;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Results UI (from your analyzer, but styled to match landing) */
+    .ai-disclaimer-banner {
+      background-color: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 15px;
+      margin: 18px 0 18px;
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: #856404;
+    }
+    .ai-disclaimer-banner i { font-size: 1.2rem; margin-top: 2px; }
+
+    #triage-container { text-align: center; margin: 8px 0 16px; font-size: 0.95rem; }
+    .triage-badge {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      color: #fff; font-weight: 700; margin-bottom: 6px;
+    }
+
+    #drug-warning-container {
+      display: none;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      padding: 12px 12px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+
+    .warning-banner {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .warning-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      cursor: pointer;
+      background: #fee2e2;
+      font-weight: 700;
+      color: #7f1d1d;
+    }
+    .warning-banner ul {
+      padding: 12px 22px 14px;
+      color: #7f1d1d;
+    }
+    .warning-banner.collapsed ul { display: none; }
+
+    .results-layout {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .results-sidebar {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .condition-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border-left: 4px solid #667eea;
+      margin-bottom: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    }
+    .condition-card:hover { transform: translateX(4px); }
+    .condition-card.selected {
+      background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+      border-left-width: 6px;
+    }
+
+    .cond-name { font-weight: 800; color: #223; margin-bottom: 8px; }
+    .match-bar-bg {
+      width: 100%; height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .match-bar-fill { height: 100%; border-radius: 999px; }
+    .cond-match-label { font-size: 0.9rem; color: #556; font-weight: 700; }
+
+    .load-more-conditions {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      color: #4f46e5;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      padding: 10px 8px;
+      border-radius: 12px;
+      transition: background 0.2s ease;
+    }
+    .load-more-conditions:hover { background: rgba(79,70,229,0.08); }
+
+    .results-detail {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 220px;
+    }
+
+    .detail-placeholder {
+      text-align: center;
+      padding: 28px 12px;
+      color: #667;
+    }
+    .detail-placeholder i { font-size: 1.6rem; color: #667eea; margin-bottom: 8px; }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-title { font-size: 1.35rem; color: #223; }
+    .match-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #fff;
+      background: #22c55e;
+    }
+
+    .detail-section { margin-top: 14px; }
+    .detail-section h4 { color: #2c5aa0; margin-bottom: 6px; }
+    .detail-section p { color: #445; }
+
+    .treatment-box {
+      background: #f8f9ff;
+      border: 1px solid rgba(102,126,234,0.2);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .remedy-badge {
+      background: #e6fffa;
+      color: #047481;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ============ FOOTER (less tall) ============ */
+    .footer {
+      background: #1a1a1a;
+      color: white;
+      padding: 2.5rem 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      margin-bottom: 1.25rem;
+      align-items: start;
+    }
+    .footer-section h3, .footer-section h4 { color: #667eea; margin-bottom: 0.75rem; }
+    .footer-section ul { list-style: none; }
+    .footer-section ul li { margin-bottom: 0.5rem; }
+    .footer-section a { color: #ccc; text-decoration: none; transition: color 0.3s ease; }
+    .footer-section a:hover { color: #667eea; }
+    .footer-disclaimer {
+      border-top: 1px solid #333;
+      padding-top: 1.25rem;
+      margin-top: 1.25rem;
+      text-align: center;
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+    .footer-bottom {
+      text-align: center;
+      margin-top: 1rem;
+      color: #999;
+      font-size: 0.95rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes floatAnimation { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .hero-container { gap: 2.5rem; } .btn-primary, .btn-secondary { min-width: 200px; } }
+    @media (max-width: 768px) {
+      .nav-menu { display: none; }
+      .nav-toggle { display: inline-flex; }
+      .hero-container { grid-template-columns: 1fr; text-align: center; }
+      .hero-buttons { justify-content: center; }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 360px; }
+      .why-choose-content { grid-template-columns: 1fr; }
+      .why-choose-stats { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .analyzer-container { padding: 2rem 1.25rem; }
+      .button-group .btnx { width: 100%; max-width: 360px; }
+      .results-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Error Messages */
+    .error-message { color: #dc3545; font-size: 0.9rem; margin-top: 0.5rem; display: none; }
+    .invalid { border-color: #dc3545 !important; background: #fff5f5 !important; }
+  </style>
 </head>
+
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-stethoscope"></i>
-                <span>GabayAI</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#analyzer">Analyzer</a></li>
-                <li><a href="userlogin.html" class="nav-cta">Book Consultation</a></li>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#home" class="nav-logo">
+        <i class="fas fa-stethoscope"></i>
+        <span>GabayAI</span>
+      </a>
 
-            </ul>
-        </div>
-    </nav>
+      <div class="nav-right">
+        <ul class="nav-menu">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#analyzer">Analyzer</a></li>
+          <li><a href="userlogin.html" class="nav-cta">Login</a></li>
+        </ul>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1 class="hero-title">AI-Powered Symptom Analyzer</h1>
-                <p class="hero-subtitle">Get personalized medication suggestions and instant teleconsultation access with advanced artificial intelligence</p>
-                <div class="hero-buttons">
-                    <a href="#analyzer" class="btn-primary">Analyze Symptoms</a>
-                    <a href="#features" class="btn-secondary">Learn More</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <div class="floating-card">
-                    <i class="fas fa-robot"></i>
-                    <h3>AI Analysis</h3>
-                    <p>Smart symptom detection</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">Revolutionary Healthcare Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>AI Symptom Analysis</h3>
-                    <p>Advanced machine learning algorithms analyze your symptoms to provide accurate preliminary assessments</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-pills"></i>
-                    </div>
-                    <h3>Personalized Medication</h3>
-                    <p>Receive tailored medication suggestions based on your symptoms, medical history, and current conditions</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <h3>Teleconsultation</h3>
-                    <p>Connect instantly with certified healthcare professionals through secure video consultations</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <div class="steps-container">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Describe Symptoms</h3>
-                    <p>Input your symptoms using our intuitive interface</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>AI Analysis</h3>
-                    <p>Our AI analyzes your data and medical patterns</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Get Results</h3>
-                    <p>Receive personalized medication suggestions</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Consult Doctor</h3>
-                    <p>Connect with healthcare professionals if needed</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Symptom Analyzer -->
-    <section id="analyzer" class="analyzer-section">
-        <div class="analyzer-container">
-            <h2 class="analyzer-title">Symptom Analyzer</h2>
-            <p class="analyzer-subtitle">Get instant AI-powered health insights in just a few simple steps</p>
-
-            <!-- Progress Indicator -->
-            <div class="analyzer-progress">
-                <div class="analyzer-progress-step active" id="progress1">1</div>
-                <div class="analyzer-progress-step" id="progress2">2</div>
-                <div class="analyzer-progress-step" id="progress3">3</div>
-            </div>
-
-            <!-- Step 1 - Changed class from "step" to "form-step" -->
-            <div class="form-step active" id="step1">
-                <div class="form-group">
-                    <div class="section-label">Personal Information</div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="age">Age</label>
-                            <input type="number" id="age" placeholder="Enter age" min="1" max="130" oninput="validateAge(this)">
-                            <div id="age-error" class="error-message">Please enter a valid age between 1 and 130</div>
-                        </div>
-                        <div class="form-field">
-                            <label for="gender">Gender</label>
-                            <select id="gender">
-                                <option value="">Select gender</option>
-                                <option>Male</option>
-                                <option>Female</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="section-label">Body Measurements</div>
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="height">Height (cm)</label>
-                            <input type="number" id="height" placeholder="Height in cm" min="1" oninput="validatePositiveNumber(this, 'height-error')">
-                            <div id="height-error" class="error-message">Please enter a valid height</div>
-                        </div>
-                        <div class="form-field">
-                            <label for="weight">Weight (kg)</label>
-                            <input type="number" id="weight" placeholder="Weight in kg" min="1" oninput="validatePositiveNumber(this, 'weight-error')">
-                            <div id="weight-error" class="error-message">Please enter a valid weight</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="section-label">Vital Signs</div>
-                    <div class="form-field">
-                        <label for="bp">Blood Pressure</label>
-                        <input type="text" id="bp" placeholder="e.g. 120/80 mmHg">
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button onclick="validateStep1()">
-                        Next <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 2 - Changed class from "step" to "form-step" -->
-            <div class="form-step" id="step2">
-                <div class="form-group">
-                    <div class="section-label">Describe Your Symptoms</div>
-                    <div class="form-field">
-                        <label for="symptoms">Symptom Description</label>
-                        <textarea id="symptoms" placeholder="Please describe your symptoms in detail, including when they started, their severity, and any factors that make them better or worse..."></textarea>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button onclick="prevStep(2)">
-                        <i class="fas fa-arrow-left" style="margin-right: 10px;"></i> Back
-                    </button>
-                    <button onclick="analyzeSymptoms()">
-                        Analyze Symptoms <i class="fas fa-search" style="margin-left: 10px;"></i>
-                    </button>
-                </div>
-
-                <div id="analyzing">
-                    <div class="spinner"></div>
-                    <div class="analyzing-text">Analyzing your symptoms...</div>
-                </div>
-            </div>
-
-            <!-- Step 3 - Changed class from "step" to "form-step" -->
-            <div class="form-step" id="step3">
-                <div class="section-label">Health Assessment Results</div>
-                <div id="results"></div>
-                <div class="button-group">
-                    <button onclick="prevStep(3)">
-                        <i class="fas fa-arrow-left" style="margin-right: 10px;"></i> Back to Symptoms
-                    </button>
-                    <button onclick="location.reload()">
-                        <i class="fas fa-redo" style="margin-right: 10px;"></i> New Analysis
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Benefits Section -->
-<section class="benefits">
-    <div class="container">
-        <div class="benefits-content">
-            <div class="benefits-text">
-                <h2>Why Use GabayAI for Your Healthcare Needs?</h2>
-                <ul class="benefits-list">
-                    <li><i class="fas fa-check"></i> Accessible anywhere, anytime using a web-based platform</li>
-                    <li><i class="fas fa-check"></i> Helps identify possible conditions based on your symptoms</li>
-                    <li><i class="fas fa-check"></i> Provides preliminary medication suggestions for common illnesses</li>
-                    <li><i class="fas fa-check"></i> Enables booking of teleconsultation with licensed doctors</li>
-                    <li><i class="fas fa-check"></i> Saves time and reduces unnecessary hospital visits</li>
-                </ul>
-            </div>
-           <div class="benefits-stats">
-                <div class="stat">
-                    <h3>20s</h3>
-                    <p>Average time to analyze your symptoms</p>
-                </div>
-                <div class="stat">
-                    <h3>24/7</h3>
-                    <p>Accessible health assistance anytime</p>
-                </div>
-            </div>
-
-        </div>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
     </div>
-</section>
 
-
-    <!-- CTA Section -->
-    <section class="cta">
-    <div class="container">
-        <h2>Need Professional Medical Advice?</h2>
-        <p>Register or log in to book a teleconsultation with a licensed healthcare provider.</p>
-        <a href="userlogin.html" class="btn-primary large">Book a Consultation</a>
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="#home">Home <i class="fas fa-angle-right"></i></a></li>
+        <li><a href="#features">Features <i class="fas fa-angle-right"></i></a></li>
+        <li><a href="#how-it-works">How It Works <i class="fas fa-angle-right"></i></a></li>
+        <li><a href="#analyzer">Analyzer <i class="fas fa-angle-right"></i></a></li>
+      </ul>
+      <div class="mobile-cta">
+        <a href="userlogin.html">Login</a>
+      </div>
     </div>
-    </section>
+  </nav>
 
-
-    <!-- Footer -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer-content">
-            <!-- Project Info -->
-            <div class="footer-section">
-                <h3>GABAY AI</h3>
-                <p>An AI-Powered Symptom Analyzer with Personalized Medication Suggestions and Teleconsultation Integration</p>
-                <p><em>A Capstone Project of Pamantasan ng Lungsod ng Muntinlupa (PLMun) - BSIT Students</em></p>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#analyzer">Symptom Analyzer</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-
-            <!-- Contact Info -->
-            <div class="footer-section">
-                <h4>Contact Info</h4>
-                <p><i class="fas fa-envelope"></i> email@gmail.com</p>
-                <p><i class="fas fa-university"></i> Pamantasan ng Lungsod ng Muntinlupa💖</p>
-            </div>
+  <!-- Hero -->
+  <section id="home" class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1>AI-Powered Symptom Analyzer</h1>
+        <p>Get instant health insights with personalized medication suggestions powered by advanced artificial intelligence</p>
+        <div class="hero-buttons">
+          <a href="#analyzer" class="btn-primary">
+            <i class="fas fa-search"></i> Analyze Symptoms
+          </a>
+          <a href="#features" class="btn-secondary">
+            <i class="fas fa-info-circle"></i> Learn More
+          </a>
         </div>
+      </div>
 
-        <!-- Disclaimer -->
-        <div class="footer-disclaimer">
-            <p><strong>Disclaimer:</strong> This system is a student capstone project and is not intended to replace professional medical advice. Always consult a licensed healthcare provider for serious medical concerns.</p>
+      <div class="hero-image">
+        <div class="floating-card">
+          <i class="fas fa-robot"></i>
+          <h3>Smart AI Analysis</h3>
+          <p>Medical-grade accuracy in seconds</p>
         </div>
-
-        <!-- Bottom -->
-        <div class="footer-bottom">
-            <p>&copy; 2025 GABAY AI Capstone Team. All rights reserved.</p>
-        </div>
+      </div>
     </div>
-</footer>
+  </section>
 
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Revolutionary Healthcare Features</h2>
 
-    <script src="analyzer.js"></script>
-    <script>
-        // Updated JavaScript functions to work with new class names
-        function validateStep1() {
-            const ageValid = validateAge(document.getElementById('age'));
-            const heightValid = validatePositiveNumber(document.getElementById('height'), 'height-error');
-            const weightValid = validatePositiveNumber(document.getElementById('weight'), 'weight-error');
-            
-            if (ageValid && heightValid && weightValid) {
-                nextStep(1);
-            } else {
-                const firstError = document.querySelector('.invalid');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        }
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-brain"></i></div>
+          <h3>AI Symptom Analysis</h3>
+          <p>Advanced machine learning analyzes your symptoms with medical-grade accuracy for instant preliminary assessments</p>
+        </div>
 
-        function nextStep(step) {
-            document.getElementById("step" + step).classList.remove("active");
-            document.getElementById("step" + (step + 1)).classList.add("active");
-            
-            // Update progress indicator
-            document.getElementById("progress" + step).classList.add("completed");
-            document.getElementById("progress" + step).classList.remove("active");
-            document.getElementById("progress" + (step + 1)).classList.add("active");
-        }
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-pills"></i></div>
+          <h3>Personalized Medication</h3>
+          <p>Tailored medication recommendations based on your unique symptoms and vital signs</p>
+        </div>
 
-        function prevStep(step) {
-            document.getElementById("step" + step).classList.remove("active");
-            document.getElementById("step" + (step - 1)).classList.add("active");
-            
-            // Update progress indicator
-            document.getElementById("progress" + step).classList.remove("active");
-            document.getElementById("progress" + (step - 1)).classList.add("active");
-            if (step > 1) {
-                document.getElementById("progress" + (step - 1)).classList.remove("completed");
-            }
-        }
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-comments"></i></div>
+          <h3>Optional Consultation</h3>
+          <p>Optional chat consultation feature where you can message a doctor if you need additional guidance</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
+  <!-- Why Choose -->
+  <section class="why-choose">
+    <div class="container">
+      <div class="why-choose-content">
+        <div class="why-choose-text">
+          <h2>Why Choose GabayAI?</h2>
+          <p>Your health matters. GabayAI gives you quick and reliable health information anytime you need it. Simple, fast, and helpful.</p>
+          <ul class="benefits-list">
+            <li><i class="fas fa-check-circle"></i><span>Works 24/7 - Available anytime, day or night</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Easy to use - Just type your symptoms in Tagalog or English</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Fast results - Get answers in about 1 minute</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Privacy note - Avoid entering personal identifiers (name, address, etc.)</span></li>
+          </ul>
+        </div>
+
+        <div class="why-choose-stats">
+          <div class="stat-card">
+            <i class="fas fa-clock"></i>
+            <h3>24/7</h3>
+            <p>Always Available</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-bolt"></i>
+            <h3>~1m</h3>
+            <p>Quick Analysis</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-language"></i>
+            <h3>2+</h3>
+            <p>Languages Supported</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-comments"></i>
+            <h3>Opt.</h3>
+            <p>Consultation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How GabayAI Works</h2>
+
+      <div class="steps-container">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Describe Symptoms</h3>
+          <p>Tell us what you're feeling in simple words</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>AI Follow-up</h3>
+          <p>We may ask a few questions to improve results</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Get Results</h3>
+          <p>See possible matches and self-care guidance</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>Optional Consultation</h3>
+          <p>Chat with a doctor if you want extra help</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ANALYZER (your logic, landing design) ============ -->
+  <section id="analyzer" class="analyzer-section">
+    <div class="analyzer-container">
+      <h2 class="analyzer-title">Symptom Analyzer</h2>
+      <p class="analyzer-subtitle">Get instant AI-powered health insights in 2 simple steps</p>
+
+      <!-- Step 1 -->
+      <div class="step-form active" id="step1">
+        <div class="form-group">
+          <div class="section-label">Personal Information</div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="age">Age</label>
+              <input type="number" id="age" placeholder="Age" min="1" max="130" oninput="validateAge(this)">
+              <div id="age-error" class="error-message">Invalid age</div>
+            </div>
+
+            <div class="form-field">
+              <label for="gender">Gender</label>
+              <select id="gender">
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="section-label">Body Measurements</div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="height">Height (cm)</label>
+              <input type="number" id="height" placeholder="cm" oninput="validatePositiveNumber(this, 'height-error')">
+              <div id="height-error" class="error-message">Invalid height</div>
+            </div>
+
+            <div class="form-field">
+              <label for="weight">Weight (kg)</label>
+              <input type="number" id="weight" placeholder="kg" oninput="validatePositiveNumber(this, 'weight-error')">
+              <div id="weight-error" class="error-message">Invalid weight</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="section-label">Vital Signs</div>
+          <div class="form-field">
+            <label for="bp">Blood Pressure</label>
+            <input type="text" id="bp" placeholder="e.g. 120/80 mmHg">
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btnx primary" onclick="validateStep1Landing()">
+            Continue <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-form" id="step2">
+        <div class="form-group">
+          <div class="section-label">Describe your symptoms</div>
+          <div class="form-field">
+            <label for="symptoms">Pwede Tagalog or English</label>
+            <textarea id="symptoms" placeholder="Masakit ba ulo? Kailan nagsimula? May lagnat ba?"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group followup-section" id="followup-section">
+          <div class="section-label">Follow-up Questions</div>
+          <div id="questions-container"></div>
+          <p class="followup-hint">Select the best match or 'Hindi ko alam'.</p>
+        </div>
+
+        <div class="button-group">
+          <button class="btnx ghost" onclick="prevStepLanding(2)">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button class="btnx primary" id="step2-main-btn" onclick="handleStep2Landing()">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="analyzing" id="analyzing">
+          <div class="spinner"></div>
+          <div class="analyzing-text" id="analyzing-text">Analyzing your symptoms...</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-form" id="step3">
+        <div class="form-group">
+          <div class="section-label">Health Assessment Results</div>
+
+          <div id="triage-container"></div>
+
+          <div class="ai-disclaimer-banner">
+            <i class="fas fa-robot"></i>
+            <div>
+              <strong>Paalala / Reminder:</strong>
+              <p style="margin: 0;">
+                This result is generated by AI and is <strong>NOT a final medical diagnosis</strong>.
+                Use this only as a guide. Always consult a licensed doctor for proper medication and treatment.
+              </p>
+            </div>
+          </div>
+
+          <div id="drug-warning-container"></div>
+
+          <div id="red-flags-card" class="warning-banner collapsed" style="display:none;">
+            <div class="warning-header" onclick="toggleRedFlagsLanding()">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-triangle-exclamation"></i>
+                <span>Important Health Notices (Red Flags)</span>
+              </div>
+              <i class="fas fa-chevron-down" id="red-flag-chevron"></i>
+            </div>
+            <ul id="red-flags-list"></ul>
+          </div>
+
+          <div class="results-layout">
+            <div class="results-sidebar" id="condition-list"></div>
+
+            <div class="results-detail">
+              <div id="detail-placeholder" class="detail-placeholder">
+                <i class="fas fa-hand-point-left"></i>
+                <p>Select a condition to see Home Remedies & Details.</p>
+              </div>
+
+              <div id="detail-content" style="display:none;">
+                <div class="detail-header">
+                  <h3 id="det-name" class="detail-title">Condition Name</h3>
+                  <span id="det-badge" class="match-badge">Match</span>
+                </div>
+
+                <div class="detail-section">
+                  <h4>Overview</h4>
+                  <p id="det-overview"></p>
+                </div>
+
+                <div class="detail-section">
+                  <h4>Matching Symptoms</h4>
+                  <ul id="det-symptoms"></ul>
+                </div>
+
+                <div class="detail-section">
+                  <h4>
+                    <i class="fas fa-mug-hot" style="color:#e07a5f; margin-right:5px;"></i>
+                    Home Remedies & Self Care
+                    <span class="remedy-badge">No Prescription Needed</span>
+                  </h4>
+                  <div class="treatment-box">
+                    <ul id="det-treatment"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btnx ghost" onclick="prevStepLanding(3)">
+              <i class="fas fa-arrow-left"></i> Back to answers
+            </button>
+            <button class="btnx primary" onclick="resetAnalyzerLanding()">
+              <i class="fas fa-redo"></i> Start Over
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>GabayAI</h3>
+          <p>AI-Powered Symptom Analyzer</p>
+          <p><em>A Student Capstone Project</em></p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#analyzer">Analyzer</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-disclaimer">
+        <p><strong>Important Notice:</strong> This is a student project for learning purposes. The AI analysis is not a replacement for real medical advice. Avoid sharing personal identifiers. If you need medical help, consult a licensed doctor.</p>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 GabayAI Capstone Team. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============ SCROLL REVEAL ============
+    const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -100px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('reveal'); });
+    }, observerOptions);
+    document.querySelectorAll('.section-title, .feature-card, .step, .why-choose-text, .why-choose-stats')
+      .forEach(el => observer.observe(el));
+
+    // ============ NAVBAR SCROLL ============
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 100) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    });
+
+    // ============ MOBILE MENU ============
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      navToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+
+    navToggle.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', String(isOpen));
+      navToggle.innerHTML = isOpen ? '<i class="fas fa-xmark"></i>' : '<i class="fas fa-bars"></i>';
+    });
+
+    document.querySelectorAll('.mobile-menu a[href^="#"]').forEach(a => {
+      a.addEventListener('click', () => closeMobileMenu());
+    });
+
+    document.addEventListener('click', (e) => {
+      const isClickInsideNav = e.target.closest('.navbar');
+      if (!isClickInsideNav) closeMobileMenu();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) closeMobileMenu();
+    });
+
+    // ============ SMOOTH SCROLL ============
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ==========================================================
+    // LANDING ANALYZER LOGIC (NO AUTOSAVE / NO HISTORY)
+    // Based on your analyzerv2 flow: Step1 -> follow-up -> results
+    // ==========================================================
+    let followupGenerated = false;
+    let analysisData = null;
+    let showAllConditions = false;
+
+    function validateAge(input) {
+      const errorElement = document.getElementById('age-error');
+      const value = parseInt(input.value);
+      if (input.value === '') {
+        input.classList.remove('invalid');
+        errorElement.style.display = 'none';
+        return true;
+      }
+      if (isNaN(value) || value < 1 || value > 130) {
+        input.classList.add('invalid');
+        errorElement.style.display = 'block';
+        return false;
+      }
+      input.classList.remove('invalid');
+      errorElement.style.display = 'none';
+      return true;
+    }
+
+    function validatePositiveNumber(input, errorId) {
+      const errorElement = document.getElementById(errorId);
+      const value = parseFloat(input.value);
+      if (input.value === '') {
+        input.classList.remove('invalid');
+        errorElement.style.display = 'none';
+        return true;
+      }
+      if (isNaN(value) || value < 1) {
+        input.classList.add('invalid');
+        errorElement.style.display = 'block';
+        return false;
+      }
+      input.classList.remove('invalid');
+      errorElement.style.display = 'none';
+      return true;
+    }
+
+    function validateStep1Landing() {
+      const ageValid = validateAge(document.getElementById('age'));
+      const hValid = validatePositiveNumber(document.getElementById('height'), 'height-error');
+      const wValid = validatePositiveNumber(document.getElementById('weight'), 'weight-error');
+
+      if (ageValid && hValid && wValid) {
+        nextStepLanding(1);
+      } else {
+        document.querySelector('.invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function nextStepLanding(step) {
+      document.getElementById("step" + step).classList.remove("active");
+      document.getElementById("step" + (step + 1)).classList.add("active");
+      // keep section view friendly
+      document.getElementById("analyzer").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function prevStepLanding(step) {
+      document.getElementById("step" + step).classList.remove("active");
+      document.getElementById("step" + (step - 1)).classList.add("active");
+      document.getElementById("analyzer").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function toggleRedFlagsLanding() {
+      const card = document.getElementById("red-flags-card");
+      const chevron = document.getElementById("red-flag-chevron");
+      card.classList.toggle("collapsed");
+      chevron.classList.toggle("fa-chevron-down");
+      chevron.classList.toggle("fa-chevron-up");
+    }
+
+    async function handleStep2Landing() {
+      const symptoms = document.getElementById("symptoms").value.trim();
+      if (!symptoms) {
+        alert("Please describe your symptoms first.");
+        return;
+      }
+      if (!followupGenerated) {
+        await generateFollowupQuestionsLanding();
+      } else {
+        await analyzeSymptomsLanding();
+      }
+    }
+
+    function collectBasePayloadLanding() {
+      return {
+        age: document.getElementById("age").value || null,
+        gender: document.getElementById("gender").value || null,
+        height: document.getElementById("height").value || null,
+        weight: document.getElementById("weight").value || null,
+        bloodPressure: document.getElementById("bp").value || null,
+        symptoms: document.getElementById("symptoms").value.trim()
+      };
+    }
+
+    function getFallbackQuestionsLanding() {
+      return [
+        { question: "Gaano katagal na?", options: ["Ngayon lang", "2-7 araw", "Mahigit 1 linggo", "Hindi ko alam"] },
+        { question: "Gaano kalala (1-10)?", options: ["Mild (1-3)", "Moderate (4-6)", "Severe (7-10)", "Hindi ko alam"] },
+        { question: "Ano nagpapalala?", options: ["Pagkain/Inumin", "Paggalaw", "Wala", "Hindi ko alam"] }
+      ];
+    }
+
+    function renderFollowupQuestionsLanding(questions) {
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+
+      questions.forEach((q, idx) => {
+        const qText = q.question?.text || q.question || `Question ${idx+1}`;
+        let opts = q.options || [];
+        opts = opts.map(o => (typeof o === 'object' ? Object.values(o)[0] : o));
+
+        const group = document.createElement("div");
+        group.className = "form-group";
+
+        const optionsHtml = opts.map(opt => `<option value="${String(opt).replaceAll('"','&quot;')}">${opt}</option>`).join("");
+
+        group.innerHTML = `
+          <div class="form-field">
+            <label>${qText}</label>
+            <select class="followup-input" data-question="${String(qText).replaceAll('"','&quot;')}">
+              <option value="">Select answer...</option>
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+        container.appendChild(group);
+      });
+    }
+
+    async function generateFollowupQuestionsLanding() {
+      const analyzing = document.getElementById("analyzing");
+      const txt = document.getElementById("analyzing-text");
+      txt.textContent = "Thinking of follow-up questions...";
+      analyzing.style.display = "flex";
+
+      const data = collectBasePayloadLanding();
+      data.step = 1;
+
+      try {
+        const res = await fetch("http://localhost:5000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
         });
-    </script>
+
+        const result = await res.json();
+        analyzing.style.display = "none";
+
+        let questionsArray = (result && Array.isArray(result.questions)) ? result.questions : [];
+        if (!questionsArray.length) questionsArray = getFallbackQuestionsLanding();
+
+        followupGenerated = true;
+        renderFollowupQuestionsLanding(questionsArray);
+
+        document.getElementById("step2-main-btn").innerHTML = `Analyze Symptoms <i class="fas fa-search"></i>`;
+        document.getElementById("followup-section").style.display = "block";
+        document.getElementById("followup-section").scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        analyzing.style.display = "none";
+        console.error("Error generating questions:", err);
+        // fallback: proceed to analysis if question gen fails
+        followupGenerated = true;
+        renderFollowupQuestionsLanding(getFallbackQuestionsLanding());
+        document.getElementById("step2-main-btn").innerHTML = `Analyze Symptoms <i class="fas fa-search"></i>`;
+        document.getElementById("followup-section").style.display = "block";
+      }
+    }
+
+    async function analyzeSymptomsLanding() {
+      const analyzing = document.getElementById("analyzing");
+      const txt = document.getElementById("analyzing-text");
+      txt.textContent = "Analyzing symptoms (Top 5 Matches)...";
+      analyzing.style.display = "flex";
+
+      const inputs = document.querySelectorAll(".followup-input");
+      const answers = Array.from(inputs).map(inp => ({
+        question: inp.getAttribute("data-question"),
+        answer: (inp.value || "").trim()
+      })).filter(a => a.answer);
+
+      const data = collectBasePayloadLanding();
+      data.step = 2;
+      data.answers = answers;
+
+      try {
+        const res = await fetch("http://localhost:5000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) throw new Error("Server error");
+
+        analysisData = await res.json();
+        analyzing.style.display = "none";
+
+        nextStepLanding(2);
+        showAllConditions = false;
+        renderResultsLanding();
+
+      } catch (err) {
+        analyzing.style.display = "none";
+        console.error("Analysis error:", err);
+        alert("Sorry, nagka-error sa server. Try again later.");
+      }
+    }
+
+    function renderResultsLanding() {
+      if (!analysisData) return;
+
+      // Triage
+      const triageDiv = document.getElementById("triage-container");
+      const level = analysisData.urgency_level || "Self Care";
+      let color = "#22c55e";
+      if (String(level).includes("Urgent")) color = "#f59e0b";
+      if (String(level).includes("Emergency")) color = "#ef4444";
+      triageDiv.innerHTML = `
+        <span class="triage-badge" style="background:${color};">${level}</span>
+        <div>${analysisData.triage_message || ""}</div>
+      `;
+
+      // Drug warning
+      const drugDiv = document.getElementById("drug-warning-container");
+      if (analysisData.drug_interaction_warning && analysisData.drug_interaction_warning !== "None") {
+        drugDiv.textContent = `💊 Drug Interaction Warning: ${analysisData.drug_interaction_warning}`;
+        drugDiv.style.display = "block";
+      } else {
+        drugDiv.style.display = "none";
+      }
+
+      // Red flags
+      const redCard = document.getElementById("red-flags-card");
+      const redList = document.getElementById("red-flags-list");
+      if (Array.isArray(analysisData.red_flags) && analysisData.red_flags.length > 0) {
+        redList.innerHTML = analysisData.red_flags.map(f => `<li>${f}</li>`).join("");
+        redCard.style.display = "block";
+      } else {
+        redCard.style.display = "none";
+      }
+
+      // Condition list
+      const listDiv = document.getElementById("condition-list");
+      listDiv.innerHTML = "";
+
+      if (!Array.isArray(analysisData.conditions) || !analysisData.conditions.length) {
+        listDiv.innerHTML = "<p style='padding:10px;color:#556;'>No specific conditions found.</p>";
+        return;
+      }
+
+      const allConds = analysisData.conditions;
+      const DEFAULT_VISIBLE = 5;
+      const visibleCount = showAllConditions ? allConds.length : Math.min(DEFAULT_VISIBLE, allConds.length);
+
+      allConds.slice(0, visibleCount).forEach((cond, idx) => {
+        const level = cond.match_level || "Possible";
+        const color = cond.match_color || "#22c55e";
+        let width = "50%";
+        if (level === "High") width = "90%";
+        if (level === "Low") width = "30%";
+
+        const card = document.createElement("div");
+        card.className = "condition-card" + (idx === 0 ? " selected" : "");
+        card.innerHTML = `
+          <div class="cond-name">${cond.name || "Unknown Condition"}</div>
+          <div class="match-bar-bg">
+            <div class="match-bar-fill" style="width:${width};background:${color};"></div>
+          </div>
+          <div class="cond-match-label">${level} Match</div>
+        `;
+        card.addEventListener("click", () => showConditionDetailLanding(idx));
+        listDiv.appendChild(card);
+      });
+
+      if (allConds.length > DEFAULT_VISIBLE) {
+        const more = document.createElement("div");
+        more.className = "load-more-conditions";
+        more.innerHTML = showAllConditions
+          ? `<i class="fas fa-chevron-up"></i> Show Top ${DEFAULT_VISIBLE} Only`
+          : `<i class="fas fa-chevron-down"></i> Show All ${allConds.length} Results`;
+
+        more.addEventListener("click", () => {
+          showAllConditions = !showAllConditions;
+          renderResultsLanding();
+        });
+        listDiv.appendChild(more);
+      }
+
+      showConditionDetailLanding(0);
+    }
+
+    function showConditionDetailLanding(index) {
+      if (!analysisData || !analysisData.conditions || !analysisData.conditions[index]) return;
+      const cond = analysisData.conditions[index];
+
+      document.querySelectorAll(".condition-card").forEach((c, i) => {
+        c.classList.toggle("selected", i === index);
+      });
+
+      document.getElementById("detail-placeholder").style.display = "none";
+      document.getElementById("detail-content").style.display = "block";
+
+      document.getElementById("det-name").textContent = cond.name || "Unknown Condition";
+
+      const badge = document.getElementById("det-badge");
+      const level = cond.match_level || "Possible";
+      badge.textContent = `${level} Match`;
+      badge.style.backgroundColor = cond.match_color || "#22c55e";
+
+      document.getElementById("det-overview").textContent = cond.overview || "No overview available.";
+
+      const symList = cond.symptoms_matched || [];
+      document.getElementById("det-symptoms").innerHTML = symList.length
+        ? symList.map(s => `<li>${s}</li>`).join("")
+        : "<li>No matches listed</li>";
+
+      const treatList = cond.treatment || [];
+      document.getElementById("det-treatment").innerHTML = treatList.length
+        ? treatList.map(t => `<li>${t}</li>`).join("")
+        : "<li>See doctor for advice.</li>";
+    }
+
+    function resetAnalyzerLanding() {
+      // reset variables
+      followupGenerated = false;
+      analysisData = null;
+      showAllConditions = false;
+
+      // reset UI inputs
+      document.getElementById('age').value = "";
+      document.getElementById('gender').value = "";
+      document.getElementById('height').value = "";
+      document.getElementById('weight').value = "";
+      document.getElementById('bp').value = "";
+      document.getElementById('symptoms').value = "";
+
+      // reset follow-up
+      document.getElementById("questions-container").innerHTML = "";
+      document.getElementById("followup-section").style.display = "none";
+      document.getElementById("step2-main-btn").innerHTML = `Next <i class="fas fa-arrow-right"></i>`;
+
+      // hide analyzing
+      document.getElementById("analyzing").style.display = "none";
+
+      // reset results UI
+      document.getElementById("triage-container").innerHTML = "";
+      document.getElementById("drug-warning-container").style.display = "none";
+      document.getElementById("red-flags-card").style.display = "none";
+      document.getElementById("condition-list").innerHTML = "";
+      document.getElementById("detail-placeholder").style.display = "block";
+      document.getElementById("detail-content").style.display = "none";
+
+      // go back to step1
+      document.querySelectorAll('.step-form').forEach(s => s.classList.remove('active'));
+      document.getElementById('step1').classList.add('active');
+      document.getElementById("analyzer").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
 </body>
 </html>

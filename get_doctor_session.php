@@ -14,7 +14,7 @@ header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 if (isset($_SESSION['doctor_id']) && isset($_SESSION['doctor_username'])) {
     // Database connection
     $servername = "localhost";
-    $username = "root";
+    $username = "root"; 
     $password = "";
     $dbname = "gabayai";
     

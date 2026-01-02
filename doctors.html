@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="navbar.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
+
 <style>
   body{
     margin:0;
@@ -219,8 +220,9 @@
     color: #4c6ef5;
   }
 
-  /* MODAL / FORM */
 
+
+  /* MODAL / FORM */
   .modal-overlay{
     position:fixed;
     inset:0;
@@ -376,6 +378,7 @@
       </li>
     </ul>
 
+
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
       <div class="hamburger" id="hamburger">
         <span></span><span></span><span></span>
@@ -383,12 +386,14 @@
     </button>
   </div>
 
+
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-items">
       <a href="homer.html" class="mobile-nav-link ">Dashboard</a>
       <a href="analyzerv2.html" class="mobile-nav-link ">Analyzer</a>
       <a href="consult.html" class="mobile-nav-link active">Consultation</a>
       <a href="editaccount.html" class="mobile-nav-link ">Profile</a>
+
 
       <div class="mobile-logout">
         <button onclick="logout()">
@@ -400,12 +405,14 @@
   </div>
 </nav>
 
+
 <div class="doctor-content">
   <div class="page-header">
     <button class="back-btn" onclick="history.back()">
       <i class="fas fa-arrow-left"></i>
       Back
     </button>
+
 
     <div class="search-container">
       <input type="text" class="search-bar" id="searchInput"
@@ -414,6 +421,7 @@
     </div>
   </div>
 
+
   <div id="doctorList" class="doctor-grid">
     <div class="loading">
       <div class="spinner"></div>
@@ -421,6 +429,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- PATIENT INTAKE MODAL -->
 <div id="intakeOverlay" class="modal-overlay">
@@ -433,9 +442,11 @@
       <button class="modal-close" onclick="closeIntake()" aria-label="Close">&times;</button>
     </div>
 
+
     <form id="intakeForm">
       <div class="modal-body">
         <input type="hidden" id="selectedDocId" />
+
 
         <div class="grid-2">
           <div class="field">
@@ -446,6 +457,7 @@
             <label>Contact Number</label>
             <input class="input" id="pPhone" type="tel" placeholder="09xx...">
           </div>
+
 
           <div class="field">
             <label>Age</label>
@@ -459,6 +471,7 @@
               <option value="Prefer not to say">Prefer not to say</option>
             </select>
           </div>
+
 
           <div class="field">
             <label>Duration</label>
@@ -480,10 +493,12 @@
           </div>
         </div>
 
+
         <div class="field" style="margin-top:12px;">
           <label>Chief Complaint</label>
           <textarea class="textarea" id="pComplaint" required placeholder="e.g. Fever + headache for 3 days..."></textarea>
         </div>
+
 
         <div class="grid-2">
           <div class="field">
@@ -500,6 +515,7 @@
           </div>
         </div>
 
+
         <div class="section">
           <h4>Medical History</h4>
           <div class="checks" id="historyChecks">
@@ -514,6 +530,7 @@
           </div>
         </div>
 
+
         <div class="section">
           <h4>Allergies</h4>
           <div class="checks" id="allergyChecks">
@@ -526,16 +543,19 @@
             <label class="chk"><input type="checkbox" value="None" data-none="allergy"> None</label>
           </div>
 
+
           <div class="field" style="margin-top:10px;">
             <label>Other allergy details (optional)</label>
             <input class="input" id="pAllergyOther" type="text" placeholder="Type other allergies...">
           </div>
         </div>
 
+
         <div class="section">
           <h4>Questions to ask (from Analyzer)</h4>
           <div class="checks" id="topicChecks"></div>
         </div>
+
 
         <div class="section">
           <label class="chk" style="background:#fff;">
@@ -544,6 +564,7 @@
           </label>
         </div>
       </div>
+
 
       <div class="modal-foot">
         <button type="button" class="btn outline" onclick="closeIntake()">Cancel</button>
@@ -555,6 +576,7 @@
   </div>
 </div>
 
+
 <script>
   function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
@@ -562,25 +584,25 @@
     menu.classList.toggle('show');
     hamburger.classList.toggle('open');
   }
+  
+  // === FIXED LOGOUT FUNCTION ===
   function logout() {
-    if (confirm("Logout?")) window.location.href = "userlogout.php";
+    if (confirm("Logout?")) {
+        // Redirect to logout script to destroy session
+        window.location.href = "user_logout.php";
+    }
   }
+
 
   const DOCTORS_URL = 'getDoctors.php';
   const PRESENCE_URL = 'getDoctorPresence.php';
   const PRESENCE_POLL_MS = 4000;
   const SESSION_KEY = "gabay_consult_session";
 
-  const ANALYZER_KEYS = [
-    "gabay_analyzer_results",
-    "analysisResults",
-    "gabay_analysis",
-    "gabayAI_analyzer",
-    "gabay_ai_analysis"
-  ];
 
   let doctorsCache = [];
   let onlineSet = new Set();
+
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -589,50 +611,38 @@
     return div.innerHTML;
   }
 
+
   function avatarUrl(name){
     const safe = encodeURIComponent(name || "Doctor");
-    return `https://ui-avatars.com/api/?name=${safe}&background=EEF2FF&color=3730A3&rounded=true&size=160`; /* placeholder avatar API [web:34] */
+    return `https://ui-avatars.com/api/?name=${safe}&background=EEF2FF&color=3730A3&rounded=true&size=160`; 
   }
+
 
   function normalizeId(v){
     return String(v ?? "").trim();
   }
 
-  function readAnalyzerTopics(){
-    for(const k of ANALYZER_KEYS){
-      try{
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const data = JSON.parse(raw);
 
-        if(Array.isArray(data)){
-          const list = data.map(x => String(x)).filter(Boolean);
-          if(list.length) return list;
+  // === UPDATED LOGIC: FETCH FROM DB ===
+  async function fetchLatestAnalysisTopics() {
+    try {
+        // This endpoint should return the latest results for the logged-in user
+        const res = await fetch('get_user_latest_analysis.php');
+        const data = await res.json();
+        
+        if (data.success && Array.isArray(data.topics) && data.topics.length > 0) {
+            return data.topics;
         }
-
-        const candidates = [
-          data.topics, data.findings, data.conditions, data.possibleConditions, data.results
-        ].filter(Boolean);
-
-        for(const c of candidates){
-          if(Array.isArray(c) && c.length){
-            return c.map(x =>
-              typeof x === "string"
-                ? x
-                : (x.name || x.title || JSON.stringify(x))
-            ).filter(Boolean);
-          }
-        }
-      }catch(e){}
+    } catch (e) {
+        console.error("DB analysis fetch failed:", e);
     }
+    // Fallback if no data/error
     return [
-      "Possible viral infection",
-      "Dehydration / low fluid intake",
-      "Headache / sinus pressure",
-      "What medicine is safe for me?",
-      "When should I go to ER?"
-    ];
+      "Headache", "Fever", "Cough", "General Checkup", "Follow-up"
+    ]; 
   }
+  // ====================================
+
 
   function wireNone(containerId, noneKey){
     const container = document.getElementById(containerId);
@@ -640,8 +650,10 @@
       const t = e.target;
       if(!(t instanceof HTMLInputElement) || t.type !== "checkbox") return;
 
+
       const noneBox = container.querySelector(`input[data-none="${noneKey}"]`);
       const boxes = Array.from(container.querySelectorAll('input[type="checkbox"]'));
+
 
       if(t === noneBox && noneBox.checked){
         boxes.forEach(b => { if(b !== noneBox) b.checked = false; });
@@ -651,21 +663,25 @@
     });
   }
 
+
   function getChecked(containerId){
     return Array.from(document.querySelectorAll(
       `#${containerId} input[type="checkbox"]:checked`
     )).map(cb => cb.value);
   }
 
+
   function renderDoctors(doctors){
     const container = document.getElementById('doctorList');
     container.innerHTML = '';
+
 
     if (!doctors || doctors.length === 0) {
       container.innerHTML =
         '<div class="empty-state"><i class="fas fa-user-md"></i><p>No doctors found.</p></div>';
       return;
     }
+
 
     doctors.forEach((doc) => {
       const id = normalizeId(doc.id);
@@ -676,13 +692,16 @@
       const photo = (doc.profilephoto || doc.image || "").trim();
       const img = photo ? photo : avatarUrl(name);
 
+
       const isOnline = onlineSet.has(id);
       const statusText = isOnline ? "ONLINE" : "OFFLINE";
       const statusClass = isOnline ? "available" : "not-available";
 
+
       const btnClass = isOnline ? "enabled" : "disabled";
       const btnDisabled = isOnline ? "" : "disabled";
       const btnText = isOnline ? "Chat Now" : "Offline";
+
 
       const card = document.createElement('div');
       card.className = 'doctor-card';
@@ -693,6 +712,7 @@
                class="doctor-avatar"
                onerror="this.src='${escapeHtml(avatarUrl(name))}'" />
 
+
           <div class="doctor-info">
             <div class="doctor-name">${escapeHtml(name)}</div>
             <div class="doctor-specialty">${escapeHtml(spec)}</div>
@@ -702,6 +722,7 @@
             </div>
           </div>
         </div>
+
 
         <div class="card-schedule">
           <div class="schedule-row">
@@ -714,24 +735,29 @@
           </div>
         </div>
 
+
         <button class="chat-btn ${btnClass}" ${btnDisabled} data-chat="1">
           <i class="fas fa-comments"></i> ${btnText}
         </button>
       `;
+
 
       card.querySelector('[data-chat="1"]').addEventListener('click', ()=>{
         if(!isOnline) return;
         openIntake({ id, name, spec });
       });
 
+
       container.appendChild(card);
     });
   }
+
 
   function applySearch(){
     const filter = (document.getElementById('searchInput').value || "")
       .toLowerCase().trim();
     if(!filter) return renderDoctors(doctorsCache);
+
 
     const filtered = doctorsCache.filter(d => {
       const name = String(d.fullname || d.name || "").toLowerCase();
@@ -739,8 +765,10 @@
       return name.includes(filter) || spec.includes(filter);
     });
 
+
     renderDoctors(filtered);
   }
+
 
   async function fetchDoctors() {
     const res = await fetch(DOCTORS_URL, { cache: "no-store" });
@@ -748,16 +776,20 @@
     const doctors = await res.json();
     if (doctors.error) throw new Error(doctors.error);
 
+
     doctorsCache = Array.isArray(doctors) ? doctors : [];
     applySearch();
   }
+
 
   async function fetchPresence(){
     const res = await fetch(PRESENCE_URL, { cache: "no-store" });
     if(!res.ok) throw new Error("Presence fetch failed");
 
+
     const data = await res.json();
     const set = new Set();
+
 
     if(Array.isArray(data)){
       if(data.length && typeof data[0] === "object"){
@@ -788,22 +820,40 @@
       }
     }
 
+
     onlineSet = set;
     applySearch();
   }
+
 
   const overlay = document.getElementById("intakeOverlay");
   const form = document.getElementById("intakeForm");
   const startBtn = document.getElementById("startBtn");
 
-  function openIntake(doc){
+
+  // === UPDATED: ASYNC OPENINTAKE ===
+  async function openIntake(doc){
     document.getElementById("selectedDocId").value = doc.id;
     document.getElementById("modalDocName").textContent = doc.name;
     document.getElementById("modalDocSpec").textContent = doc.spec;
 
+
     const wrap = document.getElementById("topicChecks");
-    wrap.innerHTML = "";
-    const topics = readAnalyzerTopics();
+    wrap.innerHTML = '<div style="color:#666; font-style:italic;">Fetching analysis results...</div>';
+
+
+    // Fetch topics from DB
+    const topics = await fetchLatestAnalysisTopics();
+
+
+    wrap.innerHTML = ""; // Clear loader
+
+
+    if(topics.length === 0) {
+        wrap.innerHTML = '<div style="color:#999; font-size:0.9em;">No recent analysis found.</div>';
+    }
+
+
     topics.forEach((t, idx)=>{
       const id = `topic_${idx}_${Math.random().toString(16).slice(2)}`;
       wrap.insertAdjacentHTML("beforeend", `
@@ -814,11 +864,14 @@
       `);
     });
 
+
     wireNone("historyChecks", "history");
     wireNone("allergyChecks", "allergy");
 
+
     overlay.style.display = "flex";
   }
+
 
   function closeIntake(){
     overlay.style.display = "none";
@@ -826,12 +879,15 @@
     document.getElementById("topicChecks").innerHTML = "";
   }
 
+
   overlay.addEventListener("click", (e)=>{
     if(e.target === overlay) closeIntake();
   });
 
+
   form.addEventListener("submit", async (e)=>{
     e.preventDefault();
+
 
     const docId = document.getElementById("selectedDocId").value;
     if(!onlineSet.has(normalizeId(docId))){
@@ -839,6 +895,7 @@
       closeIntake();
       return;
     }
+
 
     const payload = {
       doctorId: docId,
@@ -863,9 +920,11 @@
       createdAt: new Date().toISOString()
     };
 
+
     startBtn.disabled = true;
     const originalHtml = startBtn.innerHTML;
     startBtn.innerHTML = 'Starting...';
+
 
     try {
       const res = await fetch('consult_start_new.php', {
@@ -874,8 +933,10 @@
         body: JSON.stringify(payload)
       });
 
+
       const text = await res.text();
-      console.log('RAW consult_start_new.php RESPONSE:', text);
+      // console.log('RAW consult_start_new.php RESPONSE:', text);
+
 
       let result;
       try {
@@ -885,17 +946,20 @@
         return;
       }
 
+
       if (!res.ok || !result.success) {
         alert('PHP error: ' + (result.message || 'unknown') + '\n' + (result.error || ''));
         return;
       }
+
 
       localStorage.setItem(SESSION_KEY, JSON.stringify({
         ...payload,
         consultation_id: result.consultation_id
       }));
 
-      alert('OK, consultation started. ID = ' + result.consultation_id);
+
+      // alert('OK, consultation started. ID = ' + result.consultation_id);
       window.location.href =
         `chatdoc.html?consult=${encodeURIComponent(result.consultation_id)}`;
     } catch (err) {
@@ -907,7 +971,9 @@
     }
   });
 
+
   document.getElementById('searchInput').addEventListener('input', applySearch);
+
 
   (async function init(){
     try{

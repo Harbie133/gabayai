@@ -1,4 +1,5 @@
 <?php
+// get_consultation_details.php
 require_once 'db.php';
 session_start();
 
@@ -25,9 +26,11 @@ $sql = "
         c.patient_name,
         c.patient_age,
         c.patient_sex,
+        c.patient_phone, -- Added for consistency
         c.duration,
         c.severity,
         c.complaint,
+        c.topics,        -- Required for topics pill list
         dp.full_name     AS doctor_name,
         dp.specialization
     FROM consultations c
@@ -47,14 +50,25 @@ if (!$row) {
     exit;
 }
 
-// kung wala ka pang topics column, gawin muna empty list
+// Topics Logic
 $topics = [];
+if (!empty($row['topics'])) {
+    $decoded = json_decode($row['topics'], true);
+    if (is_array($decoded)) {
+        $topics = $decoded;
+    } else {
+        // Handle comma-separated string fallback
+        $clean = str_replace(['[', ']', '"'], '', $row['topics']);
+        $topics = array_values(array_filter(array_map('trim', explode(',', $clean))));
+    }
+}
 
 echo json_encode([
     'doctorName'           => $row['doctor_name'],
     'doctorSpecialization' => $row['specialization'],
     'patient' => [
         'name'      => $row['patient_name'],
+        'phone'     => $row['patient_phone'], // Added
         'age'       => $row['patient_age'],
         'sex'       => $row['patient_sex'],
         'duration'  => $row['duration'],
@@ -63,3 +77,4 @@ echo json_encode([
         'topics'    => $topics
     ]
 ]);
+?>

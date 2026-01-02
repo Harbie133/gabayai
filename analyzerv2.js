@@ -375,4 +375,5 @@ function collectBasePayloadWithLanguage() {
     symptoms: document.getElementById('symptoms').value.trim(),
     language: selectedLang
   };
-}
+} 
+

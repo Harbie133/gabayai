@@ -7,378 +7,358 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{
-      height:100%;
+    /* RESET */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Prevent full page scroll */
     }
-    body{
-      font-family:'Segoe UI',Arial,sans-serif;
-      background:linear-gradient(135deg,#f5f7fa 0%,#e4e8ec 100%);
-      color:#2d3748;
-      display:flex;
-      min-height:100vh;
-    }
-
-    .sidebar{
-      background:#3d5a80;
-      color:#fff;
-      width:260px;
-      height:100vh;
-      position:fixed;
-      top:0;left:0;
-      display:flex;
-      flex-direction:column;
-      padding:0;
-      z-index:1200;
-      box-shadow:2px 0 10px rgba(0,0,0,.1);
-    }
-    .sidebar .logo{
-      font-weight:800;
-      font-size:1.6rem;
-      padding:30px 25px 20px;
-      letter-spacing:1px;
-      border-bottom:1px solid rgba(255,255,255,.1);
-    }
-    .sidebar .logo span{color:#98c1d9}
-    .sidebar nav{flex:1;padding:20px 0;overflow-y:auto}
-    .sidebar nav a{
-      display:flex;align-items:center;gap:12px;
-      padding:14px 25px;
-      text-decoration:none;
-      color:rgba(255,255,255,.8);
-      font-size:.95rem;
-      border-left:3px solid transparent;
-      transition:all .2s ease;
-    }
-    .sidebar nav a i{width:20px;text-align:center;font-size:1.1rem}
-    .sidebar nav a:hover,
-    .sidebar nav a.active{
-      background:rgba(255,255,255,.1);
-      border-left-color:#98c1d9;
-      color:#fff;
-    }
-    .sidebar .logout{
-      padding:20px 25px;
-      border-top:1px solid rgba(255,255,255,.1);
-      cursor:pointer;
-      transition:background .2s;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:rgba(255,255,255,.9);
-    }
-    .sidebar .logout:hover{
-      background:rgba(0,0,0,.2);
-      color:#ff6b6b;
+    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      color: #2d3748;
+      display: flex;
     }
 
-    .main-content{
-      flex:1;
-      margin-left:260px;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+    /* SIDEBAR - Fixed Width (Desktop) */
+    .sidebar {
+      background: #3d5a80;
+      color: #fff;
+      width: 260px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 1200;
+      box-shadow: 2px 0 10px rgba(0,0,0,.1);
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar .logo {
+      font-weight: 800;
+      font-size: 1.6rem;
+      padding: 30px 25px 20px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar .logo span { color: #98c1d9; }
+    .sidebar nav { flex: 1; padding: 20px 0; overflow-y: auto; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 25px;
+      text-decoration: none;
+      color: rgba(255,255,255,.8);
+      font-size: .95rem;
+      border-left: 3px solid transparent;
+      transition: all .2s ease;
+    }
+    .sidebar nav a i { width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(255,255,255,.1);
+      border-left-color: #98c1d9;
+      color: #fff;
+    }
+    .sidebar .logout {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      cursor: pointer;
+      transition: background .2s;
+      display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,.9);
+    }
+    .sidebar .logout:hover { background: rgba(0,0,0,.2); color: #ff6b6b; }
+
+    /* HAMBURGER MENU (Visible only on mobile) */
+    .hamburger {
+      width: 30px;
+      height: 24px;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      cursor: pointer;
+      z-index: 1300;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .hamburger div {
+      background: #3d5a80;
+      border-radius: 2px;
+      height: 3px;
+      transition: all 0.3s ease;
+      width: 100%;
     }
 
-    .top-bar{
-      background:#fff;
-      padding:16px 24px;
-      box-shadow:0 2px 4px rgba(0,0,0,.05);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      z-index:100;
-    }
-    .top-bar h1{
-      font-size:1.6rem;
-      color:#3d5a80;
-      font-weight:600;
-    }
-    .user-info{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-size:1rem;
-      color:#4a5568;
-    }
-    .user-info i{font-size:1.8rem;color:#3d5a80}
-
-    .content-area{
-      flex:1;
-      padding:20px 30px 24px;
-      max-width:1200px;
-      width:100%;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:16px;
+    /* MAIN CONTENT */
+    .main-content {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: margin-left 0.3s ease;
     }
 
-    .today-banner{
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      color:#fff;
-      padding:14px 18px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-shrink:0;
+    /* TOP BAR */
+    .top-bar {
+      background: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.05);
+      display: flex;
+      justify-content: space-between; 
+      align-items: center;
+      z-index: 100;
+      flex-shrink: 0;
     }
-    .today-banner i{font-size:1.6rem}
-    .today-banner h3{font-size:1.2rem;margin-bottom:4px}
-    .today-banner p{opacity:.9;font-size:.9rem}
+    .top-bar h1 { font-size: 1.6rem; color: #3d5a80; font-weight: 600; }
+    .user-info { display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #4a5568; }
+    .user-info i { font-size: 1.8rem; color: #3d5a80; }
 
-    /* CHAT LAYOUT FIXED HEIGHT */
-    .chat-layout{
-      flex:1;
-      min-height:0;
-      display:grid;
-      grid-template-columns:260px minmax(0,3.2fr) minmax(0,1.7fr);
-      gap:0;
-      align-items:stretch;
-      border-radius:16px;
-      overflow:hidden;
-      border:1px solid #e2e8f0;
-      background:#fff;
+    /* CONTENT AREA */
+    .content-area {
+      flex: 1;
+      padding: 20px 30px 24px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+      min-height: 0;
     }
 
-    @media(max-width:1100px){
-      .chat-layout{
-        grid-template-columns:240px minmax(0,3fr);
+    /* BANNER */
+    .today-banner {
+      background: linear-gradient(135deg, #3d5a80 0%, #293a52 100%);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .today-banner i { font-size: 1.6rem; }
+    .today-banner h3 { font-size: 1.2rem; margin-bottom: 4px; }
+    .today-banner p { opacity: .9; font-size: .9rem; }
+
+    /* CHAT LAYOUT - DESKTOP DEFAULT */
+    .chat-layout {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 280px; /* FIXED 3 COLUMNS ON DESKTOP */
+      gap: 0;
+      align-items: stretch;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      position: relative;
+    }
+
+    /* CONVERSATION LIST (Left) */
+    .conversation-list {
+      border-right: 1px solid #e5e7eb;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    .conv-header {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .conv-items { flex: 1; overflow-y: auto; }
+    .conv-empty { font-size: .85rem; color: #9ca3af; text-align: center; padding: 24px 8px; }
+    .conv-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: background .15s; border-bottom: 1px solid #f9fafb; }
+    .conv-item:hover { background: #f3f4f6; }
+    .conv-item.active { background: #e5edff; border-left: 3px solid #3d5a80; }
+    .conv-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #e5e7eb; flex-shrink: 0; }
+    .conv-main { min-width: 0; flex: 1; }
+    .conv-name { font-size: .9rem; font-weight: 600; color: #111827; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .conv-preview { font-size: .8rem; color: #6b7280; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .conv-meta { font-size: .7rem; color: #9ca3af; text-align: right; min-width: 45px; }
+    /* Pill style retained for finished or other statuses, logic removed for 'ongoing' */
+    .conv-status-pill { display: inline-block; margin-top: 2px; padding: 2px 6px; border-radius: 999px; font-size: .7rem; background: #f3f4ff; color: #4c6ef5; }
+
+    /* CHAT PANEL (Center) */
+    .chat-panel {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Mobile Chat Header - HIDDEN ON DESKTOP */
+    .mobile-chat-header {
+      display: none; 
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .mobile-back-btn { background: none; border: none; font-size: 1.1rem; color: #3d5a80; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .mobile-info-btn { background: none; border: none; font-size: 1.2rem; color: #3d5a80; cursor: pointer; }
+
+    .chat-log {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #e4e6eb;
+      scroll-behavior: smooth;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-empty { text-align: center; padding: 40px 10px; color: #9ca3af; font-size: .9rem; margin: auto; }
+    .chat-empty i { font-size: 2rem; margin-bottom: 10px; opacity: .6; }
+
+    /* BUBBLES */
+    .bubble-wrap { display: flex; flex-direction: column; margin-bottom: 8px; width: 100%; }
+    .bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; margin: 1px 0; font-size: .95rem; line-height: 1.4; word-wrap: break-word; }
+    .me { margin-left: auto; background: #0084ff; color: #fff; border-bottom-right-radius: 4px; }
+    .them { margin-right: auto; background: #fff; color: #050505; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .meta { font-size: .7rem; opacity: .75; margin-top: 2px; text-align: right; color: #718096; }
+    
+    /* INPUT AREA */
+    .chat-input-wrap {
+      border-top: 1px solid #d1d5db;
+      padding: 12px 15px;
+      display: none; /* Hidden Default */
+      gap: 10px;
+      background: #fff;
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .chat-input-wrap.active { display: flex; }
+    
+    .attach-btn {
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .attach-btn:hover { background: #e5e7eb; color: #3d5a80; }
+
+    .chat-input { flex: 1; border-radius: 20px; border: 1px solid #e5e7eb; padding: 10px 15px; outline: none; font-size: .95rem; background: #f0f2f5; min-width: 0; }
+    .chat-input:focus { border-color: #4c6ef5; background: #fff; }
+    .send-btn { border: none; border-radius: 20px; padding: 0 18px; background: #0084ff; color: #fff; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: .9rem; flex-shrink: 0; transition: background 0.2s; height: 38px; }
+    .send-btn:hover { background: #0073e6; }
+    .send-btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    /* SIDE PANEL (Right) - DESKTOP DEFAULT */
+    .side-panel {
+      background: #fff;
+      border-left: 1px solid #e2e8f0;
+      padding: 15px;
+      display: flex; /* Visible on Desktop */
+      flex-direction: column;
+      gap: 15px;
+      min-width: 0;
+      height: 100%;
+      overflow-y: auto;
+    }
+    .side-panel > div { padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+    .side-panel h4 { margin: 0 0 6px; font-size: .85rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+    .summary-item { font-size: .95rem; color: #111827; margin: 0; white-space: pre-line; font-weight: 500; }
+    .pill-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill { padding: 4px 10px; border-radius: 999px; background: #eef2ff; color: #4c6ef5; font-size: .8rem; font-weight: 600; }
+
+    /* LOADING */
+    .spinner { border: 2px solid #e2e8f0; border-top: 2px solid #3d5a80; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin-right: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* ---------------- RESPONSIVE DESIGN (MOBILE ONLY) ---------------- */
+    @media (max-width: 1100px) {
+      .chat-layout { grid-template-columns: 240px minmax(0, 1fr) 240px; }
+    }
+
+    @media (max-width: 900px) {
+      /* Sidebar */
+      .sidebar { position: fixed; transform: translateX(-100%); width: 260px; z-index: 2000; }
+      .sidebar.show { transform: translateX(0); box-shadow: 4px 0 15px rgba(0,0,0,0.2); }
+      .hamburger { display: flex; }
+      
+      /* Main Content */
+      .main-content { margin-left: 0; }
+      .top-bar { padding-left: 60px; }
+      .content-area { padding: 15px; }
+
+      /* Chat Layout Stack - Mobile View */
+      .chat-layout { grid-template-columns: 1fr; } /* 1 Column only */
+      
+      .conversation-list { display: flex; width: 100%; } 
+      .chat-panel { display: none; width: 100%; } 
+      .side-panel { display: none; } 
+
+      /* Active Mobile Chat State */
+      .chat-layout.mobile-active .conversation-list { display: none; }
+      .chat-layout.mobile-active .chat-panel { display: flex; }
+      .mobile-chat-header { display: flex; }
+
+      /* DROPDOWN INFO PANEL (Mobile Only Override) */
+      .side-panel.mobile-dropdown {
+        display: none; /* Hidden by default */
+        position: absolute;
+        top: 50px; /* Below header */
+        left: 0; right: 0;
+        height: auto;
+        max-height: 50%;
+        background: #fff;
+        border-bottom: 2px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 50;
+        padding: 15px;
+        overflow-y: auto;
+        border-left: none; /* Remove desktop border */
       }
-      .side-panel{display:none;}
-    }
-    @media(max-width:800px){
-      .main-content{
-        margin-left:0;
-      }
-      .sidebar{
-        display:none;
-      }
-      .content-area{
-        padding:12px;
-      }
-      .chat-layout{
-        grid-template-columns:minmax(0,1fr);
-      }
-      .conversation-list{
-        height:220px;
-      }
-    }
-
-    .conversation-list{
-      border-right:1px solid #e5e7eb;
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
-    .conv-header{
-      padding:10px 12px;
-      border-bottom:1px solid #e5e7eb;
-      font-size:.85rem;
-      font-weight:600;
-      color:#4b5563;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      flex-shrink:0;
-    }
-    .conv-items{flex:1;overflow-y:auto;}
-    .conv-empty{
-      font-size:.85rem;
-      color:#9ca3af;
-      text-align:center;
-      padding:24px 8px;
-    }
-    .conv-item{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 10px;
-      cursor:pointer;
-      transition:background .15s;
-    }
-    .conv-item:hover{background:#f3f4f6;}
-    .conv-item.active{background:#e5edff;}
-    .conv-avatar{
-      width:32px;height:32px;border-radius:999px;
-      object-fit:cover;background:#e5e7eb;flex-shrink:0;
-    }
-    .conv-main{min-width:0;flex:1;}
-    .conv-name{
-      font-size:.86rem;
-      font-weight:500;
-      color:#111827;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-    }
-    .conv-preview{
-      font-size:.78rem;
-      color:#6b7280;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-    }
-    .conv-meta{
-      font-size:.72rem;
-      color:#9ca3af;
-      text-align:right;
-    }
-    .conv-status-pill{
-      display:inline-block;
-      margin-top:2px;
-      padding:2px 6px;
-      border-radius:999px;
-      font-size:.7rem;
-      background:#f3f4ff;
-      color:#4c6ef5;
-    }
-
-    .chat-panel{
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
-    .chat-log{
-      flex:1;
-      padding:16px 12px;
-      overflow-y:auto;
-      background:#e4e6eb;
-      scroll-behavior:smooth;
-      min-height:0;
-    }
-    .chat-empty{
-      text-align:center;
-      padding:40px 10px;
-      color:#9ca3af;
-      font-size:.9rem;
-    }
-    .chat-empty i{
-      font-size:1.4rem;
-      margin-bottom:4px;
-      opacity:.6;
-    }
-    .bubble-wrap{
-      display:flex;
-      flex-direction:column;
-      margin-bottom:6px;
-    }
-    .bubble{
-      max-width:70%;
-      padding:8px 10px;
-      border-radius:18px;
-      margin:1px 0;
-      font-size:.9rem;
-      line-height:1.4;
-      word-wrap:break-word;
-    }
-    .me{
-      margin-left:auto;
-      background:#0084ff;
-      color:#fff;
-      border-bottom-right-radius:4px;
-    }
-    .them{
-      margin-right:auto;
-      background:#f0f0f0;
-      color:#050505;
-      border-bottom-left-radius:4px;
-    }
-    .meta{
-      font-size:.7rem;
-      opacity:.75;
-      margin-top:1px;
-      text-align:right;
-    }
-
-    .chat-input-wrap{
-      border-top:1px solid #d1d5db;
-      padding:8px 10px;
-      display:flex;
-      gap:8px;
-      background:#fff;
-      flex-shrink:0;
-    }
-    .chat-input{
-      flex:1;
-      border-radius:20px;
-      border:1px solid #e5e7eb;
-      padding:8px 12px;
-      outline:none;
-      font-size:.9rem;
-      background:#f0f2f5;
-      min-width:0;
-    }
-    .chat-input:focus{
-      border-color:#4c6ef5;
-      box-shadow:0 0 0 2px rgba(76,110,245,.2);
-      background:#fff;
-    }
-    .send-btn{
-      border:none;
-      border-radius:999px;
-      padding:0 14px;
-      background:#0084ff;
-      color:#fff;
-      font-weight:500;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:.85rem;
-      flex-shrink:0;
-    }
-    .send-btn[disabled]{opacity:.6;cursor:not-allowed;}
-
-    .side-panel{
-      background:#fff;
-      border-left:1px solid #e2e8f0;
-      padding:14px 14px 16px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-width:0;
-    }
-    .side-panel h4{
-      margin:0 0 4px;
-      font-size:.9rem;
-      color:#111827;
-    }
-    .summary-item{
-      font-size:.85rem;
-      color:#4b5563;
-      margin:0 0 4px;
-      white-space:pre-line;
-    }
-    .pill-list{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-    }
-    .pill{
-      padding:4px 8px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#4c6ef5;
-      font-size:.78rem;
+      .side-panel.mobile-dropdown.show { display: flex; }
     }
   </style>
 </head>
 <body>
 
+  <button class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </button>
+
   <div class="sidebar" id="sidebar">
-    <div class="logo">MEDI<span>Care</span></div>
+    <div class="logo">GABAY<span>AI</span></div>
     <nav>
       <a href="doctor_dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
       <a href="doctor_profile.html"><i class="fas fa-user"></i> Profile</a>
       <a href="doctor_patients.html"><i class="fas fa-users"></i> Patients</a>
-      <a href="#"><i class="fas fa-heartbeat"></i> Symptom Analysis</a>
+      <a href="doctor_analyzer.html"><i class="fas fa-microscope"></i> Clinical Support</a>
       <a href="doctor_teleconsult.html" class="active"><i class="fas fa-comments"></i> Teleconsultation</a>
-      <a href="doctor_appointments.html"><i class="fas fa-calendar-alt"></i> Appointments</a>
-      <a href="#"><i class="fas fa-bell"></i> Notifications</a>
+      
     </nav>
     <div class="logout" onclick="location.href='doctor_logout.php'">
       <i class="fas fa-sign-out-alt"></i> Logout
@@ -403,7 +383,8 @@
         </div>
       </div>
 
-      <div class="chat-layout">
+      <div class="chat-layout" id="chatLayout">
+        
         <div class="conversation-list">
           <div class="conv-header">
             <span>Conversations</span>
@@ -411,20 +392,43 @@
           </div>
           <div id="convItems" class="conv-items">
             <div class="conv-empty">
-              No conversations yet.<br>
-              Patients will appear here after starting a consultation.
+              <div class="spinner" style="margin: 20px auto; border-color:#ccc; border-top-color:#3d5a80;"></div>
             </div>
           </div>
         </div>
 
         <div class="chat-panel">
+          <!-- Mobile Header with Info Toggle -->
+          <div class="mobile-chat-header">
+             <div style="display:flex; align-items:center; gap:10px;">
+               <button class="mobile-back-btn" onclick="closeChatMobile()">
+                 <i class="fas fa-arrow-left"></i>
+               </button>
+               <span style="font-weight:600; font-size:0.95rem;" id="mobileHeaderName">Chat</span>
+             </div>
+             <button class="mobile-info-btn" onclick="toggleMobileInfo()">
+               <i class="fas fa-info-circle"></i>
+             </button>
+          </div>
+
+          <!-- Chat Messages -->
           <div id="chatLog" class="chat-log">
             <div class="chat-empty">
               <i class="fas fa-comments"></i><br/>
               Select a conversation on the left to start chatting.
             </div>
           </div>
-          <div class="chat-input-wrap">
+          
+          <!-- Chat Input -->
+          <div class="chat-input-wrap" id="chatInputWrap">
+            <!-- Hidden File Input -->
+            <input type="file" id="fileInput" style="display:none;" accept="image/*,application/pdf">
+            
+            <!-- Attach Button -->
+            <button class="attach-btn" id="attachBtn" title="Attach file">
+               <i class="fas fa-paperclip"></i>
+            </button>
+            
             <input id="msgInput" class="chat-input" type="text"
                    placeholder="Type your message..." autocomplete="off">
             <button id="sendBtn" class="send-btn">
@@ -433,38 +437,51 @@
           </div>
         </div>
 
-        <div class="side-panel">
-          <div>
-            <h4>Patient</h4>
-            <p id="sidePatientName" class="summary-item">—</p>
-          </div>
-          <div>
-            <h4>Key info</h4>
-            <p id="sideInfo" class="summary-item">—</p>
-          </div>
-          <div>
-            <h4>Chief complaint</h4>
-            <p id="sideComplaint" class="summary-item">—</p>
-          </div>
-          <div>
-            <h4>Topics</h4>
-            <div id="sideTopics" class="pill-list"></div>
-          </div>
+        <!-- Side Panel -->
+        <div class="side-panel" id="sidePanel">
+            <div>
+              <h4>Patient</h4>
+              <p id="sidePatientName" class="summary-item">—</p>
+            </div>
+            <div>
+              <h4>Contact</h4>
+              <p id="sideContact" class="summary-item">—</p>
+            </div>
+            <div>
+              <h4>Key info</h4>
+              <p id="sideInfo" class="summary-item">—</p>
+            </div>
+            <div>
+              <h4>Chief complaint</h4>
+              <p id="sideComplaint" class="summary-item">—</p>
+            </div>
+            <div>
+              <h4>Topics</h4>
+              <div id="sideTopics" class="pill-list"></div>
+            </div>
         </div>
+
       </div>
     </div>
   </div>
 
 <script src="doctor-status.js"></script>
-
 <script>
-  const POLL_MS = 4000;
+  const POLL_MS = 1000;
 
   const chatLog       = document.getElementById('chatLog');
   const msgInput      = document.getElementById('msgInput');
   const sendBtn       = document.getElementById('sendBtn');
+  const attachBtn     = document.getElementById('attachBtn'); 
+  const fileInput     = document.getElementById('fileInput'); 
   const convItemsEl   = document.getElementById('convItems');
-
+  const chatLayout    = document.getElementById('chatLayout'); 
+  const chatInputWrap = document.getElementById('chatInputWrap');
+  const sidebar       = document.getElementById('sidebar');
+  const hamburger     = document.getElementById('hamburger');
+  const mobileHeaderName = document.getElementById('mobileHeaderName');
+  
+  const sidePanel       = document.getElementById('sidePanel');
   const sidePatientName = document.getElementById('sidePatientName');
   const sideInfo        = document.getElementById('sideInfo');
   const sideComplaint   = document.getElementById('sideComplaint');
@@ -473,6 +490,42 @@
   let consultationId    = null;
   let lastMessageId     = 0;
   let sessionDoctorName = '';
+
+  // Sidebar Toggle
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sidebar.classList.toggle('show');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 900 && 
+        !sidebar.contains(e.target) && 
+        !hamburger.contains(e.target) && 
+        sidebar.classList.contains('show')) {
+      sidebar.classList.remove('show');
+    }
+  });
+
+  // Mobile Info Toggle
+  function toggleMobileInfo() {
+    if(window.innerWidth <= 900) {
+      sidePanel.classList.toggle('show');
+      if (!sidePanel.classList.contains('mobile-dropdown')) {
+         sidePanel.classList.add('mobile-dropdown');
+      }
+    }
+  }
+
+  // ATTACHMENT HANDLERS
+  attachBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      sendAttachment();
+    }
+  });
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -485,6 +538,11 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    if(window.innerWidth <= 900) {
+       sidePanel.classList.add('mobile-dropdown');
+       document.querySelector('.chat-panel').appendChild(sidePanel);
+    }
+
     fetch('get_doctor_session.php')
       .then(r => r.json())
       .then(data => {
@@ -493,10 +551,25 @@
           document.getElementById('username').textContent = sessionDoctorName;
           loadConversations();
         } else {
-          alert('Please login');
-          window.location.href = 'doctor_login.html';
+          loadConversations();
         }
-      });
+      })
+      .catch(() => loadConversations()); 
+  });
+
+  window.addEventListener('resize', () => {
+    if(window.innerWidth <= 900) {
+      if(!sidePanel.classList.contains('mobile-dropdown')) {
+        sidePanel.classList.add('mobile-dropdown');
+        document.querySelector('.chat-panel').appendChild(sidePanel); 
+      }
+    } else {
+      if(sidePanel.classList.contains('mobile-dropdown')) {
+        sidePanel.classList.remove('mobile-dropdown', 'show');
+        sidePanel.style.display = 'flex'; 
+        document.getElementById('chatLayout').appendChild(sidePanel);
+      }
+    }
   });
 
   async function loadConversations(){
@@ -511,19 +584,12 @@
             No conversations yet.<br>
             Patients will appear here after starting a consultation.
           </div>`;
-        consultationId = null;
-        msgInput.disabled = true;
-        sendBtn.disabled  = true;
         return;
       }
 
-      msgInput.disabled = false;
-      sendBtn.disabled  = false;
-
       data.forEach(conv=>{
         const item = document.createElement('div');
-        item.className = 'conv-item' +
-          (String(conv.consultation_id) === String(consultationId) ? ' active' : '');
+        item.className = 'conv-item' + (String(conv.consultation_id) === String(consultationId) ? ' active' : '');
         item.addEventListener('click', () => selectConversation(conv, item));
 
         const avatar = document.createElement('img');
@@ -545,7 +611,8 @@
         previewEl.textContent = conv.last_message || '(no messages yet)';
         main.appendChild(previewEl);
 
-        if (conv.status) {
+        // REMOVED 'Ongoing' Pill Logic - Only finished/other statuses if needed
+        if (conv.status && conv.status !== 'ongoing') { 
           const pill = document.createElement('span');
           pill.className = 'conv-status-pill';
           pill.textContent = conv.status;
@@ -563,6 +630,7 @@
       });
     }catch(e){
       console.error(e);
+      convItemsEl.innerHTML = `<div class="conv-empty">Error loading list</div>`;
     }
   }
 
@@ -573,16 +641,36 @@
     document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
     if (item) item.classList.add('active');
 
+    chatInputWrap.classList.add('active');
+    
+    mobileHeaderName.textContent = conv.patient_name || 'Chat';
+
+    if(window.innerWidth <= 900) {
+        chatLayout.classList.add('mobile-active');
+        sidePanel.classList.remove('show');
+    }
+
+    msgInput.disabled = false;
+    sendBtn.disabled = false;
+    attachBtn.disabled = false; 
+    msgInput.focus();
+
     chatLog.innerHTML = `
       <div class="chat-empty">
-        <i class="fas fa-comments"></i><br/>
-        Conversation with ${escapeHtml(conv.patient_name || 'patient')}<br/>
-        You can start messaging now.
+        <div class="spinner" style="border-color:#ccc; border-top-color:#3d5a80;"></div>
+        Loading messages...
       </div>
     `;
 
     loadConsultationDetails(conv.consultation_id);
-    pollMessages();
+    await pollMessages(); 
+  }
+
+  function closeChatMobile() {
+    chatLayout.classList.remove('mobile-active');
+    consultationId = null;
+    chatInputWrap.classList.remove('active');
+    sidePanel.classList.remove('show');
   }
 
   async function loadConsultationDetails(id){
@@ -593,25 +681,43 @@
 
       sidePatientName.textContent = c.patient_name || '—';
 
+      // --- Contact Info ---
+      const contactEl = document.getElementById('sideContact');
+      if (contactEl) {
+          contactEl.textContent = c.patient_phone || 'N/A';
+      }
+
+      // --- Key Info ---
       const infoParts = [];
       if (c.patient_age) infoParts.push(c.patient_age + ' yrs');
       if (c.patient_sex) infoParts.push(c.patient_sex);
       if (c.duration)   infoParts.push(c.duration);
       if (c.severity)   infoParts.push(c.severity);
+      if (c.temperature) infoParts.push('Temp: ' + c.temperature);
+      
       sideInfo.textContent = infoParts.length ? infoParts.join(' · ') : '—';
 
       sideComplaint.textContent = c.complaint || '—';
 
+      // --- Topics ---
       sideTopics.innerHTML = '';
-      if (c.topics_json) {
-        let topics;
-        try { topics = JSON.parse(c.topics_json); } catch(err){ topics = []; }
-        (topics || []).forEach(t=>{
-          const span = document.createElement('span');
-          span.className = 'pill';
-          span.textContent = t;
-          sideTopics.appendChild(span);
-        });
+      let topics = [];
+      if (c.topics_array) {
+          topics = c.topics_array;
+      } else if (c.topics_json) {
+          try { 
+              // Handle if it's already an object or a JSON string
+              topics = (typeof c.topics_json === 'string') ? JSON.parse(c.topics_json) : c.topics_json; 
+          } catch(err){ topics = []; }
+      }
+      
+      if (Array.isArray(topics)) {
+          topics.forEach(t=>{
+            const span = document.createElement('span');
+            span.className = 'pill';
+            span.textContent = t;
+            sideTopics.appendChild(span);
+          });
       }
     }catch(e){
       console.error(e);
@@ -626,7 +732,6 @@
     wrap.className = 'bubble-wrap';
 
     const isMe = msg.sender === 'doctor';
-
     const bubble = document.createElement('div');
     bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
 
@@ -658,7 +763,9 @@
         link.rel = 'noopener noreferrer';
         link.style.display = 'inline-block';
         link.style.marginTop = msg.text ? '6px' : '0';
-        link.textContent = att.file_name || 'Download attachment';
+        link.textContent = '📎 ' + (att.file_name || 'Download attachment');
+        link.style.color = isMe ? '#fff' : '#0084ff';
+        link.style.textDecoration = 'underline';
         bubble.appendChild(link);
       }
     }
@@ -691,6 +798,7 @@
     });
 
     msgInput.value = '';
+    msgInput.focus();
 
     try{
       await fetch('sendMessage.php', {
@@ -702,10 +810,75 @@
           message: text
         })
       });
+      pollMessages();
     }catch(e){
       console.error(e);
+      alert('Message failed to send');
     }finally{
       sendBtn.disabled = false;
+    }
+  }
+
+  async function sendAttachment() {
+    if (!consultationId) return;
+    if (!fileInput.files.length) return;
+
+    const file = fileInput.files[0];
+    const text = msgInput.value.trim(); 
+
+    const formData = new FormData();
+    formData.append('consultationId', consultationId);
+    formData.append('message', text);
+    formData.append('file', file);
+    formData.append('sender', 'doctor');
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    appendMessage({
+      id: 'temp-file-' + now.getTime(),
+      sender: 'doctor',
+      text,
+      time: timeStr,
+      attachment: {
+        file_path: URL.createObjectURL(file),
+        file_name: file.name,
+        file_type: file.type
+      }
+    });
+
+    msgInput.value = '';
+    sendBtn.disabled = true;
+    attachBtn.disabled = true;
+
+    try {
+      const res = await fetch('upload_attachment_doctor.php', {
+        method: 'POST',
+        body: formData
+      });
+      // Check response carefully
+      const textResponse = await res.text();
+      let data;
+      try {
+         data = JSON.parse(textResponse);
+      } catch(e) {
+         console.error('Invalid JSON from upload:', textResponse);
+         alert('Server Error: ' + textResponse);
+         return;
+      }
+      
+      if (!data.success) {
+        alert('Upload failed: ' + (data.error || 'Unknown error'));
+      } else {
+        pollMessages(); 
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Upload error: ' + e);
+    } finally {
+      sendBtn.disabled = false;
+      attachBtn.disabled = false;
+      fileInput.value = '';
     }
   }
 
@@ -716,9 +889,30 @@
         `getMessages.php?consultationId=${encodeURIComponent(consultationId)}&since=${encodeURIComponent(lastMessageId)}`,
         {cache:'no-store'}
       );
+      
       if(!res.ok) return;
-      const data = await res.json();
+
+      // Handle plain text/HTML errors gracefully
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error("JSON Parse Error:", text);
+        return;
+      }
+      
+      if(lastMessageId === 0 && Array.isArray(data) && data.length === 0) {
+           chatLog.innerHTML = `
+            <div class="chat-empty">
+                <i class="fas fa-comment-dots"></i><br/>
+                No messages yet. Say hello!
+            </div>`;
+           return;
+      }
+
       if(!Array.isArray(data)) return;
+      
       data.forEach(m=>{
         lastMessageId = Math.max(lastMessageId, m.id);
         appendMessage({

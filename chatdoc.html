@@ -2,347 +2,255 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Consultation Room - GabayAI</title>
-  <link rel="stylesheet" href="navbar.css">
+  <link rel="stylesheet" href="navbar.css?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <style>
-    body{
-      margin:0;
-      background:#f0f2f5;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+    /* RESET */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      margin: 0;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    .page-wrapper{
-      flex:1;
-      max-width:1100px;
-      margin:70px auto 0;
-      padding:0 16px 16px;
-      box-sizing:border-box;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+
+    /* Navbar Styles */
+    .page-wrapper {
+      flex: 1;
+      max-width: 1200px;
+      margin: 70px auto 0;
+      padding: 0 16px 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
     }
-    .doctor-bar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:8px 4px;
+
+    /* DOCTOR BAR */
+    .doctor-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .doctor-main{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
+    .doctor-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
     }
-    .doctor-avatar{
-      width:40px;
-      height:40px;
-      border-radius:999px;
-      object-fit:cover;
-      background:#e5e7eb;
-      flex-shrink:0;
+    .doctor-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e5e7eb;
+      flex-shrink: 0;
     }
-    .doctor-text{ min-width:0; }
-    .doctor-name{
-      font-weight:600;
-      font-size:.98rem;
-      color:#050505;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-      max-width:240px;
+    .doctor-text { min-width: 0; }
+    .doctor-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1f2937;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 200px;
     }
-    .doctor-spec{
-      font-size:.8rem;
-      color:#6b7280;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-      max-width:240px;
+    .doctor-spec {
+      font-size: .85rem;
+      color: #6b7280;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 200px;
     }
-    .doctor-status{
-      padding:5px 10px;
-      border-radius:999px;
-      background:#d4edda;
-      color:#166534;
-      font-size:.72rem;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      white-space:nowrap;
-      flex-shrink:0;
+    
+    /* REMOVED: .doctor-status classes */
+
+    .queue-badge {
+      font-size: .75rem;
+      color: #6b7280;
+      margin-left: 8px;
+      font-weight: 500;
     }
-    .doctor-status .dot{
-      width:7px;
-      height:7px;
-      border-radius:50%;
-      background:#22c55e;
+
+    /* LAYOUT GRID */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 280px; /* 3 Columns Desktop */
+      gap: 0;
+      align-items: stretch;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      height: calc(100vh - 160px); 
+      min-height: 500px;
     }
-    .queue-badge{
-      font-size:.72rem;
-      color:#64748b;
-      margin-left:6px;
+
+    /* CONVERSATION LIST (LEFT) */
+    .conversation-list {
+      border-right: 1px solid #e5e7eb;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    @media (max-width:768px){
-      .page-wrapper{ margin-top:80px; }
-      .doctor-bar{
-        flex-direction:column;
-        align-items:flex-start;
+    .conv-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: .9rem;
+      font-weight: 600;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9fafb;
+    }
+    .conv-items { flex: 1; overflow-y: auto; }
+    .conv-empty { font-size: .85rem; color: #9ca3af; text-align: center; padding: 30px 10px; }
+    .conv-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background .15s;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .conv-item:hover { background: #f9fafb; }
+    .conv-item.active { background: #eff6ff; border-left: 3px solid #3b82f6; }
+    .conv-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e5e7eb; flex-shrink: 0; }
+    .conv-main { min-width: 0; flex: 1; }
+    .conv-name { font-size: .9rem; font-weight: 600; color: #111827; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .conv-preview { font-size: .8rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-meta { font-size: .7rem; color: #9ca3af; text-align: right; min-width: 50px; }
+    .conv-status-pill { display: inline-block; padding: 2px 6px; border-radius: 999px; font-size: .7rem; background: #e0e7ff; color: #4338ca; margin-top: 4px; }
+
+    /* CHAT PANEL (CENTER) */
+    .chat-panel {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .chat-log {
+      flex: 1;
+      padding: 20px;
+      padding-bottom: 80px; /* SPACE FOR INPUT */
+      overflow-y: auto;
+      background: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-empty { text-align: center; margin: auto; color: #9ca3af; font-size: .95rem; }
+    .chat-empty i { font-size: 2rem; margin-bottom: 10px; opacity: .5; }
+
+    /* BUBBLES */
+    .bubble-wrap { display: flex; flex-direction: column; margin-bottom: 8px; width: 100%; }
+    .bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; margin: 2px 0; font-size: .95rem; line-height: 1.4; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .me { margin-left: auto; background: #3b82f6; color: #fff; border-bottom-right-radius: 4px; }
+    .them { margin-right: auto; background: #fff; color: #1f2937; border-bottom-left-radius: 4px; }
+    .meta { font-size: .7rem; opacity: .7; margin-top: 2px; text-align: right; padding: 0 4px; }
+    
+    /* INPUT AREA */
+    .chat-input-wrap {
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+    }
+    .chat-input-wrap.hidden { display: none !important; }
+
+    .attach-btn { border: none; background: transparent; color: #6b7280; font-size: 1.2rem; cursor: pointer; padding: 8px; border-radius: 50%; transition: background .2s; }
+    .attach-btn:hover { background: #f3f4f6; color: #3b82f6; }
+    .chat-input { flex: 1; border-radius: 24px; border: 1px solid #d1d5db; padding: 10px 16px; outline: none; font-size: .95rem; background: #f9fafb; transition: all .2s; }
+    .chat-input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+    .send-btn { border: none; border-radius: 24px; padding: 0 20px; background: #3b82f6; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: .9rem; height: 40px; transition: background .2s; }
+    .send-btn:hover { background: #2563eb; }
+    .send-btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    /* SIDE PANEL (RIGHT) */
+    .side-panel {
+      background: #fff;
+      border-left: 1px solid #e5e7eb;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    /* IMPORTANT: Ensure visible by default on desktop */
+    .side-panel.hidden > * { display: none; } 
+
+    .side-panel > div { padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; }
+    .side-panel h4 { margin: 0 0 6px; font-size: .85rem; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; font-weight: 700; }
+    .summary-item { font-size: .95rem; color: #374151; margin: 0; line-height: 1.5; }
+    .pill-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill { padding: 4px 10px; border-radius: 999px; background: #eff6ff; color: #3b82f6; font-size: .8rem; font-weight: 500; }
+
+    /* MOBILE RESPONSIVE */
+    .mobile-back-btn { display: none; } 
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 240px minmax(0, 1fr); }
+      .side-panel { display: none; } 
+    }
+
+    @media (max-width: 700px) {
+      .page-wrapper { margin-top: 60px; padding: 10px; height: calc(100vh - 60px); }
+      .doctor-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .layout { grid-template-columns: 1fr; border: none; height: auto; flex: 1; }
+      
+      .layout.mobile-chat-active .conversation-list { display: none; }
+      .layout.mobile-chat-active .chat-panel { display: flex; height: 100%; }
+      
+      .conversation-list { width: 100%; height: 100%; border: 1px solid #e5e7eb; border-radius: 12px; }
+      
+      /* FIXED: Position Chat Panel below header so Navbar is visible */
+      .chat-panel { 
+          display: none; 
+          width: 100%; 
+          height: calc(100vh - 70px); 
+          position: fixed; 
+          top: 70px; 
+          left: 0; 
+          z-index: 900; 
+          padding-top: 0;
+          padding-bottom: 0;
       }
-      .doctor-name,.doctor-spec{
-        max-width:100%;
-        white-space:normal;
+      
+      /* FIXED: Sticky Input at Bottom */
+      .chat-input-wrap { 
+          position: fixed; 
+          bottom: 0; 
+          left: 0; 
+          width: 100%; 
+          z-index: 1010; 
+          padding: 8px; 
+          background: #fff;
+          border-top: 1px solid #eee;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
       }
-    }
-    .layout{
-      display:grid;
-      grid-template-columns: 260px minmax(0,3fr) minmax(0,1.6fr);
-      gap:0;
-      align-items:stretch;
-      border-radius:16px;
-      overflow:hidden;
-      border:1px solid #e2e8f0;
-      background:#fff;
-    }
-    @media (max-width:1100px){
-      .layout{
-        grid-template-columns: 230px minmax(0,3fr);
-      }
-      .side-panel{ display:none; }
-    }
-    @media (max-width:800px){
-      .layout{
-        grid-template-columns: minmax(0,1fr);
-      }
-      .conversation-list{ display:none; }
-      .side-panel{ display:none; }
-    }
-    .conversation-list{
-      border-right:1px solid #e5e7eb;
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      height:70vh;
-      min-height:440px;
-    }
-    .conv-header{
-      padding:10px 12px;
-      border-bottom:1px solid #e5e7eb;
-      font-size:.85rem;
-      font-weight:600;
-      color:#4b5563;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .conv-items{
-      flex:1;
-      overflow-y:auto;
-    }
-    .conv-empty{
-      font-size:.85rem;
-      color:#9ca3af;
-      text-align:center;
-      padding:24px 8px;
-    }
-    .conv-item{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 10px;
-      cursor:pointer;
-      transition:background .15s;
-    }
-    .conv-item:hover{
-      background:#f3f4f6;
-    }
-    .conv-item.active{
-      background:#e5edff;
-    }
-    .conv-avatar{
-      width:32px;
-      height:32px;
-      border-radius:999px;
-      object-fit:cover;
-      background:#e5e7eb;
-      flex-shrink:0;
-    }
-    .conv-main{
-      min-width:0;
-      flex:1;
-    }
-    .conv-name{
-      font-size:.86rem;
-      font-weight:500;
-      color:#111827;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-    }
-    .conv-preview{
-      font-size:.78rem;
-      color:#6b7280;
-      white-space:nowrap;
-      text-overflow:ellipsis;
-      overflow:hidden;
-    }
-    .conv-meta{
-      font-size:.72rem;
-      color:#9ca3af;
-      text-align:right;
-    }
-    .conv-status-pill{
-      display:inline-block;
-      margin-top:2px;
-      padding:2px 6px;
-      border-radius:999px;
-      font-size:.7rem;
-      background:#f3f4ff;
-      color:#4c6ef5;
-    }
-    .chat-panel{
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      height:70vh;
-      min-height:440px;
-    }
-    .chat-log{
-      flex:1;
-      padding:16px 12px;
-      overflow-y:auto;
-      background:#e4e6eb;
-      scroll-behavior:smooth;
-    }
-    .chat-empty{
-      text-align:center;
-      padding:40px 10px;
-      color:#9ca3af;
-      font-size:.9rem;
-    }
-    .chat-empty i{
-      font-size:1.4rem;
-      margin-bottom:4px;
-      opacity:.6;
-    }
-    .bubble-wrap{
-      display:flex;
-      flex-direction:column;
-      margin-bottom:6px;
-    }
-    .bubble{
-      max-width:70%;
-      padding:8px 10px;
-      border-radius:18px;
-      margin:1px 0;
-      font-size:.9rem;
-      line-height:1.4;
-      word-wrap:break-word;
-    }
-    .me{
-      margin-left:auto;
-      background:#0084ff;
-      color:#fff;
-      border-bottom-right-radius:4px;
-    }
-    .them{
-      margin-right:auto;
-      background:#f0f0f0;
-      color:#050505;
-      border-bottom-left-radius:4px;
-    }
-    .meta{
-      font-size:.7rem;
-      opacity:.75;
-      margin-top:1px;
-      text-align:right;
-    }
-    .chat-input-wrap{
-      border-top:1px solid #d1d5db;
-      padding:8px 10px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:#fff;
-    }
-    .attach-btn{
-      border:none;
-      background:transparent;
-      color:#6b7280;
-      font-size:1.1rem;
-      cursor:pointer;
-      padding:4px;
-      border-radius:999px;
-    }
-    .attach-btn:hover{
-      background:#e5e7eb;
-    }
-    .chat-input{
-      flex:1;
-      border-radius:20px;
-      border:1px solid #e5e7eb;
-      padding:8px 12px;
-      outline:none;
-      font-size:.9rem;
-      background:#f0f2f5;
-    }
-    .chat-input:focus{
-      border-color:#4c6ef5;
-      box-shadow:0 0 0 2px rgba(76,110,245,.2);
-      background:#fff;
-    }
-    .send-btn{
-      border:none;
-      border-radius:999px;
-      padding:0 14px;
-      background:#0084ff;
-      color:#fff;
-      font-weight:500;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:.85rem;
-    }
-    .send-btn[disabled]{
-      opacity:.6;
-      cursor:not-allowed;
-    }
-    .side-panel{
-      background:#fff;
-      border-left:1px solid #e2e8f0;
-      padding:14px 14px 16px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .side-panel h4{
-      margin:0 0 4px;
-      font-size:.9rem;
-      color:#111827;
-    }
-    .summary-item{
-      font-size:.85rem;
-      color:#4b5563;
-      margin:0 0 4px;
-      white-space:pre-line;
-    }
-    .pill-list{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-    }
-    .pill{
-      padding:4px 8px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#4c6ef5;
-      font-size:.78rem;
+
+      .mobile-back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; font-size: 1rem; color: #3b82f6; font-weight: 600; padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background: #fff; }
+      
+      .chat-input { font-size: 16px; }
     }
   </style>
 </head>
@@ -357,8 +265,7 @@
       <li><a href="editaccount.html" class="nav-link">Profile</a></li>
       <li>
         <button class="logout-btn" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-          Logout
+          <i class="fas fa-sign-out-alt"></i> Logout
         </button>
       </li>
     </ul>
@@ -376,8 +283,7 @@
       <a href="editaccount.html" class="mobile-nav-link">Profile</a>
       <div class="mobile-logout">
         <button onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-          Logout
+          <i class="fas fa-sign-out-alt"></i> Logout
         </button>
       </div>
     </div>
@@ -385,63 +291,65 @@
 </nav>
 
 <div class="page-wrapper">
+  
   <div class="doctor-bar">
     <div class="doctor-main">
       <img id="docAvatar" class="doctor-avatar" src="" alt="Doctor">
       <div class="doctor-text">
-        <div id="docName" class="doctor-name">Doctor name</div>
-        <div id="docSpec" class="doctor-spec">Specialization</div>
+        <div id="docName" class="doctor-name">Select a conversation</div>
+        <div id="docSpec" class="doctor-spec"></div>
       </div>
     </div>
+    <!-- REMOVED STATUS PILL HERE -->
     <div>
-      <div class="doctor-status">
-        <span class="dot"></span>
-        <span id="consultStatusText">In consultation</span>
-      </div>
       <span id="queueBadge" class="queue-badge"></span>
     </div>
   </div>
 
-  <div class="layout">
+  <div class="layout" id="chatLayout">
+    
+    <!-- LEFT: CONVERSATIONS -->
     <div class="conversation-list">
       <div class="conv-header">
-        <span>Conversations</span>
-        <i class="fas fa-comments"></i>
+        <span>Recent Chats</span>
+        <i class="fas fa-history"></i>
       </div>
       <div id="convItems" class="conv-items">
         <div class="conv-empty">
-          No conversations yet.<br>
-          Start a consultation to message a doctor.
+           <i class="fas fa-spinner fa-spin"></i> Loading...
         </div>
       </div>
     </div>
 
+    <!-- CENTER: CHAT -->
     <div class="chat-panel">
+      <!-- Mobile Back Button -->
+      <button class="mobile-back-btn" onclick="closeChatMobile()">
+        <i class="fas fa-arrow-left"></i> Back to list
+      </button>
+
       <div id="chatLog" class="chat-log">
         <div class="chat-empty">
           <i class="fas fa-comments"></i><br/>
-          You don't have any conversations yet.<br/>
-          Go to the Consultation page, submit your details,<br/>
-          then wait for a doctor to reply here.
+          Select a conversation on the left to start chatting.
         </div>
       </div>
-      <div class="chat-input-wrap">
-        <!-- attachment icon (UI only for now) -->
+      
+      <div class="chat-input-wrap hidden" id="chatInputWrap">
         <button id="attachBtn" class="attach-btn" type="button" title="Attach file">
           <i class="fas fa-paperclip"></i>
         </button>
-        <input id="fileInput" type="file" style="display:none"
-               multiple
-               accept="image/*,application/pdf">
-        <input id="msgInput" class="chat-input" type="text"
-               placeholder="Type your message..." autocomplete="off">
+        <input id="fileInput" type="file" style="display:none" multiple accept="image/*,application/pdf">
+        
+        <input id="msgInput" class="chat-input" type="text" placeholder="Type message..." autocomplete="off">
         <button id="sendBtn" class="send-btn">
-          <i class="fas fa-paper-plane"></i> Send
+          <i class="fas fa-paper-plane"></i>
         </button>
       </div>
     </div>
 
-    <div class="side-panel">
+    <!-- RIGHT: INFO (Desktop Only) -->
+    <div class="side-panel hidden" id="sidePanel">
       <div>
         <h4>Chief complaint</h4>
         <p id="sideComplaint" class="summary-item">—</p>
@@ -451,10 +359,11 @@
         <p id="sideInfo" class="summary-item">—</p>
       </div>
       <div>
-        <h4>Topics from Analyzer</h4>
+        <h4>Topics</h4>
         <div id="sideTopics" class="pill-list"></div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -471,34 +380,24 @@
     mobileMenu.classList.toggle('show');
     hamburger.classList.toggle('open');
   }
-  document.addEventListener('click', function(e) {
-    const mobileMenu = document.getElementById('mobileMenu');
-    const hamburger = document.getElementById('hamburger');
-    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-menu')) {
-      if (mobileMenu.classList.contains('show')) {
-        mobileMenu.classList.remove('show');
-        hamburger.classList.remove('open');
-      }
-    }
-  });
 
-  const POLL_MS = 4000;
-  const QUEUE_POLL_MS = 5000;
-
-  const chatLog    = document.getElementById('chatLog');
-  const msgInput   = document.getElementById('msgInput');
-  const sendBtn    = document.getElementById('sendBtn');
-  const queueBadge = document.getElementById('queueBadge');
-  const consultStatusText = document.getElementById('consultStatusText');
+  const POLL_MS = 1000;
+  
+  const chatLog     = document.getElementById('chatLog');
+  const msgInput    = document.getElementById('msgInput');
+  const sendBtn     = document.getElementById('sendBtn');
   const convItemsEl = document.getElementById('convItems');
-  const attachBtn  = document.getElementById('attachBtn');
-  const fileInput  = document.getElementById('fileInput');
+  const attachBtn   = document.getElementById('attachBtn');
+  const fileInput   = document.getElementById('fileInput');
+  const chatLayout  = document.getElementById('chatLayout');
+  const chatInputWrap = document.getElementById('chatInputWrap');
+  const sidePanel      = document.getElementById('sidePanel');
 
   let currentConsult = null;
   let lastMessageId  = 0;
 
   const params = new URLSearchParams(location.search);
-  const consultationId = params.get('consult');
+  let consultationId = params.get('consult');
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -510,273 +409,58 @@
     return `https://ui-avatars.com/api/?name=${safe}&background=EEF2FF&color=3730A3&rounded=true&size=160`;
   }
 
-  function initHeaderAndSidebarFromConsult(){
-    if(!currentConsult) return;
-
-    const docName = currentConsult.doctorName || "Doctor";
-    const docSpec = currentConsult.doctorSpecialization || "Specialization";
-    const p = currentConsult.patient || {};
-
-    document.getElementById('docName').textContent = docName;
-    document.getElementById('docSpec').textContent = docSpec;
-    document.getElementById('docAvatar').src = avatarUrl(docName);
-
-    const infoParts = [];
-    if(p.age)      infoParts.push(p.age + " yrs");
-    if(p.sex)      infoParts.push(p.sex);
-    if(p.duration) infoParts.push(p.duration);
-    if(p.severity) infoParts.push(p.severity);
-    document.getElementById('sideInfo').textContent =
-      infoParts.length ? infoParts.join(" · ") : "—";
-
-    document.getElementById('sideComplaint').textContent =
-      p.complaint || "—";
-
-    const topicsWrap = document.getElementById('sideTopics');
-    topicsWrap.innerHTML = "";
-    (p.topics || []).forEach(t=>{
-      const span = document.createElement('span');
-      span.className = 'pill';
-      span.textContent = t;
-      topicsWrap.appendChild(span);
-    });
+  if (consultationId && window.innerWidth <= 800) {
+    chatLayout.classList.add('mobile-chat-active');
+  }
+  
+  function closeChatMobile() {
+    chatLayout.classList.remove('mobile-chat-active');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    consultationId = null;
+    toggleUI(false); 
   }
 
-  function resetHeaderAndSidebar(){
-    currentConsult = null;
-    document.getElementById('docName').textContent = 'Doctor name';
-    document.getElementById('docSpec').textContent = 'Specialization';
-    document.getElementById('docAvatar').src = avatarUrl('Doctor');
-    document.getElementById('sideComplaint').textContent = '—';
-    document.getElementById('sideInfo').textContent = '—';
-    document.getElementById('sideTopics').innerHTML = '';
-    consultStatusText.textContent = 'No active consultation';
-    queueBadge.textContent = '';
-  }
-
-  function appendMessage(msg){
-    const empty = chatLog.querySelector('.chat-empty');
-    if(empty) empty.remove();
-
-    const wrap = document.createElement('div');
-    wrap.className = 'bubble-wrap';
-
-    const isMe = msg.sender === 'patient';
-
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
-
-    // text caption kung meron
-    if (msg.text && msg.text.trim() !== '') {
-      const textDiv = document.createElement('div');
-      textDiv.innerHTML = escapeHtml(msg.text);
-      bubble.appendChild(textDiv);
-    }
-
-    // attachment (image o file)
-    if (msg.attachment && msg.attachment.file_path) {
-      const att = msg.attachment;
-      const url = att.file_path;
-
-      if (att.file_type && att.file_type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = att.file_name || 'attachment';
-        img.style.maxWidth = '220px';
-        img.style.borderRadius = '10px';
-        img.style.display = 'block';
-        img.style.marginTop = msg.text ? '6px' : '0';
-        img.style.cursor = 'pointer';
-        img.onclick = () => window.open(url, '_blank');
-        bubble.appendChild(img);
-      } else {
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.style.display = 'inline-block';
-        link.style.marginTop = msg.text ? '6px' : '0';
-        link.textContent = att.file_name || 'Download attachment';
-        bubble.appendChild(link);
-      }
-    }
-
-    wrap.appendChild(bubble);
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    meta.textContent = msg.time || "";
-    wrap.appendChild(meta);
-
-    chatLog.appendChild(wrap);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  }
-
-  async function sendMessage(){
-    const text = msgInput.value.trim();
-    if(!text || !consultationId) return;
-
-    sendBtn.disabled = true;
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-    appendMessage({
-      id: 'temp-' + now.getTime(),
-      sender: 'patient',
-      text,
-      time: timeStr
-    });
-
-    msgInput.value = "";
-
-    try{
-      await fetch('sendMessage_patient.php', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          consultationId: consultationId,
-          message: text
-        })
-      });
-    }catch(e){
-      console.error(e);
-    }finally{
-      sendBtn.disabled = false;
-    }
-  }
-
-  async function sendAttachment(){
-    if (!consultationId) return;
-    if (!fileInput.files.length) return;
-
-    const file = fileInput.files[0];
-    const text = msgInput.value.trim();
-
-    const formData = new FormData();
-    formData.append('consultationId', consultationId);
-    formData.append('message', text);
-    formData.append('file', file);
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-    // optimistic preview gamit blob URL
-    appendMessage({
-      id: 'temp-file-' + now.getTime(),
-      sender: 'patient',
-      text,
-      time: timeStr,
-      attachment: {
-        file_path: URL.createObjectURL(file),
-        file_name: file.name,
-        file_type: file.type
-      }
-    });
-
-    msgInput.value = '';
-    sendBtn.disabled = true;
-
-    try{
-      const res  = await fetch('upload_attachment_patient.php', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (!data.success){
-        console.error('Upload failed:', data);
-        alert('Upload failed: ' + (data.error || 'Unknown error'));
-      }
-    }catch(e){
-      console.error(e);
-      alert('Upload error: ' + e);
-    }finally{
-      sendBtn.disabled = false;
-      fileInput.value = '';
-    }
-  }
-
-  async function pollMessages(){
-    if(!consultationId) return;
-    try{
-      const res = await fetch(
-        `getMessages.php?consultationId=${encodeURIComponent(consultationId)}&since=${encodeURIComponent(lastMessageId)}`,
-        {cache:'no-store'}
-      );
-      if(!res.ok) return;
-      const data = await res.json();
-      if(!Array.isArray(data)) return;
-      data.forEach(m=>{
-        lastMessageId = Math.max(lastMessageId, m.id);
-        appendMessage({
-          id: m.id,
-          sender: m.sender === 'doctor' ? 'doctor' : 'patient',
-          text: m.text,
-          time: m.time,
-          attachment: m.attachment || null
-        });
-      });
-    }catch(e){
-      console.error(e);
-    }
-  }
-
-  async function refreshQueue(){
-    if (!consultationId) return;
-    try{
-      const res = await fetch(`get_queue_position.php?consult_id=${encodeURIComponent(consultationId)}`, {
-        cache:'no-store'
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.error) return;
-
-      if (data.status === 'finished' || data.status === 'cancelled') {
-        consultStatusText.textContent = 'Consultation ended';
-        queueBadge.textContent = '';
-      } else {
-        consultStatusText.textContent = 'In consultation';
-        if (data.ahead === 0) {
-          queueBadge.textContent = 'You are 1st in queue';
-        } else {
-          queueBadge.textContent = `You are #${data.position} in queue`;
-        }
-      }
-    } catch (e) {
-      console.error(e);
+  function toggleUI(show) {
+    if(show) {
+      chatInputWrap.classList.remove('hidden');
+      sidePanel.classList.remove('hidden');
+      chatInputWrap.style.display = 'flex'; 
+    } else {
+      chatInputWrap.classList.add('hidden');
+      sidePanel.classList.add('hidden');
+      chatInputWrap.style.display = 'none';
+      document.getElementById('docName').textContent = 'Select a conversation';
+      document.getElementById('docSpec').textContent = '';
+      // Status update removed
     }
   }
 
   async function loadConversations(){
     try{
       const res = await fetch('get_patient_conversations.php', {cache:'no-store'});
-      if(!res.ok) return;
+      if(!res.ok) throw new Error('Failed to load');
       const data = await res.json();
       convItemsEl.innerHTML = '';
 
       if(!Array.isArray(data) || data.length === 0){
         convItemsEl.innerHTML = `
           <div class="conv-empty">
-            No conversations yet.<br>
-            Start a consultation to message a doctor.
-          </div>
-        `;
+            No conversations yet.<br>Start a consultation first.
+          </div>`;
         return;
       }
 
       data.forEach(conv=>{
+        const isActive = (String(conv.consultation_id) === String(consultationId));
         const item = document.createElement('div');
-        item.className = 'conv-item' +
-          (String(conv.consultation_id) === String(consultationId) ? ' active' : '');
+        item.className = 'conv-item' + (isActive ? ' active' : '');
         item.onclick = () => {
-          window.location.href = 'chatdoc.html?consult=' +
-            encodeURIComponent(conv.consultation_id);
+          window.location.href = '?consult=' + conv.consultation_id;
         };
 
         const avatar = document.createElement('img');
         avatar.className = 'conv-avatar';
         avatar.src = avatarUrl(conv.doctor_name);
-        avatar.alt = conv.doctor_name || 'Doctor';
         item.appendChild(avatar);
 
         const main = document.createElement('div');
@@ -789,25 +473,11 @@
 
         const previewEl = document.createElement('div');
         previewEl.className = 'conv-preview';
-
-        if (conv.info_preview) {
-          previewEl.textContent = conv.info_preview;
-        } else {
-          previewEl.textContent = conv.last_message || '(no messages yet)';
-        }
+        previewEl.textContent = conv.last_message || '(No messages)';
         main.appendChild(previewEl);
 
-        if (conv.status) {
-          const pill = document.createElement('span');
-          pill.className = 'conv-status-pill';
-          pill.textContent = conv.status === 'finished'
-            ? 'Finished'
-            : conv.status;
-          main.appendChild(pill);
-        }
-
         item.appendChild(main);
-
+        
         const meta = document.createElement('div');
         meta.className = 'conv-meta';
         meta.textContent = conv.last_time || '';
@@ -817,69 +487,203 @@
       });
     }catch(e){
       console.error(e);
+      convItemsEl.innerHTML = '<div class="conv-empty">Error loading list.</div>';
     }
   }
 
   async function loadConsultationDetails(){
     if (!consultationId) {
-      resetHeaderAndSidebar();
+      toggleUI(false);
       return;
     }
     try{
-      const res = await fetch(
-        'get_consultation_details.php?consultationId=' +
-        encodeURIComponent(consultationId),
-        { cache: 'no-store' }
-      );
+      const res = await fetch('get_consultation_details.php?consultationId=' + consultationId + '&t=' + new Date().getTime(), { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
 
-      if (data.error) {
-        resetHeaderAndSidebar();
-        return;
+      if (data.error) { toggleUI(false); return; }
+
+      // Show UI since we have data
+      toggleUI(true);
+      currentConsult = data;
+      
+      document.getElementById('docName').textContent = data.doctorName || "Doctor";
+      document.getElementById('docSpec').textContent = data.doctorSpecialization || "General";
+      document.getElementById('docAvatar').src = avatarUrl(data.doctorName);
+      // Status update removed
+
+      const p = data.patient || {};
+      const infoParts = [p.age ? p.age+' yrs' : '', p.sex || '', p.duration || ''].filter(Boolean);
+      document.getElementById('sideInfo').textContent = infoParts.join(" · ") || "—";
+      document.getElementById('sideComplaint').textContent = p.complaint || "—";
+      
+      const topicsWrap = document.getElementById('sideTopics');
+      topicsWrap.innerHTML = "";
+      
+      let rawTopics = p.topics;
+      let finalTopics = [];
+
+      if (Array.isArray(rawTopics)) {
+         finalTopics = rawTopics;
+      } else if (typeof rawTopics === 'string') {
+         try { finalTopics = JSON.parse(rawTopics); }
+         catch(e) { finalTopics = rawTopics.split(',').map(s=>s.trim()); }
       }
 
-      currentConsult = data;
-      initHeaderAndSidebarFromConsult();
-    }catch(e){
-      console.error(e);
-    }
+      if(finalTopics.length > 0){
+        finalTopics.forEach(t => {
+            if(t && typeof t === 'string'){
+                const cleanT = t.replace(/[\[\]"]/g, '');
+                if(cleanT.trim()){
+                    const s = document.createElement('span'); 
+                    s.className='pill'; 
+                    s.textContent=cleanT;
+                    topicsWrap.appendChild(s);
+                }
+            }
+        });
+      } else {
+        topicsWrap.innerHTML = '<span style="color:#aaa; font-size:0.8rem">No topics</span>';
+      }
+
+    }catch(e){ console.error(e); }
   }
 
-  attachBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
+  async function pollMessages(){
+    if(!consultationId) return;
+    try{
+      const res = await fetch(`getMessages.php?consultationId=${consultationId}&since=${lastMessageId}`, {cache:'no-store'});
+      if(!res.ok) return;
+      const data = await res.json();
+      
+      if(!Array.isArray(data)) return;
+      
+      if (lastMessageId === 0 && data.length > 0) {
+         const empty = chatLog.querySelector('.chat-empty');
+         if(empty) empty.remove();
+      }
 
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length){
-      sendAttachment();
-    }
-  });
-
-  sendBtn.addEventListener('click', sendMessage);
-  msgInput.addEventListener('keydown', e=>{
-    if(e.key === 'Enter' && !e.shiftKey){
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  if(!consultationId){
-    resetHeaderAndSidebar();
-    msgInput.disabled = true;
-    sendBtn.disabled  = true;
+      data.forEach(m=>{
+        lastMessageId = Math.max(lastMessageId, m.id);
+        appendMessage(m);
+      });
+    }catch(e){ console.error(e); }
   }
+
+  function appendMessage(msg){
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-wrap';
+
+    const isMe = msg.sender === 'patient';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (isMe ? 'me' : 'them');
+
+    if (msg.text && msg.text.trim()) {
+      const t = document.createElement('div');
+      t.innerHTML = escapeHtml(msg.text);
+      bubble.appendChild(t);
+    }
+
+    if (msg.attachment && msg.attachment.file_path) {
+      const att = msg.attachment;
+      if (att.file_type && att.file_type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = att.file_path;
+        img.style.maxWidth = '100%';
+        img.style.borderRadius = '12px';
+        img.style.marginTop = '6px';
+        img.style.cursor = 'pointer';
+        img.onclick = () => window.open(att.file_path, '_blank');
+        bubble.appendChild(img);
+      } else {
+        const link = document.createElement('a');
+        link.href = att.file_path;
+        link.textContent = '📎 ' + (att.file_name || 'Attachment');
+        link.target = '_blank';
+        link.style.display = 'block';
+        link.style.marginTop = '4px';
+        link.style.color = isMe ? '#fff' : '#2563eb';
+        bubble.appendChild(link);
+      }
+    }
+
+    wrap.appendChild(bubble);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = msg.time || '';
+    wrap.appendChild(meta);
+
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text || !consultationId) return;
+
+    sendBtn.disabled = true;
+    
+    appendMessage({
+      sender: 'patient', text: text, time: 'Sending...', id: 0
+    });
+    msgInput.value = '';
+
+    try{
+      await fetch('sendMessage_patient.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ consultationId, message: text, sender: 'patient' })
+      });
+      pollMessages(); 
+    }catch(e){ alert('Failed to send'); }
+    finally{ sendBtn.disabled = false; }
+  }
+
+  async function sendAttachment(){
+    if (!consultationId || !fileInput.files.length) return;
+    const file = fileInput.files[0];
+    const text = msgInput.value.trim();
+
+    const formData = new FormData();
+    formData.append('consultationId', consultationId);
+    formData.append('message', text);
+    formData.append('file', file);
+    formData.append('sender', 'patient');
+
+    appendMessage({
+      sender: 'patient', text: text, time: 'Uploading...',
+      attachment: {
+        file_path: URL.createObjectURL(file),
+        file_type: file.type
+      }
+    });
+    msgInput.value = '';
+    sendBtn.disabled = true;
+
+    try{
+      const res = await fetch('upload_attachment_patient.php', { method: 'POST', body: formData });
+      const d = await res.json();
+      if(!d.success) alert(d.error);
+      else pollMessages();
+    }catch(e){ alert('Upload error'); }
+    finally { sendBtn.disabled = false; fileInput.value = ''; }
+  }
+
+  attachBtn.onclick = () => fileInput.click();
+  fileInput.onchange = () => { if(fileInput.files.length) sendAttachment(); };
+  sendBtn.onclick = sendMessage;
+  msgInput.onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
 
   loadConversations();
-  loadConsultationDetails();
-  if (consultationId){
+  if(consultationId) {
+    toggleUI(true); // Ensure UI shows immediately
+    loadConsultationDetails();
     pollMessages();
-    refreshQueue();
     setInterval(pollMessages, POLL_MS);
-    setInterval(refreshQueue, QUEUE_POLL_MS);
+  } else {
+    toggleUI(false); 
   }
 </script>
-
-
 </body>
 </html>

@@ -2,29 +2,31 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Doctor Profile</title>
+<title>Doctor Profile - GabayAI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  /* RESET */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
   }
+  
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
     color: #2d3748;
     display: flex;
-    min-height: 100vh;
   }
 
-  /* Sidebar */
+  /* SIDEBAR - Desktop Default */
   .sidebar {
     background: #3d5a80;
     color: white;
     width: 260px;
-    height: 100vh;
+    height: 100%;
     position: fixed;
     top: 0;
     left: 0;
@@ -35,9 +37,6 @@
     transition: transform 0.3s ease;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
   }
-  .sidebar.hide {
-    transform: translateX(-260px);
-  }
   .sidebar .logo {
     font-weight: 800;
     font-size: 1.6rem;
@@ -45,13 +44,11 @@
     letter-spacing: 1px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
-  .sidebar .logo span {
-    color: #98c1d9;
-  }
-  .sidebar nav {
-    flex: 1;
-    padding: 20px 0;
-    overflow-y: auto;
+  .sidebar .logo span { color: #98c1d9; }
+  .sidebar nav { 
+    flex: 1; 
+    padding: 20px 0; 
+    overflow-y: auto; 
   }
   .sidebar nav a {
     display: flex;
@@ -64,11 +61,7 @@
     border-left: 3px solid transparent;
     transition: all 0.2s ease;
   }
-  .sidebar nav a i {
-    width: 20px;
-    text-align: center;
-    font-size: 1.1rem;
-  }
+  .sidebar nav a i { width: 20px; text-align: center; font-size: 1.1rem; }
   .sidebar nav a:hover,
   .sidebar nav a.active {
     background: rgba(255,255,255,0.1);
@@ -85,23 +78,23 @@
     gap: 10px;
     color: rgba(255,255,255,0.9);
   }
-  .sidebar .logout:hover {
-    background: rgba(0,0,0,0.2);
-    color: #ff6b6b;
-  }
+  .sidebar .logout:hover { background: rgba(0,0,0,0.2); color: #ff6b6b; }
 
-  /* Hamburger */
+  /* HAMBURGER MENU (Visible only on mobile) */
   .hamburger {
     width: 30px;
     height: 24px;
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 15px;
+    left: 15px;
     cursor: pointer;
     z-index: 1300;
-    display: none;
+    display: none; /* Hidden on Desktop */
     flex-direction: column;
     justify-content: space-between;
+    background: transparent;
+    border: none;
+    padding: 0;
   }
   .hamburger div {
     background: #3d5a80;
@@ -111,22 +104,21 @@
     width: 100%;
   }
 
-  /* Main Content */
+  /* MAIN CONTENT */
   .main-content {
     flex: 1;
-    margin-left: 260px;
-    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-left: 260px; /* Offset for sidebar */
     transition: margin-left 0.3s ease;
     min-height: 100vh;
   }
-  .main-content.full-width {
-    margin-left: 0;
-  }
 
-  /* Top Bar */
+  /* TOP BAR */
   .top-bar {
     background: white;
-    padding: 20px 30px;
+    padding: 16px 30px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
@@ -135,37 +127,26 @@
     top: 0;
     z-index: 100;
   }
-  .top-bar h1 {
-    font-size: 1.6rem;
-    color: #3d5a80;
-    font-weight: 600;
-  }
-  .back-btn {
-    background: #3d5a80;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .back-btn:hover {
-    background: #293a52;
+  .top-bar h1 { 
+    font-size: 1.6rem; 
+    color: #3d5a80; 
+    font-weight: 600; 
+    margin: 0;
   }
 
-  /* Content Area */
+  /* CONTENT AREA */
   .content-area {
+    flex: 1;
     padding: 30px;
-    max-width: 1200px;
+    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  /* Profile Header Card */
+  /* PROFILE STYLES */
   .profile-header {
     background: white;
     border-radius: 12px;
@@ -174,9 +155,7 @@
     margin-bottom: 30px;
     text-align: center;
   }
-  .profile-photo-section {
-    margin-bottom: 25px;
-  }
+  .profile-photo-section { margin-bottom: 25px; }
   .profile-photo {
     width: 150px;
     height: 150px;
@@ -195,25 +174,11 @@
     font-size: 0.9rem;
     transition: background 0.2s;
   }
-  .photo-upload-btn:hover {
-    background: #293a52;
-  }
-  .profile-header h2 {
-    font-size: 1.8rem;
-    color: #3d5a80;
-    margin-bottom: 8px;
-  }
-  .profile-header .specialty {
-    font-size: 1.1rem;
-    color: #718096;
-    margin-bottom: 5px;
-  }
-  .profile-header .experience {
-    font-size: 0.95rem;
-    color: #a0aec0;
-  }
+  .photo-upload-btn:hover { background: #293a52; }
+  .profile-header h2 { font-size: 1.8rem; color: #3d5a80; margin-bottom: 8px; }
+  .profile-header .specialty { font-size: 1.1rem; color: #718096; margin-bottom: 5px; }
 
-  /* Form Sections */
+  /* FORM STYLES */
   .form-section {
     background: white;
     border-radius: 12px;
@@ -231,17 +196,12 @@
     padding-bottom: 12px;
     border-bottom: 2px solid #f0f4f8;
   }
-  .form-section h3 i {
-    color: #98c1d9;
-  }
   .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
   }
-  .form-group {
-    margin-bottom: 20px;
-  }
+  .form-group { margin-bottom: 20px; }
   .form-group label {
     display: block;
     font-size: 0.9rem;
@@ -250,7 +210,6 @@
     margin-bottom: 8px;
   }
   .form-group input,
-  .form-group textarea,
   .form-group select {
     width: 100%;
     padding: 12px 15px;
@@ -258,21 +217,13 @@
     border-radius: 6px;
     font-size: 0.95rem;
     color: #2d3748;
-    transition: border-color 0.2s;
+    background: white;
   }
   .form-group input:focus,
-  .form-group textarea:focus,
   .form-group select:focus {
     outline: none;
     border-color: #3d5a80;
     box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.1);
-  }
-  .form-group textarea {
-    min-height: 100px;
-    resize: vertical;
-  }
-  .form-group select {
-    cursor: pointer;
   }
   .form-group small {
     display: block;
@@ -281,19 +232,33 @@
     font-size: 0.85rem;
   }
 
-  /* Checkbox styling */
-  .day-checkbox:checked + span {
-    font-weight: 600;
-    color: #3d5a80;
+  /* SLIMMER Day Checkboxes */
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
   }
-
-  label:has(.day-checkbox:checked) {
-    background: #e6f2ff !important;
-    border: 1px solid #3d5a80;
+  .day-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px 10px;
+    background: #f7fafc;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    min-height: 40px;
+    justify-content: flex-start;
   }
-
-  label:has(.day-checkbox):hover {
-    background: #edf2f7 !important;
+  .day-checkbox { width: 16px; height: 16px; flex-shrink: 0; }
+  .day-checkbox:checked + span { font-weight: 600; color: #3d5a80; }
+  .day-label:has(.day-checkbox:checked) { 
+    background: linear-gradient(135deg, #e6f2ff 0%, #b3d9ff 100%) !important; 
+    border-color: #3d5a80; 
+    box-shadow: 0 1px 4px rgba(61, 90, 128, 0.15);
   }
 
   /* Buttons */
@@ -302,6 +267,7 @@
     gap: 15px;
     justify-content: flex-end;
     margin-top: 30px;
+    flex-wrap: wrap;
   }
   .btn {
     padding: 12px 30px;
@@ -312,22 +278,10 @@
     cursor: pointer;
     transition: all 0.2s;
   }
-  .btn-primary {
-    background: #3d5a80;
-    color: white;
-  }
-  .btn-primary:hover {
-    background: #293a52;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(61, 90, 128, 0.2);
-  }
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #4a5568;
-  }
-  .btn-secondary:hover {
-    background: #cbd5e0;
-  }
+  .btn-primary { background: #3d5a80; color: white; }
+  .btn-primary:hover { background: #293a52; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(61, 90, 128, 0.2); }
+  .btn-secondary { background: #e2e8f0; color: #4a5568; }
+  .btn-secondary:hover { background: #cbd5e0; }
 
   /* Alert Messages */
   .alert {
@@ -336,47 +290,54 @@
     margin-bottom: 20px;
     display: none;
   }
-  .alert.success {
-    background: #d4edda;
-    color: #155724;
-    border-left: 4px solid #28a745;
-  }
-  .alert.error {
-    background: #f8d7da;
-    color: #721c24;
-    border-left: 4px solid #dc3545;
+  .alert.success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+  .alert.error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    /* Show Hamburger */
+    .hamburger { display: flex; }
+    
+    /* Hide Sidebar Default */
+    .sidebar { 
+      transform: translateX(-100%); 
+      width: 260px; 
+      box-shadow: none; 
+    }
+    
+    /* Show Sidebar Active */
+    .sidebar.show { 
+      transform: translateX(0); 
+      box-shadow: 4px 0 15px rgba(0,0,0,0.2); 
+    }
+    
+    /* Reset Content Margin */
+    .main-content { margin-left: 0; }
+    
+    /* Top Bar Padding */
+    .top-bar { padding-left: 60px; }
+    
+    .content-area { padding: 20px; }
+    .profile-header { padding: 25px 20px; }
+    .days-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* Responsive */
-  @media (max-width: 900px) {
-    .hamburger {
-      display: flex;
-    }
-    .sidebar {
-      transform: translateX(-260px);
-    }
-    .sidebar.show {
-      transform: translateX(0);
-    }
-    .main-content {
-      margin-left: 0;
-    }
-    .content-area {
-      padding: 20px 15px;
-    }
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-    .profile-header {
-      padding: 25px 20px;
-    }
+  @media (max-width: 600px) {
+    .btn-container { flex-direction: column; }
+    .top-bar h1 { font-size: 1.3rem; }
   }
 </style>
 </head>
 <body>
+
+  <!-- Hamburger Button -->
+  <button class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </button>
+
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
-    <div class="logo">MEDI<span>Care</span></div>
+    <div class="logo">GABAY<span>AI</span></div>
     <nav>
       <a href="doctor_dashboard.html">
         <i class="fas fa-home"></i> Dashboard
@@ -387,39 +348,24 @@
       <a href="doctor_patients.html">
         <i class="fas fa-users"></i> Patients
       </a>
-      <a href="#">
-        <i class="fas fa-heartbeat"></i> Symptom Analysis
+      <a href="doctor_analyzer.html">
+        <i class="fas fa-microscope"></i> Clinical Support
       </a>
       <a href="doctor_teleconsult.html">
-        <i class="fas fa-video"></i> Teleconsultation
+        <i class="fas fa-comments"></i> Teleconsultation
       </a>
-      <a href="doctor_appointments.html">
-        <i class="fas fa-calendar-alt"></i> Appointments
-      </a>
-      <a href="#">
-        <i class="fas fa-bell"></i> Notifications
-      </a>
+
     </nav>
     <div class="logout" onclick="location.href='doctor_logout.php'">
       <i class="fas fa-sign-out-alt"></i> Logout
     </div>
   </div>
 
-  <!-- Hamburger -->
-  <div class="hamburger" id="hamburger">
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
-
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
-    <!-- Top Bar -->
+    <!-- Top Bar - NO BACK BUTTON -->
     <div class="top-bar">
       <h1>My Profile</h1>
-      <a href="doctor_dashboard.html" class="back-btn">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
-      </a>
     </div>
 
     <!-- Content Area -->
@@ -438,7 +384,7 @@
         <div class="profile-header">
           <div class="profile-photo-section">
             <img src="https://via.placeholder.com/150" alt="Profile Photo" class="profile-photo" id="profilePhotoPreview">
-            <br>
+            <br><br>
             <label for="profilePhoto" class="photo-upload-btn">
               <i class="fas fa-camera"></i> Change Photo
             </label>
@@ -446,7 +392,6 @@
           </div>
           <h2 id="displayName">Dr. John Doe</h2>
           <p class="specialty" id="displaySpecialty">Cardiologist</p>
-          <p class="experience" id="displayExperience">15 Years of Experience</p>
         </div>
 
         <!-- Basic Information -->
@@ -483,75 +428,14 @@
                 <option value="Cardiology">Cardiology</option>
                 <option value="Dermatology">Dermatology</option>
                 <option value="Emergency Medicine">Emergency Medicine</option>
-                <option value="Endocrinology">Endocrinology</option>
                 <option value="Family Medicine">Family Medicine</option>
-                <option value="Gastroenterology">Gastroenterology</option>
-                <option value="General Surgery">General Surgery</option>
-                <option value="Hematology">Hematology</option>
+                <option value="General Practice">General Practice</option>
                 <option value="Internal Medicine">Internal Medicine</option>
-                <option value="Nephrology">Nephrology</option>
-                <option value="Neurology">Neurology</option>
-                <option value="Neurosurgery">Neurosurgery</option>
-                <option value="Obstetrics and Gynecology">Obstetrics and Gynecology</option>
-                <option value="Oncology">Oncology</option>
-                <option value="Ophthalmology">Ophthalmology</option>
-                <option value="Orthopedics">Orthopedics</option>
-                <option value="Otolaryngology (ENT)">Otolaryngology (ENT)</option>
-                <option value="Pathology">Pathology</option>
                 <option value="Pediatrics">Pediatrics</option>
-                <option value="Physical Medicine & Rehabilitation">Physical Medicine & Rehabilitation</option>
-                <option value="Plastic Surgery">Plastic Surgery</option>
-                <option value="Psychiatry">Psychiatry</option>
-                <option value="Pulmonology">Pulmonology</option>
-                <option value="Radiology">Radiology</option>
-                <option value="Rheumatology">Rheumatology</option>
-                <option value="Urology">Urology</option>
+                <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                <option value="Orthopedics">Orthopedics</option>
                 <option value="Other">Other</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label for="experience">Years of Experience *</label>
-              <select id="experience" name="experience" required>
-                <option value="">Select Experience</option>
-                <option value="0-2 years">0-2 years</option>
-                <option value="3-5 years">3-5 years</option>
-                <option value="6-10 years">6-10 years</option>
-                <option value="11-15 years">11-15 years</option>
-                <option value="16-20 years">16-20 years</option>
-                <option value="20+ years">20+ years</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Professional Summary -->
-        <div class="form-section">
-          <h3><i class="fas fa-briefcase"></i> Professional Summary</h3>
-          <div class="form-group">
-            <label for="bio">Short Bio (2-3 sentences)</label>
-            <textarea id="bio" name="bio" placeholder="Write a brief description about yourself and your expertise..."></textarea>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="hospital">Current Hospital/Clinic</label>
-              <input type="text" id="hospital" name="hospital" placeholder="e.g., City Medical Center">
-            </div>
-            <div class="form-group">
-              <label for="languages">Languages Spoken</label>
-              <select id="languages" name="languages[]" multiple>
-                <option value="English">English</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
-                <option value="German">German</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Korean">Korean</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Portuguese">Portuguese</option>
-                <option value="Tagalog">Tagalog</option>
-              </select>
-              <small>Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
             </div>
           </div>
         </div>
@@ -559,7 +443,7 @@
         <!-- Availability & Schedule -->
         <div class="form-section">
           <h3><i class="fas fa-clock"></i> Availability & Schedule</h3>
-          
+
           <div class="form-group">
             <label for="availability">Availability Status</label>
             <select id="availability" name="availability">
@@ -572,104 +456,54 @@
 
           <div class="form-group">
             <label>Available Days</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 10px;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Monday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Monday</span>
+            <div class="days-grid">
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Monday" class="day-checkbox">
+                <span>Mon</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Tuesday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Tuesday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Tuesday" class="day-checkbox">
+                <span>Tue</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Wednesday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Wednesday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Wednesday" class="day-checkbox">
+                <span>Wed</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Thursday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Thursday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Thursday" class="day-checkbox">
+                <span>Thu</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Friday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Friday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Friday" class="day-checkbox">
+                <span>Fri</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Saturday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Saturday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Saturday" class="day-checkbox">
+                <span>Sat</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: #f7fafc; border-radius: 6px; transition: background 0.2s;">
-                <input type="checkbox" name="available_days[]" value="Sunday" class="day-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                <span>Sunday</span>
+              <label class="day-label">
+                <input type="checkbox" name="available_days[]" value="Sunday" class="day-checkbox">
+                <span>Sun</span>
               </label>
             </div>
-            <small style="display: block; margin-top: 8px;">Select the days you are available for consultation</small>
+            <small>Select the days you are available for consultation</small>
           </div>
 
-           <div class="form-group">
-        <label for="availableHours">Available Hours</label>
-        <select id="availableHours" name="available_hours">
-          <option value="">Select Time Slot</option>
-          <option value="7:00 AM - 8:00 AM">7:00 AM - 8:00 AM</option>
-          <option value="8:00 AM - 9:00 AM">8:00 AM - 9:00 AM</option>
-          <option value="9:00 AM - 10:00 AM">9:00 AM - 10:00 AM</option>
-          <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
-          <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
-          <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
-          <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
-          <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
-          <option value="3:00 PM - 4:00 PM">3:00 PM - 4:00 PM</option>
-        </select>
-        <small>Select your 1-hour consultation time slot (7 AM - 4 PM)</small>
-      </div>
-
-
-
-
-        <!-- Education -->
-        <div class="form-section">
-          <h3><i class="fas fa-graduation-cap"></i> Education</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="degree">Medical Degree</label>
-              <select id="degree" name="degree">
-                <option value="">Select Degree</option>
-                <option value="MBBS">MBBS (Bachelor of Medicine, Bachelor of Surgery)</option>
-                <option value="MD">MD (Doctor of Medicine)</option>
-                <option value="DO">DO (Doctor of Osteopathic Medicine)</option>
-                <option value="BDS">BDS (Bachelor of Dental Surgery)</option>
-                <option value="BAMS">BAMS (Bachelor of Ayurvedic Medicine and Surgery)</option>
-                <option value="BHMS">BHMS (Bachelor of Homeopathic Medicine and Surgery)</option>
-                <option value="DM">DM (Doctorate of Medicine)</option>
-                <option value="MCh">MCh (Master of Chirurgiae)</option>
-                <option value="MS">MS (Master of Surgery)</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="university">University/Medical School</label>
-              <input type="text" id="university" name="university" placeholder="e.g., Harvard Medical School">
-            </div>
-            <div class="form-group">
-              <label for="graduationYear">Year of Graduation</label>
-              <select id="graduationYear" name="graduation_year">
-                <option value="">Select Year</option>
-                <script>
-                  const currentYear = new Date().getFullYear();
-                  for (let year = currentYear; year >= 1970; year--) {
-                    document.write(`<option value="${year}">${year}</option>`);
-                  }
-                </script>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Expertise -->
-        <div class="form-section">
-          <h3><i class="fas fa-star"></i> Areas of Expertise</h3>
           <div class="form-group">
-            <label for="expertise">List Your Specialties (comma-separated)</label>
-            <textarea id="expertise" name="expertise" rows="3" placeholder="e.g., Heart Surgery, Cardiac Imaging, Preventive Cardiology"></textarea>
+            <label for="availableHours">Available Hours</label>
+            <select id="availableHours" name="available_hours">
+              <option value="">Select Time Slot</option>
+              <option value="7:00 AM - 8:00 AM">7:00 AM - 8:00 AM</option>
+              <option value="8:00 AM - 9:00 AM">8:00 AM - 9:00 AM</option>
+              <option value="9:00 AM - 10:00 AM">9:00 AM - 10:00 AM</option>
+              <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+              <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+              <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+              <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+              <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
+              <option value="3:00 PM - 4:00 PM">3:00 PM - 4:00 PM</option>
+            </select>
+            <small>Select your 1-hour consultation time slot (7 AM - 4 PM)</small>
           </div>
         </div>
 
@@ -699,18 +533,28 @@
             <i class="fas fa-save"></i> Save Changes
           </button>
         </div>
-
       </form>
     </div>
   </div>
-<script src="doctor-status.js"></script>
+
 <script>
   const sidebar = document.getElementById('sidebar');
   const hamburger = document.getElementById('hamburger');
 
-  // Toggle Sidebar
-  hamburger.addEventListener('click', function() {
+  // Toggle Sidebar on Mobile
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
     sidebar.classList.toggle('show');
+  });
+
+  // Close Sidebar when clicking outside (Mobile)
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 900 && 
+        sidebar.classList.contains('show') && 
+        !sidebar.contains(e.target) && 
+        !hamburger.contains(e.target)) {
+      sidebar.classList.remove('show');
+    }
   });
 
   // Photo Preview
@@ -722,14 +566,12 @@
         this.value = '';
         return;
       }
-      
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
         alert('Only JPG, PNG, and GIF files are allowed');
         this.value = '';
         return;
       }
-      
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById('profilePhotoPreview').src = e.target.result;
@@ -744,10 +586,6 @@
   document.getElementById('specialization').addEventListener('change', function() {
     document.getElementById('displaySpecialty').textContent = this.value || 'Specialist';
   });
-  document.getElementById('experience').addEventListener('change', function() {
-    const exp = this.value ? this.value + ' of Experience' : '0 Years of Experience';
-    document.getElementById('displayExperience').textContent = exp;
-  });
 
   function updateDisplay() {
     const title = document.getElementById('title').value || 'Dr.';
@@ -758,33 +596,24 @@
   // Form Submission
   document.getElementById('profileForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const currentPass = document.getElementById('currentPassword').value;
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
-    
+
     if (newPass || confirmPass) {
-      if (!currentPass) {
-        showError('Please enter your current password to change password');
-        return;
-      }
-      if (newPass !== confirmPass) {
-        showError('New passwords do not match!');
-        return;
-      }
-      if (newPass.length < 6) {
-        showError('New password must be at least 6 characters long');
-        return;
-      }
+      if (!currentPass) { showError('Please enter your current password to change password'); return; }
+      if (newPass !== confirmPass) { showError('New passwords do not match!'); return; }
+      if (newPass.length < 6) { showError('New password must be at least 6 characters long'); return; }
     }
 
     const formData = new FormData(this);
-    
+
     const submitBtn = this.querySelector('.btn-primary');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     submitBtn.disabled = true;
-    
+
     fetch('update_doctor_profile.php', {
       method: 'POST',
       body: formData
@@ -793,18 +622,18 @@
     .then(data => {
       submitBtn.innerHTML = originalText;
       submitBtn.disabled = false;
-      
+
       if (data.success) {
         showSuccess(data.message || 'Profile updated successfully!');
-        
+
         document.getElementById('currentPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
-        
+
         if (data.profile_photo) {
           document.getElementById('profilePhotoPreview').src = data.profile_photo;
         }
-        
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         showError(data.message || 'Error updating profile');
@@ -822,21 +651,17 @@
     const alert = document.getElementById('successAlert');
     alert.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
     alert.style.display = 'block';
-    setTimeout(() => {
-      alert.style.display = 'none';
-    }, 5000);
+    setTimeout(() => { alert.style.display = 'none'; }, 5000);
   }
 
   function showError(message) {
     const alert = document.getElementById('errorAlert');
     alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
     alert.style.display = 'block';
-    setTimeout(() => {
-      alert.style.display = 'none';
-    }, 5000);
+    setTimeout(() => { alert.style.display = 'none'; }, 5000);
   }
 
-  // Load profile data
+  // Load profile data on page load
   window.addEventListener('DOMContentLoaded', function() {
     fetch('get_doctor_profile.php')
       .then(response => response.json())
@@ -847,50 +672,24 @@
           document.getElementById('email').value = data.email || '';
           document.getElementById('phone').value = data.phone || '';
           document.getElementById('specialization').value = data.specialization || '';
-          document.getElementById('experience').value = data.experience || '';
-          document.getElementById('bio').value = data.bio || '';
-          document.getElementById('hospital').value = data.hospital || '';
-          document.getElementById('degree').value = data.degree || '';
-          document.getElementById('university').value = data.university || '';
-          document.getElementById('graduationYear').value = data.graduation_year || '';
-          document.getElementById('expertise').value = data.expertise || '';
-          
-          // Populate availability status
+
           document.getElementById('availability').value = data.availability || 'Available';
-          
-          // Populate available days (checkboxes)
+
           if (data.available_days) {
             const days = data.available_days.split(',').map(d => d.trim());
-            const checkboxes = document.querySelectorAll('.day-checkbox');
-            checkboxes.forEach(checkbox => {
-              if (days.includes(checkbox.value)) {
-                checkbox.checked = true;
-              }
+            document.querySelectorAll('.day-checkbox').forEach(cb => {
+              if (days.includes(cb.value)) cb.checked = true;
             });
           }
-          
-          // Populate available hours (dropdown)
+
           document.getElementById('availableHours').value = data.available_hours || '';
-          
-          if (data.languages) {
-            const langs = data.languages.split(',').map(l => l.trim());
-            const options = document.getElementById('languages').options;
-            for (let i = 0; i < options.length; i++) {
-              if (langs.includes(options[i].value)) {
-                options[i].selected = true;
-              }
-            }
-          }
-          
+
           if (data.profile_photo) {
             document.getElementById('profilePhotoPreview').src = data.profile_photo;
           }
-          
+
           updateDisplay();
           document.getElementById('displaySpecialty').textContent = data.specialization || 'Specialist';
-          const expText = data.experience ? data.experience + ' of Experience' : '0 Years of Experience';
-          document.getElementById('displayExperience').textContent = expText;
-          
         } else {
           if (!data.logged_in) {
             alert('Please login first');
@@ -905,10 +704,6 @@
         showError('Failed to load profile data');
       });
   });
-
-
-
-  
 </script>
 </body>
 </html>

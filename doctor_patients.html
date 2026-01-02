@@ -1,511 +1,639 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8" />
-  <title>Patient Management - Doctor Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patient List - Doctor Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow-x: hidden; }
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
       color: #2d3748;
       display: flex;
-      min-height: 100vh;
     }
-
-    /* Sidebar Styling */
     .sidebar {
-      background: #3d5a80;
-      color: white;
-      width: 260px;
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      z-index: 1200;
+      background: #3d5a80; color: #fff; width: 260px; height: 100%;
+      display: flex; flex-direction: column; z-index: 1200;
+      box-shadow: 2px 0 10px rgba(0,0,0,.1); position: fixed; top: 0; left: 0;
       transition: transform 0.3s ease;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar.hide {
-      transform: translateX(-260px);
     }
     .sidebar .logo {
-      font-weight: 800;
-      font-size: 1.6rem;
-      padding: 30px 25px 20px 25px;
-      letter-spacing: 1px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-weight: 800; font-size: 1.6rem; padding: 30px 25px 20px;
+      letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,.1);
     }
-    .sidebar .logo span {
-      color: #98c1d9;
-    }
-    .sidebar nav {
-      flex: 1;
-      padding: 20px 0;
-      overflow-y: auto;
-    }
+    .sidebar .logo span { color: #98c1d9; }
+    .sidebar nav { flex: 1; padding: 20px 0; overflow-y: auto; }
     .sidebar nav a {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 25px;
-      text-decoration: none;
-      color: rgba(255,255,255,0.8);
-      font-size: 0.95rem;
-      border-left: 3px solid transparent;
-      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 12px; padding: 14px 25px;
+      text-decoration: none; color: rgba(255,255,255,.8); font-size: .95rem;
+      border-left: 3px solid transparent; transition: all .2s ease;
     }
-    .sidebar nav a i {
-      width: 20px;
-      text-align: center;
-      font-size: 1.1rem;
-    }
-    .sidebar nav a:hover,
-    .sidebar nav a.active {
-      background: rgba(255,255,255,0.1);
-      border-left-color: #98c1d9;
-      color: white;
+    .sidebar nav a i { width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(255,255,255,.1); border-left-color: #98c1d9; color: #fff;
     }
     .sidebar .logout {
-      padding: 20px 25px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: rgba(255,255,255,0.9);
+      padding: 20px 25px; border-top: 1px solid rgba(255,255,255,.1);
+      cursor: pointer; transition: background .2s;
+      display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.9);
     }
-    .sidebar .logout:hover {
-      background: rgba(0,0,0,0.2);
-      color: #ff6b6b;
-    }
+    .sidebar .logout:hover { background: rgba(0,0,0,.2); color: #ff6b6b; }
 
-    /* Hamburger Menu */
     .hamburger {
-      width: 30px;
-      height: 24px;
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      cursor: pointer;
-      z-index: 1300;
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
+      width: 30px; height: 24px; position: fixed; top: 15px; left: 15px;
+      cursor: pointer; z-index: 1300; display: none;
+      flex-direction: column; justify-content: space-between;
+      background: transparent; border: none; padding: 0;
     }
     .hamburger div {
-      background: #3d5a80;
-      border-radius: 2px;
-      height: 3px;
-      transition: all 0.3s ease;
-      width: 100%;
+      background: #3d5a80; border-radius: 2px; height: 3px;
+      transition: all 0.3s ease; width: 100%;
     }
 
-    /* Main Content */
     .main-content {
-      flex: 1;
-      margin-left: 260px;
-      padding: 0;
-      transition: margin-left 0.3s ease;
-      min-height: 100vh;
+      flex: 1; height: 100%; display: flex; flex-direction: column;
+      margin-left: 260px; transition: margin-left 0.3s ease; min-height: 100vh;
     }
-
-    /* Top Bar */
     .top-bar {
-      background: white;
-      padding: 20px 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: #fff; padding: 16px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.05);
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100; position: sticky; top: 0;
     }
-    .top-bar h1 {
-      font-size: 1.6rem;
-      color: #3d5a80;
-      font-weight: 600;
-    }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1rem;
-      color: #4a5568;
-    }
-    .user-info i {
-      font-size: 1.8rem;
-      color: #3d5a80;
-    }
+    .top-bar h1 { font-size: 1.6rem; color: #3d5a80; font-weight: 600; }
+    .user-info { display: flex; align-items: center; gap: 12px; font-size: 1rem; color: #4a5568; }
+    .user-info i { font-size: 1.8rem; color: #3d5a80; }
 
-    /* Content Area */
     .content-area {
-      padding: 30px;
-      max-width: 1400px;
-      margin: 0 auto;
+      flex: 1; padding: 30px; max-width: 1400px; width: 100%; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 20px;
     }
 
-    /* Module Cards Grid - For Main Patient Modules */
-    .module-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      margin-bottom: 35px;
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px; margin-bottom: 10px;
     }
-    .module-card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border-top: 4px solid #3d5a80;
-      position: relative;
+    .stat-card {
+      background: white; border-radius: 10px; padding: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.3s ease;
+      border-top: 3px solid #3d5a80;
     }
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(61, 90, 128, 0.15);
-    }
-    .module-card .icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #3d5a80 0%, #293a52 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 6px 20px rgba(61, 90, 128, 0.15); }
+    .stat-card .icon {
+      width: 50px; height: 50px; background: rgba(61, 90, 128, 0.1);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
       margin-bottom: 15px;
     }
-    .module-card .icon i {
-      font-size: 1.8rem;
-      color: white;
-    }
-    .module-card h3 {
-      font-size: 1.2rem;
-      color: #2d3748;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-    .module-card p {
-      font-size: 0.9rem;
-      color: #718096;
-      line-height: 1.5;
-      margin-bottom: 15px;
-    }
-    .module-card .count {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: #e6f2ff;
-      color: #3d5a80;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-    .module-card .arrow {
-      color: #3d5a80;
-      font-size: 1.2rem;
-    }
+    .stat-card .icon i { font-size: 1.5rem; color: #3d5a80; }
+    .stat-card .label { font-size: 0.9rem; color: #718096; margin-bottom: 8px; font-weight: 500; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: #2d3748; }
 
-    /* Section Header */
-    .section-header {
-      margin-bottom: 25px;
+    .patient-container {
+      background: white; border-radius: 12px; padding: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
-    .section-header h2 {
-      font-size: 1.4rem;
-      color: #2d3748;
-      margin-bottom: 8px;
-      font-weight: 600;
+    .controls {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
     }
-    .section-header p {
-      color: #718096;
-      font-size: 0.95rem;
+    .controls h3 { font-size: 1.2rem; color: #3d5a80; }
+    .search-box { position: relative; width: 100%; max-width: 320px; }
+    .search-box input {
+      width: 100%; padding: 12px 15px 12px 40px; border: 1px solid #e2e8f0;
+      border-radius: 8px; font-size: 0.95rem; outline: none; transition: all 0.2s;
     }
+    .search-box input:focus { border-color: #3d5a80; box-shadow: 0 0 0 3px rgba(61,90,128,0.1); }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
 
-    /* Quick Stats Bar */
-    .quick-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 35px;
-    }
-    .stat-box {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .stat-box .stat-icon {
-      width: 50px;
-      height: 50px;
-      background: rgba(61, 90, 128, 0.1);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .stat-box .stat-icon i {
-      font-size: 1.5rem;
-      color: #3d5a80;
-    }
-    .stat-box .stat-info h4 {
-      font-size: 0.85rem;
-      color: #718096;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    .stat-box .stat-info .number {
-      font-size: 1.8rem;
-      color: #2d3748;
-      font-weight: 700;
-    }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 15px; background: #f8fafc; color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    td { padding: 16px 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
 
-    /* Responsive Design */
+    .patient-flex { display: flex; align-items: center; gap: 15px; }
+    .avatar {
+      width: 40px; height: 40px; background: #e0e7ff; color: #3d5a80; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .badge-male { background: #dbeafe; color: #1e40af; }
+    .badge-female { background: #fce7f3; color: #9d174d; }
+
+    .btn-group { display: flex; gap: 8px; }
+    .btn { 
+      border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; 
+      color: white; transition: opacity 0.2s; font-size: 0.9rem;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-edit { background: #10b981; }
+    .btn-del { background: #ef4444; }
+
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 2000; 
+      justify-content: center; align-items: center;
+    }
+    .modal.show { display: flex; }
+    .modal-box {
+      background: white; padding: 25px; border-radius: 12px; 
+      width: 90%; max-width: 400px; animation: popIn 0.3s;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align:left;
+    }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .modal-head { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; font-size: 1.1rem; color:#2d3748; }
+    .modal-foot { margin-top: 25px; text-align: right; display:flex; justify-content:flex-end; gap:10px; }
+
+    .modal-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight:500; }
+    .btn-save { background: #3d5a80; color: white; }
+    .btn-cancel { background: #f1f5f9; color: #64748b; }
+
+    .inp-group { margin-bottom: 15px; }
+    .inp-group label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 5px; }
+    .inp { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; }
+
     @media (max-width: 900px) {
-      .hamburger {
-        display: flex;
+      .hamburger { display: flex; }
+      .sidebar { transform: translateX(-100%); width: 260px; box-shadow: none; }
+      .sidebar.show { transform: translateX(0); box-shadow: 4px 0 15px rgba(0,0,0,0.2); }
+      .main-content { margin-left: 0; }
+      .top-bar { padding-left: 60px; }
+      .content-area { padding: 15px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      thead { display: none; }
+      tr {
+        display: block; margin-bottom: 15px;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+        padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
       }
-      .sidebar {
-        transform: translateX(-260px);
+      td {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0; border: none; text-align: right;
+        border-bottom: 1px solid #f8fafc;
       }
-      .sidebar.show {
-        transform: translateX(0);
+      td:last-child { border-bottom: none; }
+      td::before {
+        content: attr(data-label);
+        font-weight: 600; color: #64748b; font-size: 0.9rem; text-align: left;
       }
-      .main-content {
-        margin-left: 0;
-      }
-      .module-cards-grid {
-        grid-template-columns: 1fr;
-      }
+      .patient-flex { justify-content: flex-end; }
+      .search-box { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .user-info span { display: none; }
     }
 
-    @media (max-width: 600px) {
-      .quick-stats {
-        grid-template-columns: 1fr;
-      }
+    /* Success modal special style */
+    #successModal .modal-box{
+      text-align:center;
+    }
+    #successModal h3{
+      margin-bottom:10px;
+      color:#16a34a;
     }
   </style>
-  </head>
-  <body>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-      <div class="logo">MEDI<span>Care</span></div>
-      <nav>
-        <a href="doctor_dashboard.html">
-          <i class="fas fa-home"></i> Dashboard
-        </a>
-        <a href="doctor_profile.html">
-          <i class="fas fa-user"></i> Profile
-        </a>
-        <a href="doctor_patients.html" class="active">
-          <i class="fas fa-users"></i> Patients
-        </a>
-        <a href="#">
-          <i class="fas fa-heartbeat"></i> Symptom Analysis
-        </a>
-        <a href="doctor_teleconsult.html">
-          <i class="fas fa-video"></i> Teleconsultation
-        </a>
-        <a href="doctor_appointments.html">
-        <i class="fas fa-calendar-alt"></i> Appointments
-      </a>
-        <a href="#">
-          <i class="fas fa-bell"></i> Notifications
-        </a>
-      </nav>
-      <div class="logout" onclick="location.href='doctor_logout.php'">
-        <i class="fas fa-sign-out-alt"></i> Logout
+</head>
+<body>
+
+  <button class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </button>
+
+  <div class="sidebar" id="sidebar">
+    <div class="logo">GABAY<span>AI</span></div>
+    <nav>
+      <a href="doctor_dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="doctor_profile.html"><i class="fas fa-user"></i> Profile</a>
+      <a href="doctor_patients.html" class="active"><i class="fas fa-users"></i> Patients</a>
+      <a href="doctor_analyzer.html"><i class="fas fa-microscope"></i> Clinical Support</a>
+      <a href="doctor_teleconsult.html"><i class="fas fa-comments"></i> Teleconsultation</a>
+    </nav>
+    <div class="logout" onclick="location.href='doctor_logout.php'">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </div> 
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>Patient Master List</h1>
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>Dr. <span id="username">Loading...</span></span>
       </div>
     </div>
 
-    <!-- Hamburger Menu -->
-    <div class="hamburger" id="hamburger">
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-      <!-- Top Bar -->
-      <div class="top-bar">
-        <h1>Patient Management</h1>
-        <div class="user-info">
-          <i class="fas fa-user-circle"></i>
-          <span>Dr. <span class="user-name" id="username">...</span></span>
+    <div class="content-area">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="icon"><i class="fas fa-users"></i></div>
+          <div class="label">Total Registered</div>
+          <div class="value" id="totalPatients">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon"><i class="fas fa-venus-mars"></i></div>
+          <div class="label">Gender Distribution</div>
+          <div class="value" id="genderRatio" style="font-size:1.5rem">- / -</div>
         </div>
       </div>
 
-      <!-- Content Area -->
-      <div class="content-area">
-        <!-- Section Header -->
-        <div class="section-header">
-          <h2>Patient Management Center</h2>
-          <p>Manage all aspects of patient care and records</p>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-          <div class="stat-box">
-            <div class="stat-icon">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-              <h4>Total Patients</h4>
-              <div class="number" id="totalPatients">0</div>
-            </div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-icon">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="stat-info">
-              <h4>New This Month</h4>
-              <div class="number" id="newPatients">0</div>
-            </div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-icon">
-              <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="stat-info">
-              <h4>Active Cases</h4>
-              <div class="number" id="activeCases">0</div>
-            </div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-icon">
-              <i class="fas fa-file-medical"></i>
-            </div>
-            <div class="stat-info">
-              <h4>Pending Reports</h4>
-              <div class="number" id="pendingReports">0</div>
-            </div>
+      <div class="patient-container">
+        <div class="controls">
+          <h3>Registered Patients</h3>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search name or ID...">
           </div>
         </div>
 
-        <!-- Module Cards Grid -->
-        <div class="module-cards-grid">
-          <!-- Patient List Module -->
-          <div class="module-card" onclick="location.href='patient_list.html'">
-            <span class="count" id="patientCount">0</span>
-            <div class="icon">
-              <i class="fas fa-list"></i>
-            </div>
-            <h3>Patient List</h3>
-            <p>View and search all registered patients with filtering options</p>
-            <i class="fas fa-arrow-right arrow"></i>
-          </div>
-
-          <!-- Patient Registration Module -->
-          <div class="module-card" onclick="location.href='patient_registration.html'">
-            <div class="icon">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <h3>Patient Registration</h3>
-            <p>Register new patients and capture their medical information</p>
-            <i class="fas fa-arrow-right arrow"></i>
-          </div>
-
-          <!-- Appointment Scheduling Module -->
-          <div class="module-card" onclick="location.href='doctor_appointments.html'">
-            <span class="count" id="appointmentCount">0</span>
-            <div class="icon">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
-            <h3>Appointments</h3>
-            <p>Schedule and manage patient appointments and follow-ups</p>
-            <i class="fas fa-arrow-right arrow"></i>
-          </div>
-
-          <!-- Patient Messages Module -->
-          <div class="module-card" onclick="location.href='patient_messages.html'">
-            <span class="count" id="messageCount">0</span>
-            <div class="icon">
-              <i class="fas fa-comments"></i>
-            </div>
-            <h3>Patient Messages</h3>
-            <p>Secure messaging system for patient communication</p>
-            <i class="fas fa-arrow-right arrow"></i>
-          </div>
-
-          
-
-          <!-- Prescriptions Module -->
-          <div class="module-card" onclick="location.href='prescriptions.html'">
-            <div class="icon">
-              <i class="fas fa-prescription-bottle"></i>
-            </div>
-            <h3>Prescriptions</h3>
-            <p>Create and manage medication prescriptions for patients</p>
-            <i class="fas fa-arrow-right arrow"></i>
-          </div>
+        <div style="width:100%;">
+          <table>
+            <thead>
+              <tr>
+                <th>Patient Name</th>
+                <th>Age / Gender</th>
+                <th>Contact Info</th>
+                <th>Address</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="patientTableBody">
+              <tr>
+                <td colspan="5" style="text-align:center; padding: 30px;">Loading patients...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        Edit Patient Info 
+        <span onclick="closeModal('editModal')" style="cursor:pointer;">&times;</span>
+      </div>
+      <form id="editForm" onsubmit="event.preventDefault(); openConfirmSave();">
+        <input type="hidden" id="edit_id">
+        <div style="display:flex; gap:15px;">
+          <div class="inp-group" style="flex:1;">
+            <label>First Name</label>
+            <input type="text" id="edit_fname" class="inp" required>
+          </div>
+          <div class="inp-group" style="flex:1;">
+            <label>Last Name</label>
+            <input type="text" id="edit_lname" class="inp" required>
+          </div>
+        </div>
+        <div class="inp-group">
+          <label>Phone Number</label>
+          <input type="text" id="edit_phone" class="inp">
+        </div>
+        <div style="display:flex; gap:15px;">
+          <div class="inp-group" style="flex:1;">
+            <label>Date of Birth</label>
+            <input type="date" id="edit_dob" class="inp">
+          </div>
+          <div class="inp-group" style="flex:1;">
+            <label>Gender</label>
+            <select id="edit_gender" class="inp">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="modal-btn btn-cancel" onclick="closeModal('editModal')">Cancel</button>
+          <button type="submit" class="modal-btn btn-save">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Save Modal -->
+  <div id="confirmSaveModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        Confirm Changes
+        <span onclick="closeModal('confirmSaveModal')" style="cursor:pointer;">&times;</span>
+      </div>
+      <p style="color:#475569; margin-bottom:20px;">
+        Are you sure you want to save these changes to this patient?
+      </p>
+
+      <input type="hidden" id="c_id">
+      <input type="hidden" id="c_fname">
+      <input type="hidden" id="c_lname">
+      <input type="hidden" id="c_phone">
+      <input type="hidden" id="c_dob">
+      <input type="hidden" id="c_gender">
+
+      <div class="modal-foot">
+        <button class="modal-btn btn-cancel" onclick="closeModal('confirmSaveModal')">Cancel</button>
+        <button class="modal-btn btn-save" id="confirmSaveBtn" onclick="saveEdit()">Yes, Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 style="margin:0;">Success</h3>
+        <span onclick="closeModal('successModal')" style="cursor:pointer;">&times;</span>
+      </div>
+      <p id="successMsg" style="color:#16a34a; margin-bottom:10px;">
+        Patient info successfully updated.
+      </p>
+      <div class="modal-foot">
+        <button class="modal-btn btn-save" onclick="closeModal('successModal')">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head" style="color:#ef4444;">Confirm Delete</div>
+      <p style="color:#475569; margin-bottom:20px;">Are you sure you want to delete <b id="delete_name"></b>? This action cannot be undone.</p>
+      <input type="hidden" id="delete_id">
+      <div class="modal-foot">
+        <button class="modal-btn btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+        <button class="modal-btn btn-save" style="background:#ef4444;" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const sidebar = document.getElementById('sidebar');
     const hamburger = document.getElementById('hamburger');
-    
-    hamburger.addEventListener('click', function() {
+
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation();
       sidebar.classList.toggle('show');
     });
 
-    // Fetch doctor session
-    window.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 900 && 
+          sidebar.classList.contains('show') && 
+          !sidebar.contains(e.target) && 
+          !hamburger.contains(e.target)) {
+        sidebar.classList.remove('show');
+      }
+    });
+
+    let allPatients = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
       fetch('get_doctor_session.php')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-          if (data.logged_in) {
+          if(data.logged_in) {
             document.getElementById('username').textContent = data.username;
-            loadPatientStats();
+            loadPatients();
           } else {
             window.location.href = 'doctor_login.html';
           }
         })
-        .catch(error => {
-          console.error('Error:', error);
-          window.location.href = 'doctor_login.html';
-        });
+        .catch(err => console.error("Session Error:", err));
     });
 
-    // Load patient statistics
-    function loadPatientStats() {
-      fetch('get_patient_stats.php')
-        .then(response => response.json())
+    function loadPatients() {
+      fetch('get_all_patients.php')
+        .then(res => res.json())
         .then(data => {
-          if (data.success) {
-            document.getElementById('totalPatients').textContent = data.total_patients || 0;
-            document.getElementById('newPatients').textContent = data.new_patients || 0;
-            document.getElementById('activeCases').textContent = data.active_cases || 0;
-            document.getElementById('pendingReports').textContent = data.pending_reports || 0;
-            
-            document.getElementById('patientCount').textContent = data.total_patients || 0;
-            document.getElementById('consultationCount').textContent = data.total_consultations || 0;
-            document.getElementById('appointmentCount').textContent = data.upcoming_appointments || 0;
-            document.getElementById('messageCount').textContent = data.unread_messages || 0;
+          if(data.success) {
+            allPatients = data.patients;
+            document.getElementById('totalPatients').textContent = data.total;
+            let males = allPatients.filter(p => p.gender === 'Male').length;
+            let females = allPatients.filter(p => p.gender === 'Female').length;
+            document.getElementById('genderRatio').textContent = `${males} M / ${females} F`;
+            renderTable(allPatients);
+          } else {
+            document.getElementById('patientTableBody').innerHTML = 
+              `<tr><td colspan="5" style="text-align:center;">${data.message || 'Failed to load'}</td></tr>`;
           }
         })
-        .catch(error => {
-          console.error('Error:', error);
-        });
+        .catch(err => console.error("Fetch Error:", err));
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', (e) => {
+      const val = e.target.value.toLowerCase();
+      const filtered = allPatients.filter(p => 
+        (p.first_name || '').toLowerCase().includes(val) || 
+        (p.last_name || '').toLowerCase().includes(val) || 
+        (p.patient_id || '').toLowerCase().includes(val)
+      );
+      renderTable(filtered);
+    });
+
+    function renderTable(patients) {
+      const tbody = document.getElementById('patientTableBody');
+      tbody.innerHTML = '';
+
+      if(patients.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">No patients found.</td></tr>`;
+        return;
+      }
+
+      patients.forEach(p => {
+        let fullName = (p.first_name || p.last_name) 
+          ? `${p.first_name || ''} ${p.last_name || ''}`.trim() 
+          : 'No Name';
+
+        const badgeClass = (p.gender === 'Male') ? 'badge-male' : 'badge-female';
+        const genderDisplay = p.gender ? `<span class="badge ${badgeClass}">${p.gender}</span>` : '<span class="badge">N/A</span>';
+        const ageDisplay = p.age ? p.age + ' yrs' : 'N/A';
+
+        let phoneDisplay = p.phone ? `<i class="fas fa-phone fa-xs"></i> ${p.phone}` : 'No Details';
+        let emailDisplay = p.email ? p.email : '';
+
+        let addressParts = [];
+        if(p.barangay_name) addressParts.push(p.barangay_name);
+        if(p.city_name) addressParts.push(p.city_name);
+        let fullAddress = addressParts.join(', ') || p.address || 'No Details';
+
+        let avatarContent = `<i class="fas fa-user"></i>`;
+        if(p.profile_picture) {
+          avatarContent = `<img src="uploads/${p.profile_picture}" alt="pic">`;
+        }
+
+        const row = `
+          <tr>
+            <td data-label="Patient Name">
+              <div class="patient-flex">
+                <div class="avatar">${avatarContent}</div>
+                <div>
+                  <div style="font-weight:600; color:#2d3748;">${fullName}</div>
+                  <div style="font-size:0.8rem; color:#718096;">ID: ${p.patient_id || 'N/A'}</div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Age / Gender">
+              <div style="font-weight:600;">${ageDisplay}</div>
+              <div style="margin-top:4px;">${genderDisplay}</div>
+            </td>
+            <td data-label="Contact Info">
+              <div>${phoneDisplay}</div>
+              <div style="font-size:0.8rem; color:#718096;">${emailDisplay}</div>
+            </td>
+            <td data-label="Address">
+              ${fullAddress}
+            </td>
+            <td data-label="Action">
+              <div class="btn-group">
+                <button class="btn btn-edit" onclick="openEdit(${p.id})">
+                  <i class="fas fa-pen"></i> Edit
+                </button>
+                <button class="btn btn-del" onclick="openDel(${p.id}, '${fullName.replace(/'/g, "\\'")}')">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+      });
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function openEdit(id) {
+      const p = allPatients.find(pat => pat.id == id);
+      if(p) {
+        document.getElementById('edit_id').value = p.id;
+        document.getElementById('edit_fname').value = p.first_name || '';
+        document.getElementById('edit_lname').value = p.last_name || '';
+        document.getElementById('edit_phone').value = p.phone || '';
+        document.getElementById('edit_dob').value = p.date_of_birth || '';
+        document.getElementById('edit_gender').value = p.gender || '';
+        document.getElementById('editModal').classList.add('show');
+      }
+    }
+
+    function openDel(id, name) {
+      document.getElementById('delete_id').value = id;
+      document.getElementById('delete_name').textContent = name;
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function openConfirmSave() {
+      const fname = document.getElementById('edit_fname').value;
+      const lname = document.getElementById('edit_lname').value;
+      if(!fname || !lname) { 
+        console.warn("Name fields are required.");
+        return; 
+      }
+
+      document.getElementById('c_id').value = document.getElementById('edit_id').value;
+      document.getElementById('c_fname').value = fname;
+      document.getElementById('c_lname').value = lname;
+      document.getElementById('c_phone').value = document.getElementById('edit_phone').value;
+      document.getElementById('c_dob').value = document.getElementById('edit_dob').value;
+      document.getElementById('c_gender').value = document.getElementById('edit_gender').value;
+
+      document.getElementById('confirmSaveModal').classList.add('show');
+    }
+
+    function saveEdit() {
+      const id = document.getElementById('c_id').value;
+      const fname = document.getElementById('c_fname').value;
+      const lname = document.getElementById('c_lname').value;
+      const phone = document.getElementById('c_phone').value;
+      const dob = document.getElementById('c_dob').value;
+      const gender = document.getElementById('c_gender').value;
+
+      const saveBtn = document.getElementById('confirmSaveBtn');
+      const origText = saveBtn.textContent;
+      saveBtn.textContent = "Saving...";
+      saveBtn.disabled = true;
+
+      fetch('update_patient.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: id,
+          first_name: fname,
+          last_name: lname,
+          phone: phone,
+          date_of_birth: dob,
+          gender: gender
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success) {
+          closeModal('confirmSaveModal');
+          closeModal('editModal');
+          document.getElementById('successMsg').textContent = 'Patient info successfully updated.';
+          document.getElementById('successModal').classList.add('show');
+          loadPatients();
+          setTimeout(() => {
+            closeModal('successModal');
+          },1500);
+        } else {
+          console.error("Update error:", data.message);
+        }
+      })
+      .catch(err => {
+        console.error("System error:", err);
+      })
+      .finally(() => {
+        saveBtn.textContent = origText;
+        saveBtn.disabled = false;
+      });
+    }
+
+    function confirmDelete() {
+      const id = document.getElementById('delete_id').value;
+      const delBtn = document.querySelector('#deleteModal .btn-save');
+      const origText = delBtn.textContent;
+
+      delBtn.textContent = 'Deleting...';
+      delBtn.disabled = true;
+
+      fetch('delete_patient.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          closeModal('deleteModal');
+          document.getElementById('successMsg').textContent = 'Patient record deleted.';
+          document.getElementById('successModal').classList.add('show');
+          loadPatients();
+          setTimeout(() => {
+            closeModal('successModal');
+          },1500);
+        } else {
+          console.error('Delete error:', data.message);
+        }
+      })
+      .catch(err => {
+        console.error('System error:', err);
+      })
+      .finally(() => {
+        delBtn.textContent = origText;
+        delBtn.disabled = false;
+      });
+    }
+
+    window.onclick = function(e) {
+      if(e.target.classList.contains('modal')) e.target.classList.remove('show');
     }
   </script>
-  </body>
-  </html>
+</body>
+</html>

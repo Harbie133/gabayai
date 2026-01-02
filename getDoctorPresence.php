@@ -1,23 +1,34 @@
 <?php
 header('Content-Type: application/json');
-require_once 'db.php'; // yung $conn mo (dbname=gabayai)
+header('Access-Control-Allow-Origin: *');
 
-$seconds = 20;
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "gabayai";
 
-// Kunin online doctors based sa doctor_presence.last_seen
-$stmt = $conn->prepare("
-  SELECT doctor_id
-  FROM doctor_presence
-  WHERE last_seen >= (NOW() - INTERVAL ? SECOND)
-");
-$stmt->bind_param("i", $seconds);
-$stmt->execute();
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    echo json_encode([]);
+    exit();
+}
+$conn->set_charset("utf8mb4");
 
-$res = $stmt->get_result();
-$ids = [];
+// ✅ ONLY DOCTORS WITH online_status = 'Available' (TELEMEDICINE READY)
+$sql = "SELECT id FROM doctor_profile 
+        WHERE online_status = 'Available'
+        AND full_name IS NOT NULL 
+        AND full_name != '' 
+        AND specialization IS NOT NULL 
+        AND specialization != ''";
 
-while ($row = $res->fetch_assoc()) {
-  $ids[] = (int)$row['doctor_id'];
+$result = $conn->query($sql);
+
+$onlineIds = [];
+while($row = $result->fetch_assoc()) {
+    $onlineIds[] = $row['id'];
 }
 
-echo json_encode(["onlineIds" => $ids]);
+echo json_encode($onlineIds);
+$conn->close();
+?>
