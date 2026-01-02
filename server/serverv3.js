@@ -20,6 +20,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "GabayAI API is running" });
+});
+
+
 // ✅ API KEY (from .env / Render env)
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
@@ -81,7 +87,7 @@ const client = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: OPENROUTER_API_KEY,
   defaultHeaders: {
-    "HTTP-Referer": "http://localhost:5000", // update to prod URL sa Render kung gusto mo
+    "HTTP-Referer": "https://gabayai-server-jz0y.onrender.com",
     "X-Title": "GabayAI Analyzer V3 Capstone",
   },
 });
@@ -439,12 +445,14 @@ Output JSON format ONLY:
 });
 
 // ==========================================================
-// 7. START SERVER
+// 7. START SERVER (Render-ready)
 // ==========================================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`\n✅ GabayAI v3 (OpenRouter FREE) running on http://localhost:${PORT}`);
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`\n✅ GabayAI v3 (OpenRouter FREE) running on port ${PORT}`);
   console.log("📡 Models: 30-Model Ultimate Defense System Active");
   console.log("🛡️ Priority: Mistral > Nvidia > Llama > Gemini > Experimental");
   console.log("🌐 Languages: Tagalog & English\n");
 });
+
