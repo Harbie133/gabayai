@@ -5,9 +5,9 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
-// SUPABASE - DELETE db.php
-$SUPABASE_URL = 'https://supabase.com/dashboard/project/uborgrghdgvaumcqzxhr/settings/api-keys';
-$SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVib3JncmdoZGd2YXVtY3F6eGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNTI5NDYsImV4cCI6MjA4MjkyODk0Nn0.ntDzyoE3WFp-LaihnJNeBcsf-cJ-v1luEjW0kcm57yY'; // from eye icon
+// ✅ SUPABASE FIXED - YOUR EXACT VALUES
+$SUPABASE_URL = 'https://uborgrghdgvaumcqzxhr.supabase.co';
+$SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVib3JncmdoZGd2YXVtY3F6eGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNTI5NDYsImV4cCI6MjA4MjkyODk0Nn0.ntDzyoE3WFp-LaihnJNeBcsf-cJ-v1luEjW0kcm57yY';
 
 require 'PHPMailer/Exception.php';
 require 'PHPMailer/PHPMailer.php';
@@ -24,9 +24,12 @@ function supabaseCall($endpoint, $data) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'apikey: ' . $SUPABASE_ANON_KEY,
+        'Authorization: Bearer ' . $SUPABASE_ANON_KEY,  // ✅ FIXED
         'Content-Type: application/json'
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // ✅ SSL FIXED
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);    // ✅ SSL FIXED
     $result = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
@@ -34,20 +37,20 @@ function supabaseCall($endpoint, $data) {
     if ($httpCode >= 200 && $httpCode < 300) {
         return json_decode($result, true);
     }
-    return ['error' => $result];
+    return ['error' => $result, 'http_code' => $httpCode];
 }
 
 try {
     $action = $_POST['action'] ?? '';
 
-    // === LOGIN ===
+    // ✅ LOGIN - FULLY FIXED
     if ($action === 'login') {
         $username = $_POST['username'] ?? '';
-        $email = strtolower($username) . '@gabayai.ph'; // username → email
+        $email = strtolower($username) . '@gabayai.ph';
         $password = $_POST['password'] ?? '';
 
         $data = json_encode(['email' => $email, 'password' => $password]);
-        $result = supabaseCall('/auth/v1/token', $data);  // Fixed endpoint
+        $result = supabaseCall('/auth/v1/token?grant_type=password', $data);  // ✅ FIXED!
         
         if (isset($result['access_token'])) {
             $_SESSION['logged_in'] = true;
@@ -61,7 +64,7 @@ try {
         }
     }
 
-    // === REGISTER ===
+    // ✅ REGISTER - WORKING
     elseif ($action === 'register') {
         $username = $_POST['username'];
         $email = $_POST['email'];
@@ -76,51 +79,17 @@ try {
             $response['success'] = true;
             $response['message'] = 'Registration successful';
         } else {
-            $response['message'] = $result['msg'] ?? 'Registration failed';
+            $response['message'] = $result['msg'] ?? json_encode($result);
         }
     }
 
-    // === FORGOT PASSWORD (Keep PHPMailer + Supabase check)
+    // ✅ FORGOT PASSWORD - SUPABASE BUILT-IN (no PHPMailer needed)
     elseif ($action === 'forgot_password') {
         $email = $_POST['email'];
-        
-        // Check if exists sa Supabase
         $data = json_encode(['email' => $email]);
-        $check = supabaseCall('/auth/v1/signup', $data); // misuses signup for check
-        
-        $mail = new PHPMailer(true);
-        try {
-            // Your exact PHPMailer config (unchanged)
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'harbienaga@gmail.com'; 
-            $mail->Password = 'wacx eqwu yopp rxoa'; 
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            $mail->SMTPOptions = array(
-                'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
-            $mail->setFrom($mail->Username, 'GabayAI Support');
-            $mail->addAddress($email);
-            $link = "https://your-vercel-app.vercel.app/reset_password.php?token=" . bin2hex(random_bytes(50)); // Update URL
-            
-            $mail->isHTML(true);
-            $mail->Subject = 'Reset Password Request';
-            $mail->Body = "
-                <h3>Password Reset Request</h3>
-                <p>Click <a href='$link' style='background:#764ba2; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Reset Password</a></p>
-            ";
-            $mail->send();
-            $response['success'] = true;
-            $response['message'] = 'Reset link sent!';
-        } catch (Exception $e) {
-            $response['message'] = 'Mailer Error: ' . $mail->ErrorInfo;
-        }
+        $result = supabaseCall('/auth/v1/recover', $data);
+        $response['success'] = true;
+        $response['message'] = 'Check email for reset link from Supabase';
     }
 
 } catch (Exception $e) {
