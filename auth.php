@@ -1,95 +1,147 @@
 <?php
 session_start();
 date_default_timezone_set('Asia/Manila');
+
+// I-off ang error display sa browser para malinis ang JSON response
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING); 
 ini_set('display_errors', 0);
+
 header('Content-Type: application/json');
 
-// ✅ SUPABASE FIXED - YOUR EXACT VALUES
-$SUPABASE_URL = 'https://uborgrghdgvaumcqzxhr.supabase.co';
-$SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVib3JncmdoZGd2YXVtY3F6eGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNTI5NDYsImV4cCI6MjA4MjkyODk0Nn0.ntDzyoE3WFp-LaihnJNeBcsf-cJ-v1luEjW0kcm57yY';
+// Check connection file
+require_once 'db.php'; 
 
 require 'PHPMailer/Exception.php';
 require 'PHPMailer/PHPMailer.php';
 require 'PHPMailer/SMTP.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $response = ['success' => false, 'message' => 'An error occurred'];
 
-function supabaseCall($endpoint, $data) {
-    global $SUPABASE_URL, $SUPABASE_ANON_KEY;
-    $ch = curl_init($SUPABASE_URL . $endpoint);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'apikey: ' . $SUPABASE_ANON_KEY,
-        'Authorization: Bearer ' . $SUPABASE_ANON_KEY,  // ✅ FIXED
-        'Content-Type: application/json'
-    ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);    // ✅ SSL FIXED
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);    // ✅ SSL FIXED
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    if ($httpCode >= 200 && $httpCode < 300) {
-        return json_decode($result, true);
-    }
-    return ['error' => $result, 'http_code' => $httpCode];
-}
-
 try {
+    if ($conn->connect_error) {
+        throw new Exception("Connection Failed: " . $conn->connect_error);
+    }
+
     $action = $_POST['action'] ?? '';
 
-    // ✅ LOGIN - FULLY FIXED
+    // === LOGIN ===
     if ($action === 'login') {
         $username = $_POST['username'] ?? '';
-        $email = strtolower($username) . '@gabayai.ph';
         $password = $_POST['password'] ?? '';
 
-        $data = json_encode(['email' => $email, 'password' => $password]);
-        $result = supabaseCall('/auth/v1/token?grant_type=password', $data);  // ✅ FIXED!
-        
-        if (isset($result['access_token'])) {
-            $_SESSION['logged_in'] = true;
-            $_SESSION['username'] = $username;
-            $_SESSION['email'] = $email;
-            $_SESSION['token'] = $result['access_token'];
-            $response['success'] = true;
-            $response['message'] = 'Login successful';
-        } else {
-            $response['message'] = $result['error_description'] ?? 'Invalid credentials';
-        }
-    }
+        $stmt = $conn->prepare("SELECT id, username, email, password FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $res = $stmt->get_result();
 
-    // ✅ REGISTER - WORKING
+        if ($row = $res->fetch_assoc()) {
+            if (password_verify($password, $row['password'])) {
+                $_SESSION['logged_in'] = true; 
+                $_SESSION['user_id'] = $row['id'];
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['email'] = $row['email']; 
+
+                $response['success'] = true;
+                $response['message'] = 'Login successful';
+            } else {
+                $response['message'] = 'Invalid password';
+            }
+        } else {
+            $response['message'] = 'User not found';
+        }
+    } 
+
+    // === REGISTER ===
     elseif ($action === 'register') {
         $username = $_POST['username'];
         $email = $_POST['email'];
-        $password = $_POST['password'];
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        $data = json_encode(['email' => $email, 'password' => $password]);
-        $result = supabaseCall('/auth/v1/signup', $data);
+        $check = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $check->bind_param("ss", $username, $email);
+        $check->execute();
         
-        if (isset($result['id'])) {
-            $_SESSION['username'] = $username;
-            $_SESSION['email'] = $email;
-            $response['success'] = true;
-            $response['message'] = 'Registration successful';
+        if($check->get_result()->num_rows > 0) {
+            $response['message'] = 'Username or Email already taken';
         } else {
-            $response['message'] = $result['msg'] ?? json_encode($result);
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $username, $email, $password);
+            if($stmt->execute()) {
+                $response['success'] = true;
+                $response['message'] = 'Registration successful';
+            } else {
+                $response['message'] = 'Database Error';
+            }
         }
     }
 
-    // ✅ FORGOT PASSWORD - SUPABASE BUILT-IN (no PHPMailer needed)
+    // === FORGOT PASSWORD ===
     elseif ($action === 'forgot_password') {
         $email = $_POST['email'];
-        $data = json_encode(['email' => $email]);
-        $result = supabaseCall('/auth/v1/recover', $data);
-        $response['success'] = true;
-        $response['message'] = 'Check email for reset link from Supabase';
+        
+        $stmt = $conn->prepare("SELECT id, username FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if ($user) {
+            $token = bin2hex(random_bytes(50));
+            $expires = date("Y-m-d H:i:s", strtotime("+1 day"));
+
+            $update = $conn->prepare("UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?");
+            $update->bind_param("sss", $token, $expires, $email);
+            
+            if ($update->execute()) {
+                $mail = new PHPMailer(true);
+                try {
+                    $mail->isSMTP();
+                    $mail->Host = 'smtp.gmail.com';
+                    $mail->SMTPAuth = true;
+                    $mail->Username = 'harbienaga@gmail.com'; 
+                    $mail->Password = 'wacx eqwu yopp rxoa'; 
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port = 587;
+
+                    // *** ITO ANG FIX PARA SA SSL ERROR ***
+                    $mail->SMTPOptions = array(
+                        'ssl' => array(
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                            'allow_self_signed' => true
+                        )
+                    );
+
+                    $mail->setFrom($mail->Username, 'GabayAI Support');
+                    $mail->addAddress($email);
+
+                    // Siguraduhin na tama ang path ng reset_password.php mo
+                    $link = "http://localhost/gabayai/reset_password.php?token=" . $token;
+                    
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Reset Password Request';
+                    $mail->Body = "
+                        <h3>Password Reset Request</h3>
+                        <p>Hi " . htmlspecialchars($user['username']) . ",</p>
+                        <p>You requested a password reset. Click the link below to proceed:</p>
+                        <p><a href='$link' style='background:#764ba2; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Reset Password</a></p>
+                        <p><small>If you did not request this, please ignore this email.</small></p>
+                    ";
+
+                    $mail->send();
+                    $response['success'] = true;
+                    $response['message'] = 'Reset link sent! Check your email inbox/spam.';
+                } catch (Exception $e) {
+                    $response['message'] = 'Mailer Error: ' . $mail->ErrorInfo;
+                }
+            }
+        } else {
+            // Fake success para sa security (iwas user fishing)
+            $response['success'] = true; 
+            $response['message'] = 'If email exists, link was sent.';
+        }
     }
 
 } catch (Exception $e) {
