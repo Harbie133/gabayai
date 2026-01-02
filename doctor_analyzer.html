@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GabayAI - Clinical Decision Support</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="analyzerv2.css"> 
+  
+  <style>
+    /* =========================================
+       1. BASE STYLES
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      min-height: 100vh;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      color: #2d3748;
+      overflow-x: hidden;
+    }
+    
+    body { display: flex; flex-direction: column; }
+
+    /* =========================================
+       2. SIDEBAR (Exact Style from Dashboard)
+       ========================================= */
+    .sidebar {
+      background: #3d5a80;
+      color: #fff;
+      width: 260px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 1200;
+      box-shadow: 2px 0 10px rgba(0,0,0,.1);
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+      position: fixed;
+      top: 0; left: 0;
+    }
+    
+    .sidebar .logo {
+      font-weight: 800;
+      font-size: 1.6rem;
+      padding: 30px 25px 20px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar .logo span { color: #98c1d9; }
+    
+    .sidebar nav { flex: 1; padding: 20px 0; overflow-y: auto; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 25px;
+      text-decoration: none;
+      color: rgba(255,255,255,.8);
+      font-size: .95rem;
+      border-left: 3px solid transparent;
+      transition: all .2s ease;
+    }
+    .sidebar nav a i { width: 20px; text-align: center; font-size: 1.1rem; }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(255,255,255,.1);
+      border-left-color: #98c1d9;
+      color: #fff;
+    }
+    .sidebar .logout {
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,.9);
+    }
+    .sidebar .logout:hover { background: rgba(0,0,0,.2); color: #ff6b6b; }
+
+    /* =========================================
+       3. HAMBURGER MENU
+       ========================================= */
+    .hamburger {
+      width: 30px;
+      height: 24px;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      cursor: pointer;
+      z-index: 1300;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .hamburger div {
+      background: #3d5a80;
+      border-radius: 2px;
+      height: 3px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    /* =========================================
+       4. MAIN CONTENT LAYOUT
+       ========================================= */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-left: 260px; 
+      width: calc(100% - 260px);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* CONTENT WRAPPER */
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      margin-top: 0;
+    }
+
+    /* ANALYZER CARD */
+    .analyzer-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(61, 90, 128, 0.1);
+      padding: 30px;
+      border-top: 5px solid #3d5a80;
+      min-height: 500px;
+    }
+
+    .analyzer-header {
+        margin-bottom: 25px;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 15px;
+    }
+    .analyzer-header h2 {
+        color: #2d3748;
+        font-size: 1.5rem;
+    }
+    .analyzer-header p {
+        color: #718096;
+        font-size: 0.95rem;
+    }
+
+    /* =========================================
+       5. ANALYZER INTERNAL OVERRIDES
+       ========================================= */
+    .navbar, .mobile-menu, .mobile-menu-btn { display: none !important; }
+    #mainContainer { margin: 0 !important; width: 100% !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }
+
+    .results-layout { display: flex; gap: 25px; margin-top: 20px; align-items: flex-start; }
+    .results-sidebar { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; }
+    .results-detail { flex: 2; background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; }
+
+    .step h3 { 
+      color: #3d5a80; margin-bottom: 20px; font-size: 1.3rem;
+      border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; 
+      display: block; margin-top: 0;
+    }
+    
+    .ai-disclaimer-banner {
+        background-color: #ebf8ff; 
+        border-left: 5px solid #3182ce;
+        color: #2c5282; 
+        margin-bottom: 20px; 
+        padding: 15px; 
+        border-radius: 6px; 
+        font-size: 0.95rem;
+        display: flex; 
+        gap: 12px; 
+        align-items: flex-start;
+    }
+
+    .button-group { display: flex; gap: 10px; margin-top: 25px; }
+    .button-group button {
+      background-color: #3d5a80; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 1rem;
+    }
+    .button-group button.secondary { background-color: #718096; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-row { display: flex; gap: 20px; }
+    .form-field { flex: 1; display: flex; flex-direction: column; }
+    .form-field input, .form-field select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; }
+    textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; }
+
+    /* =========================================
+       6. RESPONSIVE FIXES
+       ========================================= */
+    @media (max-width: 900px) {
+      .hamburger { display: flex; }
+      .sidebar { transform: translateX(-100%); width: 260px; box-shadow: none; }
+      .sidebar.show { transform: translateX(0); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+      .main-content { margin-left: 0; width: 100%; }
+      .content-area { padding: 20px; padding-top: 80px; min-height: 100vh; }
+    }
+
+    @media (max-width: 600px) {
+      .content-area { padding: 15px; padding-top: 80px; }
+      .analyzer-card { padding: 15px; }
+      .results-layout { flex-direction: column; gap: 15px; }
+      .results-sidebar, .results-detail { width: 100%; }
+      .form-row { flex-direction: column; gap: 10px; }
+      .button-group { flex-direction: column; }
+      .button-group button { width: 100%; }
+      #triage-container { margin-bottom: 20px; display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hamburger Button -->
+  <button class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </button>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo">GABAY<span>AI</span></div>
+    <nav>
+      <a href="doctor_dashboard.html">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a href="doctor_profile.html">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <a href="doctor_patients.html">
+        <i class="fas fa-users"></i> Patients
+      </a>
+      <a href="doctor_analyzer.html" class="active">
+        <i class="fas fa-microscope"></i> Clinical Support
+      </a>
+      <a href="doctor_teleconsult.html">
+        <i class="fas fa-comments"></i> Teleconsultation
+      </a>
+    
+    </nav>
+    <div class="logout" onclick="location.href='doctor_logout.php'">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContentWrapper">
+    
+    <!-- Content Area -->
+    <div class="content-area">
+      
+      <div class="analyzer-card">
+        
+        <!-- Header for Clinical Look -->
+        <div class="analyzer-header">
+            <h2>Clinical Decision Support System</h2>
+            <p>AI-Powered preliminary assessment to assist in differential diagnosis.</p>
+        </div>
+
+        <div id="mainContainer">
+          
+          <!-- Step 1: Vitals -->
+          <div class="step active" id="step1">
+            <h3><i class="fas fa-notes-medical me-2"></i> Patient Vitals & History</h3>
+            <div class="form-group">
+              <div class="section-label">Demographics</div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="age">Age (Years)</label>
+                  <input type="number" id="age" placeholder="Ex. 25" min="1" max="130" oninput="validateAge(this)">
+                  <div id="age-error" class="error-message">Invalid age</div>
+                </div>
+                <div class="form-field">
+                  <label for="gender">Biological Sex</label>
+                  <select id="gender">
+                    <option value="">Select Sex</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="section-label">Anthropometrics</div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="height">Height (cm)</label>
+                  <input type="number" id="height" placeholder="cm" oninput="validatePositiveNumber(this, 'height-error')">
+                  <div id="height-error" class="error-message">Invalid input</div>
+                </div>
+                <div class="form-field">
+                  <label for="weight">Weight (kg)</label>
+                  <input type="number" id="weight" placeholder="kg" oninput="validatePositiveNumber(this, 'weight-error')">
+                  <div id="weight-error" class="error-message">Invalid input</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="section-label">Vital Signs (Optional)</div>
+              <div class="form-field">
+                <label for="bp">Blood Pressure (mmHg)</label>
+                <input type="text" id="bp" placeholder="e.g. 120/80">
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button onclick="validateStep1()" class="btn-primary">Proceed to Symptoms</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Symptoms -->
+          <div class="step" id="step2">
+            <h3><i class="fas fa-file-medical-alt me-2"></i> Clinical Presentation</h3>
+            <label for="symptoms">Chief Complaint & History of Present Illness</label>
+            <textarea id="symptoms" rows="5" placeholder="Enter patient's reported symptoms, duration, and severity..."></textarea>
+            
+            <div class="form-group followup-section" id="followup-section">
+              <div class="section-label">Anamnesis Assistance (AI Generated)</div>
+              <div id="questions-container"></div>
+              <p class="followup-hint" style="font-size: 0.85rem; color: #718096; margin-top: 5px; font-style:italic;">
+                Use these guide questions to clarify the patient's condition.
+              </p>
+            </div>
+
+            <div class="button-group">
+              <button onclick="prevStep(2)" class="secondary">Back</button>
+              <button id="step2-main-btn" onclick="handleStep2()">Generate Assessment</button>
+            </div>
+            
+            <div class="analyzing" id="analyzing">
+              <div class="spinner-container"><div class="spinner"></div></div>
+              <div class="analyzing-text" id="analyzing-text">Analyzing clinical patterns...</div>
+            </div>
+          </div>
+
+          <!-- Step 3: Results -->
+          <div class="step" id="step3">
+            <h3><i class="fas fa-laptop-medical me-2"></i> Diagnostic Assessment</h3>
+            
+            <div id="triage-container" style="margin-bottom: 20px;"></div>
+            
+            <div class="ai-disclaimer-banner">
+              <i class="fas fa-user-md" style="margin-top: 3px; font-size: 1.2rem;"></i>
+              <div>
+                <strong>Clinical Use Only:</strong>
+                <p style="margin: 0; font-size: 0.9rem;">
+                    This assessment is generated by AI based on provided data. It serves as a <strong>decision support tool</strong> and does not replace professional medical diagnosis. Please verify all findings.
+                </p>
+              </div>
+            </div>
+            
+            <div id="drug-warning-container"></div>
+            
+            <div id="red-flags-card" class="warning-banner collapsed" style="margin-bottom: 15px;">
+              <div class="warning-header" onclick="toggleRedFlags()" style="padding: 10px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <i class="fas fa-exclamation-circle text-danger"></i>
+                  <span>Warning Signs / Red Flags</span>
+                </div>
+                <i class="fas fa-chevron-down chevron-icon" id="red-flag-chevron"></i>
+              </div>
+              <ul id="red-flags-list"></ul>
+            </div>
+
+            <div class="results-layout">
+              <!-- Differential Diagnosis List -->
+              <div class="results-sidebar">
+                  <h4 style="font-size:0.9rem; text-transform:uppercase; color:#718096; margin-bottom:10px; font-weight:700;">Differential Diagnosis</h4>
+                  <div id="condition-list"></div>
+              </div>
+
+              <!-- Detailed View -->
+              <div class="results-detail">
+                <div id="detail-placeholder" class="detail-placeholder" style="padding: 30px; text-align: center; color: #718096;">
+                  <i class="fas fa-file-medical" style="font-size: 2.5rem; margin-bottom: 15px; opacity:0.5;"></i>
+                  <p>Select a condition from the left panel to review clinical details and management suggestions.</p>
+                </div>
+                <div id="detail-content" style="display:none;">
+                  <div class="detail-header">
+                    <h3 id="det-name" class="detail-title">Condition Name</h3>
+                    <span id="det-badge" class="match-badge">High Probability</span>
+                  </div>
+                  <div class="detail-section">
+                    <h4>Clinical Overview</h4>
+                    <p id="det-overview"></p>
+                  </div>
+                  <div class="detail-section">
+                    <h4>Correlating Symptoms</h4>
+                    <ul id="det-symptoms"></ul>
+                  </div>
+                  <div class="detail-section">
+                    <h4>Suggested Clinical Management</h4>
+                    <div class="treatment-box">
+                      <ul id="det-treatment"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="button-group">
+              <button onclick="prevStep(3)" class="secondary">Back</button>
+              <button onclick="location.reload()">Start New Assessment</button>
+            </div>
+          </div>
+
+        </div> <!-- End MainContainer -->
+      </div> <!-- End Analyzer Card -->
+    </div> <!-- End Content Area -->
+  </div> <!-- End Main Content -->
+
+  <!-- SCRIPTS -->
+  <script src="language-manager.js"></script>
+  <script src="analyzerv2.js?v=7"></script> 
+
+  <script>
+    // --- SIDEBAR LOGIC ---
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebar.classList.toggle('show');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 900 && 
+          sidebar.classList.contains('show') && 
+          !sidebar.contains(e.target) && 
+          !hamburger.contains(e.target)) {
+        sidebar.classList.remove('show');
+      }
+    });
+
+    // --- SESSION CHECK ---
+    async function checkSession() {
+      try {
+        const sessionRes = await fetch('get_doctor_session.php');
+        const sessionData = await sessionRes.json();
+        
+        if (!sessionData.logged_in) {
+           window.location.href = 'doctor_login.html';
+        }
+      } catch (error) {
+        console.error('Session check failed', error);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', checkSession);
+  </script>
+</body>
+</html>
