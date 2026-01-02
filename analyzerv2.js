@@ -1,7 +1,7 @@
 // ===========================
 // SYMPTOM ANALYZER V2 - UPDATED JS
 // ===========================
-const API_BASE = 'https://gabayai-server.onrender.com';
+const API_BASE = "https://gabayai-server-jz0y.onrender.com";
 
 let followupGenerated = false;
 let analysisData = null;
