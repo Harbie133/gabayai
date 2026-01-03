@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+    
+
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GabayAI - Patient Portal</title>
@@ -266,6 +269,11 @@
     </div>
 
     <script>
+                // GabayAI Supabase (from Vercel env vars)
+        const SUPABASE_URL = 'https://fuicwbgwylpcwsncbrup.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1aWN3Ymd3eWxwY3dzbmNicnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MjQyMTIsImV4cCI6MjA4MzAwMDIxMn0.pAA0qOd68BqIfqRldWMUuK1s_DAwjp9n34BAPydMdhk';  // From API page
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const captchas = { login: '', reg: '', forgot: '' };
 
         function genCaptcha(type) {
@@ -322,144 +330,214 @@
         // --- HANDLERS (CONNECTED TO BACKEND) ---
 
         async function handleLogin(e) {
-            e.preventDefault();
-            let user = document.getElementById('loginUser').value;
-            let pass = document.getElementById('loginPass').value;
-            let code = document.getElementById('loginCaptchaInput').value;
-
-            if(code.toUpperCase() !== captchas.login) {
-                alert('Incorrect Captcha');
-                genCaptcha('login');
-                return;
-            }
-
-            let btn = document.getElementById('loginBtn');
-            let load = document.getElementById('loginLoad');
-            btn.style.display = 'none';
-            load.style.display = 'block';
-
-            let fd = new FormData();
-            fd.append('action', 'login');
-            fd.append('username', user);
-            fd.append('password', pass);
-
-            try {
-                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
-                if (!req.ok) throw new Error('Network response was not ok'); 
-                let res = await req.json();
-                
-                if(res.success) {
-                    window.location.href = 'homer.html'; 
-                } else {
-                    alert(res.message);
+                e.preventDefault();
+                let user = document.getElementById('loginUser').value;
+                let pass = document.getElementById('loginPass').value;
+                let code = document.getElementById('loginCaptchaInput').value.toUpperCase();
+            
+                if(code !== captchas.login.toUpperCase()) {
+                    alert('Incorrect Captcha');
                     genCaptcha('login');
+                    return;
                 }
-            } catch(err) {
-                console.error(err);
-                alert('Connection Error: Please check if auth.php exists and database is connected.');
+            
+                let btn = document.getElementById('loginBtn');
+                let load = document.getElementById('loginLoad');
+                btn.style.display = 'none';
+                load.style.display = 'block';
+            
+                try {
+                    // SUPABASE QUERY - GabayAI users table
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('id, username, password, is_active, first_name')
+                        .eq('username', user)
+                        .single();
+            
+                    if (error && error.code !== 'PGRST116') {  // No row found
+                        throw error;
+                    }
+            
+                    if (data && data.password === pass && data.is_active) {
+                        // Save user session
+                        localStorage.setItem('gabayai_user', JSON.stringify({
+                            id: data.id,
+                            username: data.username,
+                            first_name: data.first_name || data.username
+                        }));
+                        window.location.href = 'homer.html';
+                    } else {
+                        alert('Invalid username or password');
+                        genCaptcha('login');
+                    }
+                } catch (err) {
+                    console.error('Login error:', err);
+                    alert('Login failed. Check username/password.');
+                } finally {
+                    btn.style.display = 'block';
+                    load.style.display = 'none';
+                }
             }
-            btn.style.display = 'block';
-            load.style.display = 'none';
-        }
+
 
         async function handleRegister(e) {
-            e.preventDefault();
-            let user = document.getElementById('regUser').value;
-            let email = document.getElementById('regEmail').value;
-            let pass = document.getElementById('regPass').value;
-            let confirm = document.getElementById('regConfirm').value;
-            let code = document.getElementById('regCaptchaInput').value;
+    e.preventDefault();
+    let user = document.getElementById('regUser').value.trim();
+    let email = document.getElementById('regEmail').value.trim();
+    let pass = document.getElementById('regPass').value;
+    let confirm = document.getElementById('regConfirm').value;
+    let code = document.getElementById('regCaptchaInput').value.toUpperCase();
 
-            if(pass !== confirm) { alert('Passwords do not match'); return; }
-            if(code.toUpperCase() !== captchas.reg) {
-                alert('Incorrect Captcha');
-                genCaptcha('reg');
-                return;
-            }
+    // Validation
+    if(pass !== confirm) { 
+        alert('Passwords do not match'); 
+        return; 
+    }
+    if(code !== captchas.reg.toUpperCase()) {
+        alert('Incorrect Captcha');
+        genCaptcha('reg');
+        return;
+    }
+    if(user.length < 3) {
+        alert('Username must be 3+ characters');
+        return;
+    }
 
-            let btn = document.getElementById('regBtn');
-            let load = document.getElementById('regLoad');
-            btn.style.display = 'none';
-            load.style.display = 'block';
+    let btn = document.getElementById('regBtn');
+    let load = document.getElementById('regLoad');
+    btn.style.display = 'none';
+    load.style.display = 'block';
 
-            let fd = new FormData();
-            fd.append('action', 'register');
-            fd.append('username', user);
-            fd.append('email', email);
-            fd.append('password', pass);
+    try {
+        // Check if user/email exists
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .or(`username.eq.${user},email.eq.${email}`)
+            .single();
 
-            try {
-                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
-                if (!req.ok) throw new Error('Network response was not ok');
-                let res = await req.json();
-                
-                if(res.success) {
-                    // Reset Form
-                    document.getElementById('regUser').value = '';
-                    document.getElementById('regEmail').value = '';
-                    document.getElementById('regPass').value = '';
-                    document.getElementById('regConfirm').value = '';
-                    document.getElementById('regCaptchaInput').value = '';
-                    
-                    // Show Success Modal instead of alert
-                    openSuccessModal('Account created successfully! Please login.');
-                } else {
-                    alert(res.message);
-                }
-            } catch(err) { alert('Connection Error: Please check if auth.php exists.'); }
-            
-            btn.style.display = 'block';
-            load.style.display = 'none';
+        if (existing) {
+            alert('Username or email already exists');
+            genCaptcha('reg');
+            return;
         }
+
+        // SUPABASE REGISTER - GabayAI users table
+        const { data, error } = await supabase
+            .from('users')
+            .insert({
+                username: user,
+                email: email,
+                password: pass,  // TODO: Hash with bcrypt sa production
+                first_name: user.split(' ')[0],  // Auto from username
+                is_active: true,
+                created_at: new Date().toISOString()
+            })
+            .select('id, username, email')
+            .single();
+
+        if (!error && data) {
+            // Reset Form
+            document.getElementById('regUser').value = '';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPass').value = '';
+            document.getElementById('regConfirm').value = '';
+            document.getElementById('regCaptchaInput').value = '';
+            
+            // Show Success Modal
+            openSuccessModal('Account created successfully! Please login.');
+        } else {
+            alert(error?.message || 'Registration failed');
+            genCaptcha('reg');
+        }
+    } catch (err) {
+        console.error('Register error:', err);
+        alert('Registration failed. Try again.');
+        genCaptcha('reg');
+    } finally {
+        btn.style.display = 'block';
+        load.style.display = 'none';
+    }
+}
+
 
         // --- FORGOT PASSWORD LOGIC ---
-        function openModal() { 
-            document.getElementById('forgotModal').classList.add('show'); 
-            genCaptcha('forgot'); 
+        // --- FORGOT PASSWORD LOGIC (Supabase Version) ---
+function openModal() { 
+    document.getElementById('forgotModal').classList.add('show'); 
+    genCaptcha('forgot'); 
+}
+function closeModal() { document.getElementById('forgotModal').classList.remove('show'); }
+
+async function handleForgot(e) {
+    e.preventDefault();
+    let email = document.getElementById('forgotEmail').value.trim();
+    let code = document.getElementById('forgotCaptchaInput').value.toUpperCase();
+
+    if(code !== captchas.forgot.toUpperCase()) {
+        document.getElementById('forgotCaptchaError').style.display = 'block';
+        genCaptcha('forgot');
+        return;
+    } else {
+        document.getElementById('forgotCaptchaError').style.display = 'none';
+    }
+
+    let btn = document.getElementById('forgotBtn');
+    let load = document.getElementById('forgotLoad');
+    btn.style.display = 'none';
+    load.style.display = 'block';
+
+    try {
+        // SUPABASE: Check if email exists sa users table
+        const { data: user, error: checkError } = await supabase
+            .from('users')
+            .select('id, email, username')
+            .eq('email', email)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
         }
-        function closeModal() { document.getElementById('forgotModal').classList.remove('show'); }
 
-        async function handleForgot(e) {
-            e.preventDefault();
-            let email = document.getElementById('forgotEmail').value;
-            let code = document.getElementById('forgotCaptchaInput').value;
+        if (!user) {
+            alert('Email not found');
+        } else {
+            // Generate 6-digit reset code (expires 1 hour)
+            const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();  // 1 hour
 
-            if(code.toUpperCase() !== captchas.forgot) {
-                document.getElementById('forgotCaptchaError').style.display = 'block';
-                genCaptcha('forgot');
-                return;
+            // Save to password_resets table
+            const { error: insertError } = await supabase
+                .from('password_resets')
+                .insert({
+                    user_id: user.id,
+                    reset_code: resetCode,
+                    expires_at: expiresAt
+                });
+
+            if (!insertError) {
+                alert(`Reset code sent! Your code: ${resetCode}\n(Valid for 1 hour - check email simulation)`);
+                console.log(`Demo: User ${user.username} reset code: ${resetCode} expires: ${expiresAt}`);
+                closeModal();
             } else {
-                document.getElementById('forgotCaptchaError').style.display = 'none';
+                alert('Failed to generate reset code');
             }
-
-            let btn = document.getElementById('forgotBtn');
-            let load = document.getElementById('forgotLoad');
-            btn.style.display = 'none';
-            load.style.display = 'block';
-
-            let fd = new FormData();
-            fd.append('action', 'forgot_password');
-            fd.append('email', email);
-
-            try {
-                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
-                if (!req.ok) throw new Error('Network response was not ok');
-                let res = await req.json();
-                alert(res.message);
-                if(res.success) closeModal();
-            } catch(err) {
-                console.error(err);
-                alert('Connection Error: Please check backend configuration.');
-            }
-            btn.style.display = 'block';
-            load.style.display = 'none';
         }
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        alert('Reset failed. Try again.');
+    } finally {
+        btn.style.display = 'block';
+        load.style.display = 'none';
+    }
+}
 
-        window.onload = function() { genCaptcha('login'); };
-        window.onclick = function(e) { 
-            if(e.target === document.getElementById('forgotModal')) closeModal(); 
-            if(e.target === document.getElementById('successModal')) closeSuccessModal(); 
-        }
+window.onload = function() { genCaptcha('login'); };
+window.onclick = function(e) { 
+    if(e.target === document.getElementById('forgotModal')) closeModal(); 
+    if(e.target === document.getElementById('successModal')) closeSuccessModal(); 
+}
+
     </script>
 </body>
 </html>
