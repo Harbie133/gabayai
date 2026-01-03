@@ -344,7 +344,7 @@
             fd.append('password', pass);
 
             try {
-                let req = await fetch("https://gabayai.page.gd/auth.php", { method: 'POST', body: fd });
+                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
                 if (!req.ok) throw new Error('Network response was not ok'); 
                 let res = await req.json();
                 
@@ -389,7 +389,7 @@
             fd.append('password', pass);
 
             try {
-                let req = await fetch("https://gabayai.page.gd/auth.php", { method: 'POST', body: fd });
+                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
                 if (!req.ok) throw new Error('Network response was not ok');
                 let res = await req.json();
                 
@@ -442,7 +442,7 @@
             fd.append('email', email);
 
             try {
-                let req = await fetch("https://gabayai.page.gd/auth.php", { method: 'POST', body: fd });
+                let req = await fetch("https://dagayai.infinityfreeapp.com/auth.php", { method: 'POST', body: fd });
                 if (!req.ok) throw new Error('Network response was not ok');
                 let res = await req.json();
                 alert(res.message);
