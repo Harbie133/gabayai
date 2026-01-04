@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: gabayai
+    env: php
+    region: singapore
+    buildCommand: ""
+    startCommand: "php -S 0.0.0.0:$PORT"
