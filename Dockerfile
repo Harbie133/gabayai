@@ -1,16 +1,16 @@
 FROM php:8.1-apache
 
-# Install mysqli extension
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
+# Install mysqli
+RUN docker-php-ext-install mysqli
 
-# Kopyahin ang files
+# Copy files
 COPY . /var/www/html/
 
-# Buksan ang port 80
+# Enable Apache rewrite module (if you have .htaccess)
+RUN a2enmod rewrite
+
+# Expose port
 EXPOSE 80
 
-# Ayusin ang port para sa Render
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
-
-# Start Server
+# Start Apache (Render will handle PORT automatically)
 CMD ["apache2-foreground"]
